@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Karparts360 Knowledge Base</title>
+  <!-- Externalize this CSS to styles.css for maintainability -->
+  <style>
+    :root {
+      --color-bg: #fff;
+      --color-primary: #1e2a4a;
+      --color-secondary: #6e8efb;
+      --color-text: #333;
+      --color-muted: #555;
+      --radius: 0.5rem;
+      --shadow-light: 0 2px 8px rgba(0,0,0,0.05);
+      --shadow-hover: 0 4px 12px rgba(0,0,0,0.1);
+      --gap: 1.5rem;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
+    }
+    header {
+      background: linear-gradient(135deg, #f4f8ff 0%, #dbe6ff 100%);
+      text-align: center;
+      padding: 4rem 1rem;
+    }
+    header h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: var(--color-primary);
+    }
+    .search-wrapper {
+      position: relative;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .search-wrapper input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-light);
+    }
+    main {
+      display: flex;
+      gap: var(--gap);
+      padding: 0 1rem 2rem;
+    }
+    .cards {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: var(--gap);
+    }
+    .card {
+      background: var(--color-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-light);
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-hover);
+    }
+    .card svg {
+      width: 3rem;
+      height: 3rem;
+      margin-bottom: 1rem;
+      fill: var(--color-secondary);
+    }
+    .card h2 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+      color: var(--color-primary);
+    }
+    .card p {
+      color: var(--color-muted);
+      font-size: 0.95rem;
+    }
+    aside.updates {
+      width: 300px;
+      position: sticky;
+      top: 2rem;
+      background: var(--color-bg);
+      border-radius: var(--radius);
+      padding: 1rem;
+      box-shadow: var(--shadow-light);
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh - 4rem);
+    }
+    .updates h3 {
+      margin-bottom: 1rem;
+      color: var(--color-primary);
+      font-size: 1.25rem;
+    }
+    .updates-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .update-item {
+      background: #fafafa;
+      border: 1px solid #eee;
+      border-radius: 0.25rem;
+      padding: 0.75rem;
+      position: relative;
+    }
+    .update-item time {
+      display: block;
+      font-size: 0.75rem;
+      color: #888;
+      margin-bottom: 0.25rem;
+    }
+    .update-item button {
+      position: absolute;
+      top: 0.5rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 0.25rem;
+      transition: background 0.15s;
+    }
+    .update-item button:hover { background: #f0f0f0; }
+    .update-item .edit { right: 2.5rem; }
+    .update-item .delete { right: 0.5rem; }
+    .updates-form {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .updates-form input {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 0.25rem;
+    }
+    .updates-form button {
+      background: var(--color-secondary);
+      color: #fff;
+      border: none;
+      padding: 0 1rem;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .updates-form button:hover {
+      background: #5a78d1;
+    }
+    /* Overlay styles */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+    .overlay.active { display: flex; }
+    .panel {
+      background: var(--color-bg);
+      border-radius: var(--radius);
+      width: 90%;
+      max-width: 800px;
+      max-height: 90vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-hover);
+    }
+    .panel header {
+      background: linear-gradient(135deg, #f4f8ff 0%, #dbe6ff 100%);
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+    }
+    .panel header button {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      color: var(--color-secondary);
+      margin-right: 1rem;
+      cursor: pointer;
+    }
+    .panel main {
+      padding: 1rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .panel a, .panel button.list { color: var(--color-secondary); text-decoration: none; }
+    .panel a:hover, .panel button.list:hover { text-decoration: underline; }
+    /* Utility */
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Karparts360 Knowledge Base</h1>
+    <div class="search-wrapper">
+      <label for="search" class="visually-hidden">Search Knowledge Base</label>
+      <input id="search" type="search" placeholder="Search…" aria-label="Search Knowledge Base">
+    </div>
+  </header>
+
+  <main>
+    <section class="cards" aria-label="Knowledge Categories">
+      <!-- Example card, repeat for each category -->
+      <article class="card" data-category="Email Responses">
+        <svg aria-hidden="true"><use href="#icon-email"></use></svg>
+        <h2>Email Responses</h2>
+        <p>Templates for common email scenarios</p>
+      </article>
+      <!-- … other cards … -->
+    </section>
+
+    <aside class="updates" aria-labelledby="updates-title">
+      <h3 id="updates-title">Updates</h3>
+      <div class="updates-list" id="updates-list"></div>
+      <form class="updates-form" id="updates-form">
+        <label for="update-text" class="visually-hidden">New Update</label>
+        <input id="update-text" type="text" placeholder="Add an update…" required>
+        <button type="submit">Add</button>
+      </form>
+    </aside>
+  </main>
+
+  <!-- Overlay panel -->
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true">
+    <div class="panel">
+      <header>
+        <button id="close-panel" aria-label="Close">← Back</button>
+        <h2 id="panel-title"></h2>
+      </header>
+      <main id="panel-content"></main>
+    </div>
+  </div>
+
+  <!-- SVG sprite -->
+  <svg style="display:none;">
+    <symbol id="icon-email" viewBox="0 0 24 24">
+      <path d="M4 4h16v16H4z" />
+    </symbol>
+    <!-- Add other icons symbols here -->
+  </svg>
+
+  <script>
+  (() => {
+    'use strict';
+    const selectors = {
+      search: '#search', cards: '.card', overlay: '#overlay',
+      panelTitle: '#panel-title', panelContent: '#panel-content', close: '#close-panel',
+      updatesList: '#updates-list', updatesForm: '#updates-form', updatesInput: '#update-text'
+    };
+    const elems = {};
+    for (const [key, sel] of Object.entries(selectors)) {
+      elems[key] = document.querySelector(sel);
+    }
+
+    // LocalStorage key
+    const STORAGE = 'kb-updates';
+
+    // Fetch and render saved updates
+    function loadUpdates() {
+      const items = JSON.parse(localStorage.getItem(STORAGE) || '[]');
+      items.forEach(addUpdateItem);
+    }
+
+    // Save current updates to storage
+    function saveUpdates() {
+      const items = [...elems.updatesList.children].map(item => ({
+        date: item.querySelector('time').dateTime,
+        text: item.querySelector('p').textContent
+      }));
+      localStorage.setItem(STORAGE, JSON.stringify(items));
+    }
+
+    // Create and append an update item
+    function addUpdateItem({ date = new Date().toISOString(), text }) {
+      const article = document.createElement('article');
+      article.className = 'update-item';
+      article.innerHTML = `
+        <time datetime="${date}">${new Date(date).toLocaleDateString()}</time>
+        <p>${text}</p>
+        <button class="edit" aria-label="Edit update">✎</button>
+        <button class="delete" aria-label="Delete update">🗑️</button>
+      `;
+      elems.updatesList.prepend(article);
+    }
+
+    // Handle form submission
+    elems.updatesForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const text = elems.updatesInput.value.trim();
+      if (!text) return;
+      addUpdateItem({ text });
+      elems.updatesInput.value = '';
+      saveUpdates();
+    });
+
+    // Delegate edit/delete clicks
+    elems.updatesList.addEventListener('click', e => {
+      const item = e.target.closest('.update-item');
+      if (!item) return;
+      if (e.target.classList.contains('edit')) {
+        const p = item.querySelector('p');
+        p.contentEditable = 'true'; p.focus();
+        p.addEventListener('blur', () => { p.contentEditable = 'false'; saveUpdates(); }, { once: true });
+      }
+      if (e.target.classList.contains('delete')) {
+        item.remove(); saveUpdates();
+      }
+    });
+
+    // Search filtering
+    elems.search.addEventListener('input', ({ target }) => {
+      const term = target.value.toLowerCase();
+      document.querySelectorAll(selectors.cards).forEach(card => {
+        card.hidden = !card.textContent.toLowerCase().includes(term);
+      });
+      [...elems.updatesList.children].forEach(u => {
+        u.hidden = !u.textContent.toLowerCase().includes(term);
+      });
+    });
+
+    // Card click -> open overlay
+    document.querySelectorAll(selectors.cards).forEach(card => {
+      card.addEventListener('click', () => {
+        const category = card.dataset.category;
+        fetch(`${category.replace(/\s+/g, '_').toLowerCase()}.json`)
+          .then(r => r.json())
+          .then(data => showPanel(category, data))
+          .catch(() => showPanel(category, null));
+      });
+    });
+
+    // Show panel with content
+    function showPanel(title, items) {
+      elems.panelTitle.textContent = title;
+      elems.panelContent.innerHTML = items && items.length
+        ? `<ul>${items.map(i => `<li><button class="list" data-key="${i.key || ''}">${i.title}</button></li>`).join('')}</ul>`
+        : `<p>Content for “${title}” isn’t available yet.</p>`;
+      elems.overlay.classList.add('active');
+    }
+
+    // Close panel
+    elems.close.addEventListener('click', () => elems.overlay.classList.remove('active'));
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && elems.overlay.classList.contains('active')) {
+        elems.overlay.classList.remove('active');
+      }
+    });
+
+    // Initialize
+    loadUpdates();
+  })();
+  </script>
+</body>
+</html>
