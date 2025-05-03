@@ -1,0 +1,40 @@
+{
+  "VIN Decoders": [
+    {
+      "name": "Driving Tests VIN Decoder",
+      "link": "https://driving-tests.org/vin-decoder/"
+    },
+    {
+      "name": "VINDecoderz",
+      "link": "https://www.vindecoderz.com/"
+    },
+    {
+      "name": "TYC VIN Decoder",
+      "link": "https://tyc.mycarparts.net/"
+    }
+  ],
+  "KarParts360": [
+    {
+      "name": "KarParts360 Home",
+      "link": "https://www.carparts.com/"
+    }
+  ],
+  "Perfect Fit Group (USAuto)": [
+    {
+      "name": "PFG Login",
+      "link": "https://www.carpartswholesale.com/login"
+    }
+  ],
+  "Product Info": [
+    {
+      "name": "VIN Product Info",
+      "link": "https://chmpzu.github.io/vin-product-info/"
+    }
+  ],
+  "Report Generator": [
+    {
+      "name": "Report Generator",
+      "link": "https://chmpzu.github.io/report-generator/"
+    }
+  ]
+}
