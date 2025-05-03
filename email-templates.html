@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Templates - WooHub</n  >
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 antialiased flex flex-col min-h-screen">
+  <!-- Header -->
+  <header class="bg-white shadow sticky top-0 z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+      <a href="/" class="text-2xl font-semibold text-indigo-600">WooHub</a>
+      <div class="relative w-1/3">
+        <input id="search-input" type="search" placeholder="Search templates..." aria-label="Search templates"
+               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        <ul id="search-suggestions" class="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg hidden z-20"></ul>
+      </div>
+    </div>
+  </header>
+
+  <!-- Breadcrumbs -->
+  <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-sm text-gray-600" aria-label="Breadcrumb">
+    <ol class="list-reset flex">
+      <li><a href="/" class="hover:underline">Home</a></li>
+      <li><span class="mx-2">/</span></li>
+      <li>Email Templates</li>
+    </ol>
+  </nav>
+
+  <!-- Main content -->
+  <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
+    <h1 class="text-3xl font-semibold mb-6">Email Templates</h1>
+    <div id="templates-list" class="bg-white rounded-lg shadow p-6">
+      <!-- Loaded templates will appear here -->
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white py-6 border-t border-gray-200 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-sm text-gray-500 flex justify-between">
+      <p>&copy; 2025 WooHub. All rights reserved.</p>
+      <div class="space-x-4">
+        <a href="#" class="hover:underline">Privacy Policy</a>
+        <a href="#" class="hover:underline">Terms of Service</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Script -->
+  <script>
+    async function loadTemplates() {
+      const res = await fetch('data/email-templates.json');
+      const data = await res.json();
+      const container = document.getElementById('templates-list');
+
+      if (Array.isArray(data)) {
+        const ul = document.createElement('ul');
+        ul.className = 'list-disc pl-5 space-y-2';
+        data.forEach(item => {
+          const li = document.createElement('li');
+          li.innerHTML = `<a href="${item.link}" class="text-indigo-600 hover:underline">${item.name}</a>`;
+          ul.appendChild(li);
+        });
+        container.appendChild(ul);
+      } else {
+        Object.entries(data).forEach(([group, items]) => {
+          const h2 = document.createElement('h2');
+          h2.className = 'text-xl font-semibold mt-4';
+          h2.textContent = group;
+          container.appendChild(h2);
+          const ul = document.createElement('ul');
+          ul.className = 'list-disc pl-5 space-y-2 mb-4';
+          items.forEach(item => {
+            const li = document.createElement('li');
+            li.innerHTML = `<a href="${item.link}" class="text-indigo-600 hover:underline">${item.name}</a>`;
+            ul.appendChild(li);
+          });
+          container.appendChild(ul);
+        });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadTemplates);
+  </script>
+</body>
+</html>
