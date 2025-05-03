@@ -1,12 +1,13 @@
 {
+  ...,
   "Claims Contacts": [
     {
       "name": "Amazon Logistics Claims",
-      "content": "<p>Reach out to Ariane with Order Number, AMZL Tracking Number, proof of refund, and screenshot of tracking page.</p>"
+      "content": "<p>Reach out to Ariane…</p>"
     },
     {
       "name": "FedEx, UPS, USPS Claims",
-      "content": "<p>Contact Elizabeth Gacula with Order Number, Tracking Number, and images for proof.</p>"
+      "content": "<p>Contact Elizabeth Gacula…</p>"
     }
   ]
 }
