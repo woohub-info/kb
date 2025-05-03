@@ -31,10 +31,7 @@
     <aside class="w-64 mr-6 hidden lg:block">
       <div class="bg-white border border-gray-200 rounded-lg p-4 sticky top-24">
         <h2 class="text-lg font-semibold mb-2">Recent Updates</h2>
-        <ul id="updates-list" class="space-y-2 text-gray-700"></ul>
-        <div class="mt-4">
-          <a href="/updates" class="text-indigo-600 hover:underline text-sm">View All Updates →</a>
-        </div>
+        <ul id="updates-list" class="space-y-2 text-gray-700 max-h-64 overflow-y-auto"></ul>
       </div>
     </aside>
 
@@ -113,7 +110,7 @@
     async function fetchCategoryItems(category) {
       if (contentCache[category]) return contentCache[category];
       const slug = category.toLowerCase().replace(/\s+/g, '-');
-      const res = await fetch(`/data/${slug}.json`);
+      const res = await fetch('data/' + slug + '.json');
       if (!res.ok) throw new Error('Failed to load data');
       const data = await res.json();
       contentCache[category] = data;
@@ -131,7 +128,7 @@
           const ul = document.createElement('ul'); ul.className = 'list-disc pl-5 space-y-2';
           items.forEach(item => {
             const li = document.createElement('li');
-            li.innerHTML = `<a href=\"${item.link}\" class=\"text-indigo-600 hover:underline\">${item.name}</a>`;
+            li.innerHTML = `<a href="${item.link}" class="text-indigo-600 hover:underline">${item.name}</a>`;
             ul.appendChild(li);
           });
           detailList.appendChild(ul);
@@ -142,7 +139,7 @@
             const ul = document.createElement('ul'); ul.className = 'list-disc pl-5 space-y-2 mb-4';
             subitems.forEach(item => {
               const li = document.createElement('li');
-              li.innerHTML = `<a href=\"${item.link}\" class=\"text-indigo-600 hover:underline\">${item.name}</a>`;
+              li.innerHTML = `<a href="${item.link}" class="text-indigo-600 hover:underline">${item.name}</a>`;
               ul.appendChild(li);
             });
             detailList.appendChild(ul);
@@ -155,14 +152,16 @@
     }
 
     backBtn.addEventListener('click', () => {
-      detailContainer.classList.add('hidden'); container.classList.remove('hidden');
+      detailContainer.classList.add('hidden');
+      container.classList.remove('hidden');
     });
 
     function preloadAll() { cardsData.forEach(card => fetchCategoryItems(card.title).catch(console.error)); }
 
     searchInput.addEventListener('input', async () => {
-      const query = searchInput.value.trim().toLowerCase(); suggestionsList.innerHTML = '';
-      if (!query) return suggestionsList.classList.add('hidden');
+      const query = searchInput.value.trim().toLowerCase();
+      suggestionsList.innerHTML = '';
+      if (!query) { suggestionsList.classList.add('hidden'); return; }
       await Promise.all(cardsData.map(card => fetchCategoryItems(card.title).catch(() => [])));
       const categoryMatches = cardsData.filter(c => c.title.toLowerCase().includes(query));
       const itemMatches = [];
@@ -176,30 +175,38 @@
         }
       });
       if (!categoryMatches.length && !itemMatches.length) {
-        const li = document.createElement('li'); li.textContent = 'No results found'; li.className = 'px-3 py-2 text-gray-500'; suggestionsList.appendChild(li);
-      } else {
-        categoryMatches.forEach(c => {
-          const li = document.createElement('li'); li.textContent = c.title; li.className = 'px-3 py-2 hover:bg-gray-100 cursor-pointer font-medium';
-          li.addEventListener('click', () => { suggestionsList.classList.add('hidden'); searchInput.value = c.title; showContent(c.title); }); suggestionsList.appendChild(li);
-        });
-        if (categoryMatches.length && itemMatches.length) { const sep = document.createElement('li'); sep.className='border-t my-1'; suggestionsList.appendChild(sep); }
-        itemMatches.forEach(m => {
-          const li = document.createElement('li'); li.textContent = `${m.name} (${m.category})`; li.className = 'px-3 py-2 hover:bg-gray-100 cursor-pointer';
-          li.addEventListener('click', () => { window.location.href = m.link; }); suggestionsList.appendChild(li);
-        });
+        const li = document.createElement('li'); li.textContent = 'No results found'; li.className = 'px-3 py-2 text-gray-500';
+        suggestionsList.appendChild(li); suggestionsList.classList.remove('hidden'); return;
       }
+      categoryMatches.forEach(c => {
+        const li = document.createElement('li'); li.textContent = c.title; li.className = 'px-3 py-2 hover:bg-gray-100 cursor-pointer font-medium';
+        li.addEventListener('click', () => { suggestionsList.classList.add('hidden'); searchInput.value = c.title; showContent(c.title); });
+        suggestionsList.appendChild(li);
+      });
+      if (categoryMatches.length && itemMatches.length) { const sep = document.createElement('li'); sep.className='border-t my-1'; suggestionsList.appendChild(sep); }
+      itemMatches.forEach(m => {
+        const li = document.createElement('li'); li.textContent = `${m.name} (${m.category})`; li.className = 'px-3 py-2 hover:bg-gray-100 cursor-pointer';
+        li.addEventListener('click', () => window.location.href = m.link);
+        suggestionsList.appendChild(li);
+      });
       suggestionsList.classList.remove('hidden');
     });
     document.addEventListener('click', e => { if (!searchInput.contains(e.target) && !suggestionsList.contains(e.target)) suggestionsList.classList.add('hidden'); });
 
-    // Real-time updates
     async function fetchAndRenderUpdates() {
-      try { const res = await fetch('/api/updates'); const updates = await res.json(); const ul = document.getElementById('updates-list'); ul.innerHTML=''; updates.slice(0,3).forEach(u => { const li=document.createElement('li'); li.innerHTML=`<a href="${u.link}" class="block hover:underline font-medium">${u.title}</a><span class="text-xs text-gray-500">${u.date}</span>`; ul.appendChild(li); }); } catch(e) { console.error(e); }
+      try {
+        const res = await fetch('data/updates.json');
+        const updates = await res.json();
+        const ul = document.getElementById('updates-list'); ul.innerHTML = '';
+        updates.forEach(u => {
+          const li = document.createElement('li');
+          li.innerHTML = `<a href="${u.link}" class="block hover:underline font-medium">${u.title}</a><span class="text-xs text-gray-500">${u.date}</span>`;
+          ul.appendChild(li);
+        });
+      } catch (e) { console.error(e); }
     }
-    if (window.EventSource) { const source=new EventSource('/api/updates/stream'); source.onmessage=event => { const u=JSON.parse(event.data); const ul=document.getElementById('updates-list'); const li=document.createElement('li'); li.className='bg-yellow-50 rounded p-2'; li.innerHTML=`<a href="${u.link}" class="block hover:underline font-medium">${u.title}</a><span class="text-xs text-gray-500">${u.date}</span>`; ul.prepend(li); while(ul.children.length>3) ul.removeChild(ul.lastChild); }; } else { setInterval(fetchAndRenderUpdates,60000); }
-
-    // Init
-    renderCards(); preloadAll(); fetchAndRenderUpdates();
+    fetchAndRenderUpdates();
+    renderCards(); preloadAll();
   </script>
 </body>
 </html>
