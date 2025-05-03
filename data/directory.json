@@ -1,12 +1,30 @@
 {
+  "Warehouse Managers": [
+    {
+      "name": "Anthony Pitter and Carmen Wu",
+      "content": "<p><strong>Anthony Pitter and Carmen Wu</strong> – 100 RYAN ST STE 1 S PLAINFIELD, NJ 07080-4211</p>"
+    },
+    {
+      "name": "Jimmy Chou",
+      "content": "<p><strong>Jimmy Chou</strong> – California</p>"
+    },
+    {
+      "name": "Jannell Thomas",
+      "content": "<p><strong>Jannell Thomas</strong> – 6325 MCDONOUGH DR STE C NORCROSS, GA 30093-1232</p>"
+    },
+    {
+      "name": "Jason Homan",
+      "content": "<p><strong>Jason Homan</strong> – 333 CHARLES CT STE 105 WEST CHICAGO, IL 60185-2604</p>"
+    }
+  ],
   "Claims Contacts": [
     {
       "name": "Amazon Logistics Claims",
-      "content": "<p>Reach out to Ariane…</p>"
+      "content": "<p><strong>Amazon Logistics Claims</strong> – Reach out to Ariane. Send Order Number, AMZL Tracking Number, proof of refund, and screenshot of the tracking page.</p>"
     },
     {
       "name": "FedEx, UPS, USPS Claims",
-      "content": "<p>Contact Elizabeth Gacula…</p>"
+      "content": "<p><strong>FedEx, UPS, USPS Claims</strong> – Contact Elizabeth Gacula. Send Order Number, Tracking Number, and images for proof.</p>"
     }
   ]
 }
