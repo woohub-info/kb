@@ -171,7 +171,9 @@
       copyBtn.classList.remove('hidden');
       copyBtn.textContent = 'Copy';
       copyBtn.onclick = () => {
-        navigator.clipboard.writeText(htmlContent).then(() => {
+        // Copy rendered text (with spacing) rather than raw HTML
+        const text = overlayBody.innerText;
+        navigator.clipboard.writeText(text).then(() => {
           copyBtn.textContent = 'Copied!';
           setTimeout(() => copyBtn.textContent = 'Copy', 2000);
         });
