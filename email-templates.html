@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Email Templates - WooHub</n  >
+  <title>Email Templates - WooHub</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -32,10 +32,17 @@
   <!-- Main content -->
   <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
     <h1 class="text-3xl font-semibold mb-6">Email Templates</h1>
-    <div id="templates-list" class="bg-white rounded-lg shadow p-6">
-      <!-- Loaded templates will appear here -->
-    </div>
+    <div id="templates-list" class="bg-white rounded-lg shadow p-6"></div>
   </main>
+
+  <!-- Modal Overlay -->
+  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-30">
+    <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-2/3 lg:w-1/2 max-h-[80vh] overflow-y-auto p-6 relative">
+      <button id="modal-close" class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700">&times;</button>
+      <h2 id="modal-title" class="text-2xl font-semibold mb-4"></h2>
+      <div id="modal-body" class="prose max-w-none"></div>
+    </div>
+  </div>
 
   <!-- Footer -->
   <footer class="bg-white py-6 border-t border-gray-200 mt-auto">
@@ -55,32 +62,45 @@
       const data = await res.json();
       const container = document.getElementById('templates-list');
 
-      if (Array.isArray(data)) {
+      // Clear existing
+      container.innerHTML = '';
+
+      // Render grouped categories
+      Object.entries(data).forEach(([group, items]) => {
+        const h2 = document.createElement('h2');
+        h2.className = 'text-xl font-semibold mt-6';
+        h2.textContent = group;
+        container.appendChild(h2);
+
         const ul = document.createElement('ul');
         ul.className = 'list-disc pl-5 space-y-2';
-        data.forEach(item => {
+
+        items.forEach(item => {
           const li = document.createElement('li');
-          li.innerHTML = `<a href="${item.link}" class="text-indigo-600 hover:underline">${item.name}</a>`;
+          const btn = document.createElement('button');
+          btn.className = 'text-indigo-600 hover:underline focus:outline-none';
+          btn.textContent = item.name;
+          btn.addEventListener('click', () => openModal(item.name, item.content));
+          li.appendChild(btn);
           ul.appendChild(li);
         });
+
         container.appendChild(ul);
-      } else {
-        Object.entries(data).forEach(([group, items]) => {
-          const h2 = document.createElement('h2');
-          h2.className = 'text-xl font-semibold mt-4';
-          h2.textContent = group;
-          container.appendChild(h2);
-          const ul = document.createElement('ul');
-          ul.className = 'list-disc pl-5 space-y-2 mb-4';
-          items.forEach(item => {
-            const li = document.createElement('li');
-            li.innerHTML = `<a href="${item.link}" class="text-indigo-600 hover:underline">${item.name}</a>`;
-            ul.appendChild(li);
-          });
-          container.appendChild(ul);
-        });
-      }
+      });
     }
+
+    function openModal(title, htmlContent) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-body').innerHTML = htmlContent;
+      document.getElementById('modal').classList.remove('hidden');
+    }
+
+    document.getElementById('modal-close').addEventListener('click', () => {
+      document.getElementById('modal').classList.add('hidden');
+    });
+    document.getElementById('modal').addEventListener('click', e => {
+      if (e.target.id === 'modal') document.getElementById('modal').classList.add('hidden');
+    });
 
     document.addEventListener('DOMContentLoaded', loadTemplates);
   </script>
