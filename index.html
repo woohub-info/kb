@@ -196,7 +196,7 @@
     // Show email template content in overlay
     function openEmailOverlay(name, htmlContent) {
       overlayHeader.textContent = name;
-      overlayBody.innerHTML = `<div class="prose max-w-none">${htmlContent}</div>`;
+      overlayBody.innerHTML = `<div class="prose max-w-none space-y-4">${htmlContent}</div>`;
       // Show the overlay
       overlay.classList.remove('hidden');
     }
