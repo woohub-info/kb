@@ -1,5 +1,5 @@
 {
-  "Links": [
+  "VIN Decoders": [
     {
       "name": "Driving Tests VIN Decoder",
       "content": "<p><a href=\"https://driving-tests.org/vin-decoder/\" target=\"_blank\" rel=\"noopener\">https://driving-tests.org/vin-decoder/</a></p>"
@@ -11,19 +11,27 @@
     {
       "name": "TYC VIN Decoder",
       "content": "<p><a href=\"https://tyc.mycarparts.net/\" target=\"_blank\" rel=\"noopener\">https://tyc.mycarparts.net/</a></p>"
-    },
+    }
+  ],
+  "KarParts360": [
     {
-      "name": "KarParts360",
+      "name": "KarParts360 Home",
       "content": "<p><a href=\"https://www.carparts.com/\" target=\"_blank\" rel=\"noopener\">https://www.carparts.com/</a></p>"
-    },
+    }
+  ],
+  "Perfect Fit Group (USAuto)": [
     {
-      "name": "Perfect Fit Group (USAuto)",
+      "name": "PFG",
       "content": "<p><a href=\"https://www.carpartswholesale.com/login\" target=\"_blank\" rel=\"noopener\">https://www.carpartswholesale.com/login</a></p>"
-    },
+    }
+  ],
+  "Product Info": [
     {
       "name": "VIN Product Info",
       "content": "<p><a href=\"https://chmpzu.github.io/vin-product-info/\" target=\"_blank\" rel=\"noopener\">https://chmpzu.github.io/vin-product-info/</a></p>"
-    },
+    }
+  ],
+  "Report Generator": [
     {
       "name": "Report Generator",
       "content": "<p><a href=\"https://chmpzu.github.io/report-generator/\" target=\"_blank\" rel=\"noopener\">https://chmpzu.github.io/report-generator/</a></p>"
