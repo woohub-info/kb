@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Email Templates - WooHub</title>
+  <title id="page-title">Templates - WooHub</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -25,13 +25,13 @@
     <ol class="list-reset flex">
       <li><a href="/" class="hover:underline">Home</a></li>
       <li><span class="mx-2">/</span></li>
-      <li>Email Templates</li>
+      <li id="breadcrumb-category">Templates</li>
     </ol>
   </nav>
 
   <!-- Main content -->
   <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
-    <h1 class="text-3xl font-semibold mb-6">Email Templates</h1>
+    <h1 id="header-title" class="text-3xl font-semibold mb-6">Templates</h1>
     <div id="templates-list" class="bg-white rounded-lg shadow p-6"></div>
   </main>
 
@@ -57,15 +57,27 @@
 
   <!-- Script -->
   <script>
+    function getCategory() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('category') || 'email-templates';
+    }
+
+    function formatTitle(slug) {
+      return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+
     async function loadTemplates() {
-      const res = await fetch('data/email-templates.json');
+      const category = getCategory();
+      const title = formatTitle(category);
+      document.getElementById('page-title').textContent = `${title} - WooHub`;
+      document.getElementById('breadcrumb-category').textContent = title;
+      document.getElementById('header-title').textContent = title;
+
+      const res = await fetch(`data/${category}.json`);
       const data = await res.json();
       const container = document.getElementById('templates-list');
-
-      // Clear existing
       container.innerHTML = '';
 
-      // Render grouped categories
       Object.entries(data).forEach(([group, items]) => {
         const h2 = document.createElement('h2');
         h2.className = 'text-xl font-semibold mt-6';
