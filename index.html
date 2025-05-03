@@ -13,13 +13,8 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
       <a href="/" class="text-2xl font-semibold text-indigo-600">WooHub</a>
       <div class="relative w-1/3">
-        <input
-          id="search-input"
-          type="search"
-          placeholder="Search keywords..."
-          aria-label="Search keywords"
-          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
+        <input id="search-input" type="search" placeholder="Search keywords..." aria-label="Search keywords"
+               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
         <ul id="search-suggestions" class="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg hidden z-20"></ul>
       </div>
     </div>
@@ -46,18 +41,25 @@
         </ol>
       </nav>
 
-      <div class="flex-1 flex flex-col">
-        <!-- Detail View -->
-        <section id="detail-container" class="hidden bg-white rounded-lg shadow p-6 mb-6">
-          <button id="back-btn" class="text-indigo-600 hover:underline mb-4">← Back to Dashboard</button>
-          <h2 id="detail-title" class="text-2xl font-semibold mb-4"></h2>
-          <div id="detail-list" class="space-y-4"></div>
-        </section>
+      <!-- Detail View -->
+      <section id="detail-container" class="hidden bg-white rounded-lg shadow p-6 mb-6">
+        <button id="back-btn" class="text-indigo-600 hover:underline mb-4">← Back to Dashboard</button>
+        <h2 id="detail-title" class="text-2xl font-semibold mb-4"></h2>
+        <ul id="detail-list" class="list-disc pl-5 space-y-2"></ul>
+      </section>
 
-        <!-- Card Grid -->
-        <section id="card-container" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></section>
-      </div>
+      <!-- Card Grid -->
+      <section id="card-container" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></section>
     </main>
+  </div>
+
+  <!-- Overlay Modal -->
+  <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden items-start justify-center overflow-y-auto z-40">
+    <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 max-h-[90vh] overflow-y-auto p-6 relative mt-20 mx-auto">
+      <button id="overlay-close" class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700">&times;</button>
+      <h2 id="overlay-header" class="text-2xl font-semibold mb-4"></h2>
+      <div id="overlay-body" class="space-y-4"></div>
+    </div>
   </div>
 
   <!-- Footer -->
@@ -73,24 +75,29 @@
 
   <!-- Script -->
   <script>
+    // Card definitions
     const cardsData = [
-      { title: 'Email Templates', description: 'Browse pre-built email templates.' },
-      { title: 'Processes', description: 'Explore documented workflows.' },
-      { title: 'Reports', description: 'Access performance and usage reports.' },
-      { title: 'Links', description: 'Quick access to essential resources.' },
-      { title: 'Tutorials', description: 'Step-by-step how-to guides.' },
-      { title: 'Directory', description: 'Contacts and key stakeholders.' }
+      { title: 'Email Templates', slug: 'email-templates', description: 'Browse pre-built email templates.' },
+      { title: 'Processes',      slug: 'processes',      description: 'Explore documented workflows.' },
+      { title: 'Reports',        slug: 'reports',        description: 'Access performance and usage reports.' },
+      { title: 'Links',          slug: 'links',          description: 'Quick access to essential resources.' },
+      { title: 'Tutorials',      slug: 'tutorials',      description: 'Step-by-step how-to guides.' },
+      { title: 'Directory',      slug: 'directory',      description: 'Contacts and key stakeholders.' }
     ];
 
-    const container = document.getElementById('card-container');
+    // Element refs
+    const container      = document.getElementById('card-container');
     const detailContainer = document.getElementById('detail-container');
-    const detailTitle = document.getElementById('detail-title');
-    const detailList = document.getElementById('detail-list');
-    const backBtn = document.getElementById('back-btn');
-    const searchInput = document.getElementById('search-input');
-    const suggestionsList = document.getElementById('search-suggestions');
-    const contentCache = {};
+    const detailTitle     = document.getElementById('detail-title');
+    const detailList      = document.getElementById('detail-list');
+    const backBtn         = document.getElementById('back-btn');
+    const overlay        = document.getElementById('overlay');
+    const overlayClose   = document.getElementById('overlay-close');
+    const overlayHeader  = document.getElementById('overlay-header');
+    const overlayBody    = document.getElementById('overlay-body');
+    const contentCache   = {};
 
+    // Render cards; title => overlay, View => detail view
     function renderCards() {
       container.innerHTML = '';
       cardsData.forEach(card => {
@@ -101,112 +108,109 @@
           <p class="text-gray-600 flex-1">${card.description}</p>
           <button class="mt-4 text-indigo-600 font-medium hover:underline">View ${card.title} →</button>
         `;
-        article.querySelector('h3').addEventListener('click', () => showContent(card.title));
-        article.querySelector('button').addEventListener('click', () => showContent(card.title));
+        // Overlay on title click
+        article.querySelector('h3').addEventListener('click', () => openOverlay(card.slug, card.title));
+        // Detail view on button
+        article.querySelector('button').addEventListener('click', () => showContent(card.slug, card.title));
         container.appendChild(article);
       });
     }
 
-    async function fetchCategoryItems(category) {
-      if (contentCache[category]) return contentCache[category];
-      const slug = category.toLowerCase().replace(/\s+/g, '-');
-      const res = await fetch('data/' + slug + '.json');
+    // Fetch JSON
+    async function fetchItems(slug) {
+      if (contentCache[slug]) return contentCache[slug];
+      const res = await fetch(`data/${slug}.json`);
       if (!res.ok) throw new Error('Failed to load data');
       const data = await res.json();
-      contentCache[category] = data;
+      contentCache[slug] = data;
       return data;
     }
 
-    async function showContent(category) {
+    // Show detail inline
+    async function showContent(slug, title) {
       container.classList.add('hidden');
       detailContainer.classList.remove('hidden');
-      detailTitle.textContent = category;
+      detailTitle.textContent = title;
       detailList.innerHTML = '';
       try {
-        const items = await fetchCategoryItems(category);
-        if (Array.isArray(items)) {
-          const ul = document.createElement('ul'); ul.className = 'list-disc pl-5 space-y-2';
+        const data = await fetchItems(slug);
+        const groups = Array.isArray(data) ? { '': data } : data;
+        for (const [group, items] of Object.entries(groups)) {
+          if (group) {
+            const header = document.createElement('h3');
+            header.className = 'text-lg font-semibold mt-4';
+            header.textContent = group;
+            detailList.appendChild(header);
+          }
           items.forEach(item => {
             const li = document.createElement('li');
-            li.innerHTML = `<a href="${item.link}" class="text-indigo-600 hover:underline">${item.name}</a>`;
-            ul.appendChild(li);
-          });
-          detailList.appendChild(ul);
-        } else {
-          Object.entries(items).forEach(([subcat, subitems]) => {
-            const subHeader = document.createElement('h3'); subHeader.className = 'text-lg font-semibold'; subHeader.textContent = subcat;
-            detailList.appendChild(subHeader);
-            const ul = document.createElement('ul'); ul.className = 'list-disc pl-5 space-y-2 mb-4';
-            subitems.forEach(item => {
-              const li = document.createElement('li');
-              li.innerHTML = `<a href="${item.link}" class="text-indigo-600 hover:underline">${item.name}</a>`;
-              ul.appendChild(li);
-            });
-            detailList.appendChild(ul);
+            const btn = document.createElement('button');
+            btn.className = 'text-indigo-600 hover:underline focus:outline-none';
+            btn.textContent = item.name;
+            btn.addEventListener('click', () => openOverlay(item.slug || slug, item.name, item.content));
+            li.appendChild(btn);
+            detailList.appendChild(li);
           });
         }
       } catch (e) {
-        detailList.innerHTML = '<div class="text-red-500">Error loading content.</div>';
+        detailList.innerHTML = '<li class="text-red-500">Error loading content.</li>';
         console.error(e);
       }
     }
 
+    // Open overlay with grouped items
+    async function openOverlay(categorySlug, title) {
+      overlayHeader.textContent = title;
+      overlayBody.innerHTML = '<p class="text-center py-10">Loading…</p>';
+      overlay.classList.remove('hidden');
+      try {
+        const data = await fetchItems(categorySlug);
+        overlayBody.innerHTML = '';
+        const groups = Array.isArray(data) ? { '': data } : data;
+        for (const [group, items] of Object.entries(groups)) {
+          if (group) {
+            const header = document.createElement('h3');
+            header.className = 'text-xl font-semibold mt-4';
+            header.textContent = group;
+            overlayBody.appendChild(header);
+          }
+          const ul = document.createElement('ul');
+          ul.className = 'list-disc pl-5 space-y-2 mb-4';
+          items.forEach(item => {
+            const li = document.createElement('li');
+            const btn = document.createElement('button');
+            btn.className = 'text-indigo-600 hover:underline focus:outline-none';
+            btn.textContent = item.name;
+            btn.addEventListener('click', () => showOverlayContent(item.name, item.content));
+            li.appendChild(btn);
+            ul.appendChild(li);
+          });
+          overlayBody.appendChild(ul);
+        }
+      } catch (e) {
+        overlayBody.innerHTML = '<p class="text-red-500">Error loading content.</p>';
+        console.error(e);
+      }
+    }
+
+    // Show actual email template in overlay
+    function showOverlayContent(name, html) {
+      overlayHeader.textContent = name;
+      overlayBody.innerHTML = `<div class="prose max-w-none">${html}</div>`;
+    }
+
+    // Close overlay
+    overlayClose.addEventListener('click', () => overlay.classList.add('hidden'));
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.add('hidden'); });
+
+    // Back to cards view
     backBtn.addEventListener('click', () => {
       detailContainer.classList.add('hidden');
       container.classList.remove('hidden');
     });
 
-    function preloadAll() { cardsData.forEach(card => fetchCategoryItems(card.title).catch(console.error)); }
-
-    searchInput.addEventListener('input', async () => {
-      const query = searchInput.value.trim().toLowerCase();
-      suggestionsList.innerHTML = '';
-      if (!query) { suggestionsList.classList.add('hidden'); return; }
-      await Promise.all(cardsData.map(card => fetchCategoryItems(card.title).catch(() => [])));
-      const categoryMatches = cardsData.filter(c => c.title.toLowerCase().includes(query));
-      const itemMatches = [];
-      Object.entries(contentCache).forEach(([category, items]) => {
-        if (Array.isArray(items)) {
-          items.forEach(item => { if (item.name.toLowerCase().includes(query)) itemMatches.push({ category, ...item }); });
-        } else {
-          Object.entries(items).forEach(([subcat, subitems]) => {
-            subitems.forEach(item => { if (item.name.toLowerCase().includes(query)) itemMatches.push({ category, name: item.name, link: item.link }); });
-          });
-        }
-      });
-      if (!categoryMatches.length && !itemMatches.length) {
-        const li = document.createElement('li'); li.textContent = 'No results found'; li.className = 'px-3 py-2 text-gray-500';
-        suggestionsList.appendChild(li); suggestionsList.classList.remove('hidden'); return;
-      }
-      categoryMatches.forEach(c => {
-        const li = document.createElement('li'); li.textContent = c.title; li.className = 'px-3 py-2 hover:bg-gray-100 cursor-pointer font-medium';
-        li.addEventListener('click', () => { suggestionsList.classList.add('hidden'); searchInput.value = c.title; showContent(c.title); });
-        suggestionsList.appendChild(li);
-      });
-      if (categoryMatches.length && itemMatches.length) { const sep = document.createElement('li'); sep.className='border-t my-1'; suggestionsList.appendChild(sep); }
-      itemMatches.forEach(m => {
-        const li = document.createElement('li'); li.textContent = `${m.name} (${m.category})`; li.className = 'px-3 py-2 hover:bg-gray-100 cursor-pointer';
-        li.addEventListener('click', () => window.location.href = m.link);
-        suggestionsList.appendChild(li);
-      });
-      suggestionsList.classList.remove('hidden');
-    });
-    document.addEventListener('click', e => { if (!searchInput.contains(e.target) && !suggestionsList.contains(e.target)) suggestionsList.classList.add('hidden'); });
-
-    async function fetchAndRenderUpdates() {
-      try {
-        const res = await fetch('data/updates.json');
-        const updates = await res.json();
-        const ul = document.getElementById('updates-list'); ul.innerHTML = '';
-        updates.forEach(u => {
-          const li = document.createElement('li');
-          li.innerHTML = `<a href="${u.link}" class="block hover:underline font-medium">${u.title}</a><span class="text-xs text-gray-500">${u.date}</span>`;
-          ul.appendChild(li);
-        });
-      } catch (e) { console.error(e); }
-    }
-    fetchAndRenderUpdates();
-    renderCards(); preloadAll();
+    // Initialize
+    document.addEventListener('DOMContentLoaded', renderCards);
   </script>
 </body>
 </html>
