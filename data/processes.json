@@ -5,6 +5,7 @@
       "content": "<p><strong>Tools:</strong> ShipStation, All PO Spreadsheet, Marketplaces, ZenShip</p><p><strong>For Orders NOT highlighted in the All Supplier PO Spreadsheet:</strong></p><ol><li>Locate the order in the All Supplier PO Spreadsheet and paste the order number. If it does not turn red, proceed to cancel the order.</li><li>In ShipStation, tag the order as Buyer Cancellation Request, then perform any necessary actions before canceling the order.</li><li>In ChannelAdvisor, click Fail Shipment Order or Cancel Order, select Buyer Canceled as the reason.</li><li>Notify the buyer that their order has been canceled.</li><li>Cancel the order on the marketplace / 3DSellers.</li></ol><p><strong>For Orders highlighted in the All Supplier PO Spreadsheet:</strong></p><ol><li>Locate the order in the PO Spreadsheet and paste the order number. If it turns red, proceed.</li><li>Search in ShipStation for a generated label or tracking. If none, continue.</li><li>In ZenMighty, under POS → Order → All, verify the PO number and tags.</li><li>In the PO Spreadsheet, highlight the order red. If separator is yellow, add note <em>BUYER CANCELED</em>. If black, add note <em>BUYER CANCELED. PLEASE STOCK OR RETURN THE ITEM.</em></li><li>If uploaded to ZenShip: if status Pending → Cancelled; if Picked/Completed with no label → contact warehouse. If warehouse confirms stop, proceed; if not, inform buyer cancellation is no longer possible.</li><li>In ChannelAdvisor, cancel order with Buyer Canceled and tick “Do Not Notify Marketplace.”</li><li>Cancel in ShipStation and on marketplace / 3DSellers.</li><li>Send buyer confirmation email of cancellation.</li></ol>"
     }
   ],
+
   "USAUTO Cancellation": [
     {
       "name": "No “Thank You” Email or Not Showing in PFG",
@@ -15,13 +16,14 @@
       "content": "<p>If order is Pending, Processing, or Shipped in PFG:</p><ol><li>If Processing, tag in ShipStation as Buyer Cancellation Request and Pending Cancellation.</li><li>In Purchases Mailbox, email Team Kool Vue East Service (kveastservice@carparts.com) with subject “Cancellation Request” using template:</li><ol><li>May we please request the cancellation of this order? The buyer wants to cancel.</li><li>PO Number: [Order Number]</li><li>Sales Order Number: [In PFG]</li></ol><li>Message buyer that you will attempt to intercept the order.</li><li>Once USAUTO confirms, proceed: cancel in ShipStation, ChannelAdvisor (if possible), message buyer, cancel on marketplace / 3DSellers.</li><li>Post cancellation in All Supplier PO Spreadsheet.</li></ol>"
     }
   ],
+
   "Meyer Cancellation": [
     {
       "name": "Meyer Cancellation Process",
       "content": "<p><strong>Tools:</strong> Meyer site, ChannelAdvisor, ShipStation, Marketplaces</p><ol><li>In ChannelAdvisor, change Store to WooParts → Fulfill → Orders → Meyer → Orders, search order and get Rithum Order ID.</li><li>Ask PO team to cancel in Meyer site using Rithum Order ID.</li><li>Once confirmed, in ChannelAdvisor cancel or refund order (Buyer Canceled), tick restock and do not notify marketplace, add public note “Buyer canceled.”</li><li>Cancel in ShipStation (Amazon); if eBay does not appear, skip.</li><li>Message buyer that order has been canceled.</li><li>Cancel on marketplaces (eBay or Amazon).</li></ol>"
     }
   ],
-{
+
   "Oversized Items": [
     {
       "name": "List",
