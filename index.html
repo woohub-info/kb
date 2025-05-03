@@ -197,6 +197,8 @@
     function openEmailOverlay(name, htmlContent) {
       overlayHeader.textContent = name;
       overlayBody.innerHTML = `<div class="prose max-w-none">${htmlContent}</div>`;
+      // Show the overlay
+      overlay.classList.remove('hidden');
     }
 
     // Close overlay handlers
