@@ -20,4 +20,5 @@
       "name": "Meyer Cancellation Process",
       "content": "<p><strong>Tools:</strong> Meyer site, ChannelAdvisor, ShipStation, Marketplaces</p><ol><li>In ChannelAdvisor, change Store to WooParts → Fulfill → Orders → Meyer → Orders, search order and get Rithum Order ID.</li><li>Ask PO team to cancel in Meyer site using Rithum Order ID.</li><li>Once confirmed, in ChannelAdvisor cancel or refund order (Buyer Canceled), tick restock and do not notify marketplace, add public note “Buyer canceled.”</li><li>Cancel in ShipStation (Amazon); if eBay does not appear, skip.</li><li>Message buyer that order has been canceled.</li><li>Cancel on marketplaces (eBay or Amazon).</li></ol>"
     }
- 
+  ]
+}
