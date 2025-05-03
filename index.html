@@ -29,6 +29,7 @@
         <ul id="updates-list" class="space-y-2 text-gray-700 max-h-64 overflow-y-auto"></ul>
       </div>
     </aside>
+    </aside>
 
     <!-- Main content -->
     <main class="flex-1 flex flex-col">
@@ -57,6 +58,7 @@
   <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden items-start justify-center overflow-y-auto z-40">
     <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 max-h-[90vh] overflow-y-auto p-6 relative mt-20 mx-auto">
       <button id="overlay-close" class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700">&times;</button>
+      <button id="copy-btn" class="absolute top-4 right-12 text-sm text-gray-500 hover:text-gray-700 hidden">Copy</button>
       <h2 id="overlay-header" class="text-2xl font-semibold mb-4"></h2>
       <div id="overlay-body" class="space-y-4"></div>
     </div>
@@ -93,11 +95,12 @@
     const backBtn         = document.getElementById('back-btn');
     const overlay         = document.getElementById('overlay');
     const overlayClose    = document.getElementById('overlay-close');
+    const copyBtn         = document.getElementById('copy-btn');
     const overlayHeader   = document.getElementById('overlay-header');
     const overlayBody     = document.getElementById('overlay-body');
     const contentCache    = {};
 
-    // Render cards; title opens overlay listing, View opens detail panel
+    // Render cards; both title and button open detail view
     function renderCards() {
       container.innerHTML = '';
       cardsData.forEach(card => {
@@ -132,6 +135,7 @@
       detailContainer.classList.remove('hidden');
       detailTitle.textContent = title;
       detailList.innerHTML = '';
+      copyBtn.classList.add('hidden');
       try {
         const data = await fetchItems(slug);
         const groups = Array.isArray(data) ? { '': data } : data;
@@ -158,47 +162,20 @@
       }
     }
 
-    // Open overlay listing categories and items
-    async function openCategoryOverlay(slug, title) {
-      overlayHeader.textContent = title;
-      overlayBody.innerHTML = '<p class="text-center py-10">Loading…</p>';
-      overlay.classList.remove('hidden');
-      try {
-        const data = await fetchItems(slug);
-        overlayBody.innerHTML = '';
-        const groups = Array.isArray(data) ? { '': data } : data;
-        for (const [group, items] of Object.entries(groups)) {
-          if (group) {
-            const header = document.createElement('h3');
-            header.className = 'text-xl font-semibold mt-4';
-            header.textContent = group;
-            overlayBody.appendChild(header);
-          }
-          const ul = document.createElement('ul');
-          ul.className = 'list-disc pl-5 space-y-2 mb-4';
-          items.forEach(item => {
-            const li = document.createElement('li');
-            const btn = document.createElement('button');
-              btn.className = 'text-indigo-600 hover:underline focus:outline-none';
-            btn.textContent = item.name;
-            btn.addEventListener('click', () => openEmailOverlay(item.name, item.content));
-            li.appendChild(btn);
-            ul.appendChild(li);
-          });
-          overlayBody.appendChild(ul);
-        }
-      } catch (e) {
-        overlayBody.innerHTML = '<p class="text-red-500">Error loading content.</p>';
-        console.error(e);
-      }
-    }
-
-    // Show email template content in overlay
+    // Show email template content in overlay with copy button
     function openEmailOverlay(name, htmlContent) {
       overlayHeader.textContent = name;
       overlayBody.innerHTML = `<div class="prose max-w-none space-y-4">${htmlContent}</div>`;
-      // Show the overlay
+      // Show the overlay and copy button
       overlay.classList.remove('hidden');
+      copyBtn.classList.remove('hidden');
+      copyBtn.textContent = 'Copy';
+      copyBtn.onclick = () => {
+        navigator.clipboard.writeText(htmlContent).then(() => {
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => copyBtn.textContent = 'Copy', 2000);
+        });
+      };
     }
 
     // Close overlay handlers
@@ -209,6 +186,7 @@
     backBtn.addEventListener('click', () => {
       detailContainer.classList.add('hidden');
       container.classList.remove('hidden');
+      copyBtn.classList.add('hidden');
     });
 
     // Initialize
