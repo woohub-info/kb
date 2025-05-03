@@ -2,372 +2,261 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Karparts360 Knowledge Base</title>
-  <!-- Externalize this CSS to styles.css for maintainability -->
-  <style>
-    :root {
-      --color-bg: #fff;
-      --color-primary: #1e2a4a;
-      --color-secondary: #6e8efb;
-      --color-text: #333;
-      --color-muted: #555;
-      --radius: 0.5rem;
-      --shadow-light: 0 2px 8px rgba(0,0,0,0.05);
-      --shadow-hover: 0 4px 12px rgba(0,0,0,0.1);
-      --gap: 1.5rem;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, sans-serif;
-      background: var(--color-bg);
-      color: var(--color-text);
-      line-height: 1.6;
-    }
-    header {
-      background: linear-gradient(135deg, #f4f8ff 0%, #dbe6ff 100%);
-      text-align: center;
-      padding: 4rem 1rem;
-    }
-    header h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      color: var(--color-primary);
-    }
-    .search-wrapper {
-      position: relative;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    .search-wrapper input {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-light);
-    }
-    main {
-      display: flex;
-      gap: var(--gap);
-      padding: 0 1rem 2rem;
-    }
-    .cards {
-      flex: 1;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: var(--gap);
-    }
-    .card {
-      background: var(--color-bg);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-light);
-      padding: 1.5rem;
-      text-align: center;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-hover);
-    }
-    .card svg {
-      width: 3rem;
-      height: 3rem;
-      margin-bottom: 1rem;
-      fill: var(--color-secondary);
-    }
-    .card h2 {
-      font-size: 1.25rem;
-      margin-bottom: 0.5rem;
-      color: var(--color-primary);
-    }
-    .card p {
-      color: var(--color-muted);
-      font-size: 0.95rem;
-    }
-    aside.updates {
-      width: 300px;
-      position: sticky;
-      top: 2rem;
-      background: var(--color-bg);
-      border-radius: var(--radius);
-      padding: 1rem;
-      box-shadow: var(--shadow-light);
-      display: flex;
-      flex-direction: column;
-      max-height: calc(100vh - 4rem);
-    }
-    .updates h3 {
-      margin-bottom: 1rem;
-      color: var(--color-primary);
-      font-size: 1.25rem;
-    }
-    .updates-list {
-      flex: 1;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-    .update-item {
-      background: #fafafa;
-      border: 1px solid #eee;
-      border-radius: 0.25rem;
-      padding: 0.75rem;
-      position: relative;
-    }
-    .update-item time {
-      display: block;
-      font-size: 0.75rem;
-      color: #888;
-      margin-bottom: 0.25rem;
-    }
-    .update-item button {
-      position: absolute;
-      top: 0.5rem;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0.25rem;
-      border-radius: 0.25rem;
-      transition: background 0.15s;
-    }
-    .update-item button:hover { background: #f0f0f0; }
-    .update-item .edit { right: 2.5rem; }
-    .update-item .delete { right: 0.5rem; }
-    .updates-form {
-      display: flex;
-      gap: 0.5rem;
-    }
-    .updates-form input {
-      flex: 1;
-      padding: 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 0.25rem;
-    }
-    .updates-form button {
-      background: var(--color-secondary);
-      color: #fff;
-      border: none;
-      padding: 0 1rem;
-      border-radius: 0.25rem;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    .updates-form button:hover {
-      background: #5a78d1;
-    }
-    /* Overlay styles */
-    .overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      justify-content: center;
-      align-items: center;
-      z-index: 100;
-    }
-    .overlay.active { display: flex; }
-    .panel {
-      background: var(--color-bg);
-      border-radius: var(--radius);
-      width: 90%;
-      max-width: 800px;
-      max-height: 90vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      box-shadow: var(--shadow-hover);
-    }
-    .panel header {
-      background: linear-gradient(135deg, #f4f8ff 0%, #dbe6ff 100%);
-      padding: 1rem;
-      display: flex;
-      align-items: center;
-      border-bottom: 1px solid #eee;
-    }
-    .panel header button {
-      background: none;
-      border: none;
-      font-size: 1rem;
-      color: var(--color-secondary);
-      margin-right: 1rem;
-      cursor: pointer;
-    }
-    .panel main {
-      padding: 1rem;
-      overflow-y: auto;
-      flex: 1;
-    }
-    .panel a, .panel button.list { color: var(--color-secondary); text-decoration: none; }
-    .panel a:hover, .panel button.list:hover { text-decoration: underline; }
-    /* Utility */
-    .hidden { display: none; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WooHub</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <header>
-    <h1>Karparts360 Knowledge Base</h1>
-    <div class="search-wrapper">
-      <label for="search" class="visually-hidden">Search Knowledge Base</label>
-      <input id="search" type="search" placeholder="Search…" aria-label="Search Knowledge Base">
+<body class="bg-gray-100 text-gray-800 antialiased">
+  <!-- Header -->
+  <header class="bg-white shadow sticky top-0 z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+      <a href="#" class="text-2xl font-semibold text-indigo-600">WooHub</a>
+      <div class="relative w-1/3">
+        <input
+          id="search-input"
+          type="search"
+          placeholder="Search keywords..."
+          aria-label="Search keywords"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+        <ul id="search-suggestions" class="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg hidden z-20"></ul>
+      </div>
     </div>
   </header>
 
-  <main>
-    <section class="cards" aria-label="Knowledge Categories">
-      <!-- Example card, repeat for each category -->
-      <article class="card" data-category="Email Responses">
-        <svg aria-hidden="true"><use href="#icon-email"></use></svg>
-        <h2>Email Responses</h2>
-        <p>Templates for common email scenarios</p>
-      </article>
-      <!-- … other cards … -->
-    </section>
-
-    <aside class="updates" aria-labelledby="updates-title">
-      <h3 id="updates-title">Updates</h3>
-      <div class="updates-list" id="updates-list"></div>
-      <form class="updates-form" id="updates-form">
-        <label for="update-text" class="visually-hidden">New Update</label>
-        <input id="update-text" type="text" placeholder="Add an update…" required>
-        <button type="submit">Add</button>
-      </form>
+  <div class="flex max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+    <!-- Sidebar: Recent Updates -->
+    <aside class="w-64 mr-6 hidden lg:block">
+      <div class="bg-white border border-gray-200 rounded-lg p-4 sticky top-24">
+        <h2 class="text-lg font-semibold mb-2">Recent Updates</h2>
+        <ul id="updates-list" class="space-y-2 text-gray-700"></ul>
+        <div class="mt-4">
+          <a href="/updates" class="text-indigo-600 hover:underline text-sm">View All Updates →</a>
+        </div>
+      </div>
     </aside>
-  </main>
 
-  <!-- Overlay panel -->
-  <div class="overlay" id="overlay" role="dialog" aria-modal="true">
-    <div class="panel">
-      <header>
-        <button id="close-panel" aria-label="Close">← Back</button>
-        <h2 id="panel-title"></h2>
-      </header>
-      <main id="panel-content"></main>
-    </div>
+    <!-- Main content -->
+    <main class="flex-1">
+      <!-- Breadcrumbs -->
+      <nav class="text-sm mb-4" aria-label="Breadcrumb">
+        <ol class="list-reset flex text-gray-600">
+          <li><a href="#" class="hover:underline">Home</a></li>
+          <li><span class="mx-2">/</span></li>
+          <li>Dashboard</li>
+        </ol>
+      </nav>
+
+      <!-- Detail View -->
+      <section id="detail-container" class="hidden bg-white rounded-lg shadow p-6 mb-6">
+        <button id="back-btn" class="text-indigo-600 hover:underline mb-4">← Back to Dashboard</button>
+        <h2 id="detail-title" class="text-2xl font-semibold mb-4"></h2>
+        <ul id="detail-list" class="list-disc pl-5 space-y-2"></ul>
+      </section>
+
+      <!-- Card Grid -->
+      <section id="card-container" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></section>
+    </main>
   </div>
 
-  <!-- SVG sprite -->
-  <svg style="display:none;">
-    <symbol id="icon-email" viewBox="0 0 24 24">
-      <path d="M4 4h16v16H4z" />
-    </symbol>
-    <!-- Add other icons symbols here -->
-  </svg>
+  <!-- Footer -->
+  <footer class="bg-white mt-10 py-6 border-t border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-sm text-gray-500 flex justify-between">
+      <p>&copy; 2025 WooHub. All rights reserved.</p>
+      <div class="space-x-4">
+        <a href="#" class="hover:underline">Privacy Policy</a>
+        <a href="#" class="hover:underline">Terms of Service</a>
+      </div>
+    </div>
+  </footer>
 
+  <!-- Data & Real-Time Updates Script -->
   <script>
-  (() => {
-    'use strict';
-    const selectors = {
-      search: '#search', cards: '.card', overlay: '#overlay',
-      panelTitle: '#panel-title', panelContent: '#panel-content', close: '#close-panel',
-      updatesList: '#updates-list', updatesForm: '#updates-form', updatesInput: '#update-text'
-    };
-    const elems = {};
-    for (const [key, sel] of Object.entries(selectors)) {
-      elems[key] = document.querySelector(sel);
-    }
+    // Card definitions
+    const cardsData = [
+      { title: 'Email Templates', description: 'Browse pre-built email templates.' },
+      { title: 'Processes', description: 'Explore documented workflows.' },
+      { title: 'Reports', description: 'Access performance and usage reports.' },
+      { title: 'Links', description: 'Quick access to essential resources.' },
+      { title: 'Tutorials', description: 'Step-by-step how-to guides.' },
+      { title: 'Directory', description: 'Contacts and key stakeholders.' }
+    ];
 
-    // LocalStorage key
-    const STORAGE = 'kb-updates';
+    // Elements
+    const container = document.getElementById('card-container');
+    const detailContainer = document.getElementById('detail-container');
+    const detailTitle = document.getElementById('detail-title');
+    const detailList = document.getElementById('detail-list');
+    const backBtn = document.getElementById('back-btn');
+    const searchInput = document.getElementById('search-input');
+    const suggestionsList = document.getElementById('search-suggestions');
 
-    // Fetch and render saved updates
-    function loadUpdates() {
-      const items = JSON.parse(localStorage.getItem(STORAGE) || '[]');
-      items.forEach(addUpdateItem);
-    }
+    // Cache for JSON content
+    const contentCache = {};
 
-    // Save current updates to storage
-    function saveUpdates() {
-      const items = [...elems.updatesList.children].map(item => ({
-        date: item.querySelector('time').dateTime,
-        text: item.querySelector('p').textContent
-      }));
-      localStorage.setItem(STORAGE, JSON.stringify(items));
-    }
-
-    // Create and append an update item
-    function addUpdateItem({ date = new Date().toISOString(), text }) {
-      const article = document.createElement('article');
-      article.className = 'update-item';
-      article.innerHTML = `
-        <time datetime="${date}">${new Date(date).toLocaleDateString()}</time>
-        <p>${text}</p>
-        <button class="edit" aria-label="Edit update">✎</button>
-        <button class="delete" aria-label="Delete update">🗑️</button>
-      `;
-      elems.updatesList.prepend(article);
-    }
-
-    // Handle form submission
-    elems.updatesForm.addEventListener('submit', e => {
-      e.preventDefault();
-      const text = elems.updatesInput.value.trim();
-      if (!text) return;
-      addUpdateItem({ text });
-      elems.updatesInput.value = '';
-      saveUpdates();
-    });
-
-    // Delegate edit/delete clicks
-    elems.updatesList.addEventListener('click', e => {
-      const item = e.target.closest('.update-item');
-      if (!item) return;
-      if (e.target.classList.contains('edit')) {
-        const p = item.querySelector('p');
-        p.contentEditable = 'true'; p.focus();
-        p.addEventListener('blur', () => { p.contentEditable = 'false'; saveUpdates(); }, { once: true });
-      }
-      if (e.target.classList.contains('delete')) {
-        item.remove(); saveUpdates();
-      }
-    });
-
-    // Search filtering
-    elems.search.addEventListener('input', ({ target }) => {
-      const term = target.value.toLowerCase();
-      document.querySelectorAll(selectors.cards).forEach(card => {
-        card.hidden = !card.textContent.toLowerCase().includes(term);
+    // Render cards
+    function renderCards() {
+      container.innerHTML = '';
+      cardsData.forEach(card => {
+        const article = document.createElement('article');
+        article.className = 'bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6 flex flex-col';
+        article.innerHTML = `
+          <h3 class="text-xl font-semibold mb-2 hover:text-indigo-600 cursor-pointer">${card.title}</h3>
+          <p class="text-gray-600 flex-1">${card.description}</p>
+          <button class="mt-4 text-indigo-600 font-medium hover:underline">View ${card.title} →</button>
+        `;
+        article.querySelector('h3').addEventListener('click', () => showContent(card.title));
+        article.querySelector('button').addEventListener('click', () => showContent(card.title));
+        container.appendChild(article);
       });
-      [...elems.updatesList.children].forEach(u => {
-        u.hidden = !u.textContent.toLowerCase().includes(term);
-      });
-    });
-
-    // Card click -> open overlay
-    document.querySelectorAll(selectors.cards).forEach(card => {
-      card.addEventListener('click', () => {
-        const category = card.dataset.category;
-        fetch(`${category.replace(/\s+/g, '_').toLowerCase()}.json`)
-          .then(r => r.json())
-          .then(data => showPanel(category, data))
-          .catch(() => showPanel(category, null));
-      });
-    });
-
-    // Show panel with content
-    function showPanel(title, items) {
-      elems.panelTitle.textContent = title;
-      elems.panelContent.innerHTML = items && items.length
-        ? `<ul>${items.map(i => `<li><button class="list" data-key="${i.key || ''}">${i.title}</button></li>`).join('')}</ul>`
-        : `<p>Content for “${title}” isn’t available yet.</p>`;
-      elems.overlay.classList.add('active');
     }
 
-    // Close panel
-    elems.close.addEventListener('click', () => elems.overlay.classList.remove('active'));
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && elems.overlay.classList.contains('active')) {
-        elems.overlay.classList.remove('active');
+    // Fetch items for a category
+    async function fetchCategoryItems(category) {
+      if (contentCache[category]) return contentCache[category];
+      const slug = category.toLowerCase().replace(/\s+/g, '-');
+      const res = await fetch(`/data/${slug}.json`);
+      if (!res.ok) throw new Error('Failed to load data');
+      const data = await res.json();
+      contentCache[category] = data;
+      return data;
+    }
+
+    // Show detailed content
+    async function showContent(category) {
+      container.classList.add('hidden');
+      detailContainer.classList.remove('hidden');
+      detailTitle.textContent = category;
+      detailList.innerHTML = '';
+      try {
+        const items = await fetchCategoryItems(category);
+        items.forEach(item => {
+          const li = document.createElement('li');
+          li.innerHTML = `<a href="${item.link}" class="text-indigo-600 hover:underline">${item.name}</a>`;
+          detailList.appendChild(li);
+        });
+      } catch (e) {
+        detailList.innerHTML = '<li class="text-red-500">Error loading content.</li>';
+        console.error(e);
+      }
+    }
+
+    // Back to dashboard
+    backBtn.addEventListener('click', () => {
+      detailContainer.classList.add('hidden');
+      container.classList.remove('hidden');
+    });
+
+    // Preload all category JSON
+    function preloadAll() {
+      cardsData.forEach(card => fetchCategoryItems(card.title).catch(console.error));
+    }
+
+    // Search functionality including JSON items
+    searchInput.addEventListener('input', async () => {
+      const query = searchInput.value.trim().toLowerCase();
+      suggestionsList.innerHTML = '';
+      if (!query) {
+        suggestionsList.classList.add('hidden');
+        return;
+      }
+      // Ensure content is loaded
+      await Promise.all(cardsData.map(card => fetchCategoryItems(card.title).catch(() => [])));
+      // Category matches
+      const categoryMatches = cardsData
+        .filter(c => c.title.toLowerCase().includes(query))
+        .map(c => ({ type: 'category', title: c.title }));
+      // Item matches
+      const itemMatches = [];
+      Object.entries(contentCache).forEach(([category, items]) => {
+        items.forEach(item => {
+          if (item.name.toLowerCase().includes(query)) {
+            itemMatches.push({ type: 'item', category, name: item.name, link: item.link });
+          }
+        });
+      });
+      // Render suggestions
+      if (!categoryMatches.length && !itemMatches.length) {
+        const li = document.createElement('li');
+        li.textContent = 'No results found';
+        li.className = 'px-3 py-2 text-gray-500';
+        suggestionsList.appendChild(li);
+      } else {
+        categoryMatches.forEach(m => {
+          const li = document.createElement('li');
+          li.textContent = m.title;
+          li.className = 'px-3 py-2 hover:bg-gray-100 cursor-pointer font-medium';
+          li.addEventListener('click', () => {
+            suggestionsList.classList.add('hidden');
+            searchInput.value = m.title;
+            showContent(m.title);
+          });
+          suggestionsList.appendChild(li);
+        });
+        if (categoryMatches.length && itemMatches.length) {
+          const sep = document.createElement('li');
+          sep.className = 'border-t my-1';
+          suggestionsList.appendChild(sep);
+        }
+        itemMatches.forEach(m => {
+          const li = document.createElement('li');
+          li.textContent = `${m.name} (${m.category})`;
+          li.className = 'px-3 py-2 hover:bg-gray-100 cursor-pointer';
+          li.addEventListener('click', () => {
+            window.location.href = m.link;
+          });
+          suggestionsList.appendChild(li);
+        });
+      }
+      suggestionsList.classList.remove('hidden');
+    });
+    document.addEventListener('click', e => {
+      if (!searchInput.contains(e.target) && !suggestionsList.contains(e.target)) {
+        suggestionsList.classList.add('hidden');
       }
     });
 
-    // Initialize
-    loadUpdates();
-  })();
+    // Real-time updates (unchanged)
+    const updatesList = document.getElementById('updates-list');
+    async function fetchAndRenderUpdates() {
+      try {
+        const res = await fetch('/api/updates');
+        const updates = await res.json();
+        updatesList.innerHTML = '';
+        updates.slice(0, 3).forEach(u => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+            <a href="${u.link}" class="block hover:underline font-medium">${u.title}</a>
+            <span class="text-xs text-gray-500">${u.date}</span>
+          `;
+          updatesList.appendChild(li);
+        });
+      } catch (error) {
+        console.error('Error loading updates:', error);
+      }
+    }
+    if (window.EventSource) {
+      const source = new EventSource('/api/updates/stream');
+      source.onmessage = event => {
+        const update = JSON.parse(event.data);
+        const li = document.createElement('li');
+        li.className = 'bg-yellow-50 rounded p-2';
+        li.innerHTML = `
+          <a href="${update.link}" class="block hover:underline font-medium">${update.title}</a>
+          <span class="text-xs text-gray-500">${update.date}</span>
+        `;
+        updatesList.prepend(li);
+        while (updatesList.children.length > 3) updatesList.removeChild(updatesList.lastChild);
+      };
+    } else {
+      setInterval(fetchAndRenderUpdates, 60000);
+    }
+
+    // Initial setup
+    renderCards();
+    preloadAll();
+    fetchAndRenderUpdates();
   </script>
 </body>
 </html>
