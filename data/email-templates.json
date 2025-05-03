@@ -1,42 +1,132 @@
 {
   "DAMAGED ITEM": [
     {
-      "name": "DAMAGE ITEM WITH RETURN REQUEST / OPEN CASE",
-      "content": "<p>Hi,</p><p>We apologize for the inconvenience of receiving a damaged item. We would like to inform you that we made an exception to our standard procedure. There is no need to return the part back. We have initiated a full refund. It will go back to your original payment method and will reflect in the next 1-5 business days. You are welcome to keep or dispose of the item.</p><p>We’d appreciate it if you could provide us the additional image below:</p><ul><li>Shipping label attached to the box</li><li>Image of the box</li><li>Image of the thumb-sized Part Number (SKU label) on the item itself</li><li>Image(s) of the item</li></ul><p>If the part is still needed, feel free to place a new order as it's the fastest way of getting a replacement.</p><p>We appreciate your understanding.</p><p>Sincerely,<br>WooParts</p>"
+      "name": "Damage Item With Return Request / Open Case",
+      "content": "<p>Hi,</p><p>We apologize for the inconvenience of receiving a damaged item. We’ve made an exception to our standard procedure: no need to return the part. We have initiated a full refund to your original payment method; it will reflect within 1–5 business days. You may keep or dispose of the item.</p><p>We’d appreciate the following additional images:</p><ol><li>Shipping label attached to the box</li><li>Image of the box</li><li>Image of the thumb-sized Part Number (SKU label) on the item</li><li>Image(s) of the item</li></ol><p>If you still need the part, feel free to place a new order. Thank you for your understanding.</p><p>Sincerely,<br>WooParts</p>"
     },
     {
-      "name": "DAMAGED RETURN (NO TRACKING NUMBER YET)",
-      "content": "<p>Hi,</p><p>We sincerely apologize for the inconvenience caused by receiving a damaged item. We would like to inform you that we made an exception to our standard procedure. There is no need to return the part back. You are welcome to keep or dispose of the damaged part as you see fit.</p><p>To proceed, kindly let us know whether you would prefer a refund or a replacement. Additionally, please cancel or close the return request so we can move forward with your preferred resolution.</p><p>To assist us in processing your request, we kindly ask that you provide the following additional images:</p><ul><li>Shipping label attached to the box</li><li>Image of the box itself</li><li>Image of the thumb-sized Part Number (SKU label) on the item</li></ul><p>We appreciate your cooperation and understanding in this matter.</p><p>Sincerely,<br>WooParts</p>"
+      "name": "Damaged Return (No Tracking Number Yet)",
+      "content": "<p>Hi,</p><p>We sincerely apologize for the inconvenience of receiving a damaged item. No return is required; you may keep or dispose of it.</p><p>To proceed, let us know if you prefer a refund or replacement, and please cancel or close the return request so we can move forward.</p><p>Additional images needed:</p><ol><li>Shipping label attached to the box</li><li>Image of the box</li><li>Image of the thumb-sized Part Number (SKU label) on the item</li></ol><p>Thank you for your cooperation.</p><p>Sincerely,<br>WooParts</p>"
+    },
+    {
+      "name": "Defective Item",
+      "content": "<p>Hi,</p><p>Thank you for reaching out and we apologize you received a defective item. We’ve issued a full refund to your original payment method; it will reflect within 1–5 business days. No return is required—you may keep or dispose of the item.</p><p>We will investigate to prevent recurrence. Thank you for your understanding.</p><p>Sincerely,<br>WooParts</p>"
     }
   ],
+
   "RETURNS": [
     {
-      "name": "RETURN REQUEST",
-      "content": "<p>Hi,</p><p>We would like to inform you that we have approved your return request. Please note that our Return Department may require up to 5 days after receiving the item to verify its condition and process the refund.</p><p>Thank you for choosing us, and we look forward to serving you again in the future.</p><p>Regards,<br>WooParts</p>"
+      "name": "Return Request",
+      "content": "<p>Hi,</p><p>Your return request has been approved. Our Returns Department may take up to 5 days after receipt to verify condition and process your refund.</p><p>Thank you for choosing us. We look forward to serving you again.</p><p>Regards,<br>WooParts</p>"
     },
     {
-      "name": "RETURNLESS REFUND",
-      "content": "<p>Hi,</p><p>We received a return request for this item. We would like to inform you that we made an exemption to our standard procedure, there is no need to return the part. We have initiated a full refund. It will go back to your original payment method and will reflect in the next 1-5 business days.</p><p>If time permits, we kindly ask for at least positive merchant feedback if you are satisfied with the service we provided.</p><p>Thank you for your business and we hope to serve you again in the future.</p><p>Regards,<br>WooParts</p>"
+      "name": "Returnless Refund",
+      "content": "<p>Hi,</p><p>We received your return request and have made an exception—no need to return the part. A full refund has been issued to your original payment method; it will reflect within 1–5 business days.</p><p>If you’re satisfied with our service, we’d appreciate positive feedback.</p><p>Regards,<br>WooParts</p>"
     },
     {
-      "name": "RETURNLESS (DOESN’T FIT)",
-      "content": "<p>Hi,</p><p>We're sorry to hear that the part didn't fit your vehicle. As an exception to our usual procedure, you do not need to return the part. You may keep it or dispose of it as you wish. We have processed a full refund, which will be credited back to your original payment method within 1-5 business days.</p><p>To help us improve our listings, could you please provide the VIN or OEM number of your vehicle? This will enable us to conduct a thorough compatibility check and ensure more accurate listings in the future.</p><p>Thank you for bringing this to our attention. We look forward to the opportunity to serve you again in the future.</p><p>Sincerely,<br>WooParts</p>"
+      "name": "Returnless (Doesn’t Fit)",
+      "content": "<p>Hi,</p><p>We’re sorry the part didn’t fit. No return is necessary. A full refund has been processed; it will reflect within 1–5 business days.</p><p>To help improve listings, please provide your vehicle’s VIN or OEM number.</p><p>Sincerely,<br>WooParts</p>"
     },
     {
-      "name": "CLOSE RETURN REQUEST",
-      "content": "<p>Hi,</p><p>We have received your return request. We’d like to inform you that as an exception to our standard procedure, you do not need to return the item. We will proceed with issuing a full refund for your order.</p><p>If this works for you, kindly close or cancel your return request at your earliest convenience.</p><p>Should you have any questions or need further assistance, feel free to reach out.</p><p>Best regards,<br>WooParts</p>"
+      "name": "Close Return Request",
+      "content": "<p>Hi,</p><p>Your return request has been received. No return is required; we will issue a full refund. Please close or cancel your return request at your convenience.</p><p>Best regards,<br>WooParts</p>"
     },
     {
-      "name": "APPROVED RETURN (DOESN’T FIT)",
-      "content": "<p>Hi,</p><p>We're sorry to hear that the part didn't fit your vehicle. We would like to inform you that we have approved your return request. Please note that our Return Department may require up to 5 days after receiving the item to verify its condition and process the refund.</p><p>To help us improve our listings, could you please provide the VIN or OEM number of your vehicle? This will enable us to conduct a thorough compatibility check and ensure more accurate listings in the future.</p><p>Thank you for your understanding.</p><p>Regards,<br>WooParts</p>"
+      "name": "Approved Return (Doesn’t Fit)",
+      "content": "<p>Hi,</p><p>We’ve approved your return request. Our Returns Department may take up to 5 days after receipt to verify condition and process the refund.</p><p>Please provide your vehicle’s VIN or OEM number to help us improve compatibility checks.</p><p>Regards,<br>WooParts</p>"
     },
     {
-      "name": "RETURNED ITEM RECEIVED BY WH (NEEDS REFUND)",
-      "content": "<p>Hi,</p><p>We have successfully received and inspected the returned item. A full refund for your order has been initiated, and it should appear in your account within 1-5 business days.</p><p>Thank you.</p><p>Best regards,<br>WooParts</p>"
+      "name": "Returned Items Received by Warehouse (Needs Refund)",
+      "content": "<p>Hi,</p><p>We received and inspected your returned item. A full refund has been initiated; it will reflect within 1–5 business days.</p><p>Best regards,<br>WooParts</p>"
     },
     {
-      "name": "RETURNED ITEM DIFFERENT FROM WHAT WAS ORDERED (SAFE T CLAIMS)",
-      "content": "<p>Hi,</p><p>Our warehouse team confirmed that the item you returned to us is materially different than what we sold to you for this order. We have attached images of the items you sent.</p><p>Please send us the correct part(s) using your own label and provide the tracking number so we can properly initiate the refund after we receive the item.</p><p>Regards,<br>WooParts</p>"
+      "name": "Returned Item Different From What Was Ordered (Safe-T Claims)",
+      "content": "<p>Hi,</p><p>Our warehouse found that the item you returned differs from what was sold. Please send the correct part(s) with tracking so we can process your refund upon receipt.</p><p>Regards,<br>WooParts</p>"
+    }
+  ],
+
+  "SHIPMENT CONCERNS": [
+    {
+      "name": "Shipping Update (Awaiting Shipment)",
+      "content": "<p>Hi,</p><p>We have a 2-business-day handling time. Estimated delivery is 3–5 business days. You’ll receive a tracking number once shipped.</p><p>Thank you for your patience.</p><p>Sincerely,<br>WooParts</p>"
+    },
+    {
+      "name": "Lost in Transit",
+      "content": "<p>Hi,</p><p>We’re sorry—your package appears lost in transit. We’ve issued a full refund; it will reflect within 1–5 business days.</p><p>We’re working with the carrier to investigate and prevent future incidents.</p><p>Sincerely,<br>WooParts</p>"
+    },
+    {
+      "name": "Item Not Received",
+      "content": "<p>Hi,</p><p>Tracking shows delivery on [DELIVERY DATE] via [CARRIER]. Please check less visible spots and with neighbors. If still missing after checking, let us know so we can assist.</p><p>Best regards,<br>WooParts</p>"
+    },
+    {
+      "name": "No Movement (USPS)",
+      "content": "<p>Hi,</p><p>We apologize—USPS sometimes delays tracking updates. Please allow 3–5 business days for movement. If still no updates then, we’ll issue a refund.</p><p>Thank you for your patience.</p><p>Sincerely,<br>WooParts</p>"
+    }
+  ],
+
+  "CANCELLATION": [
+    {
+      "name": "For Shipped Items",
+      "content": "<p>Hi,</p><p>Your cancellation request was rejected because the item shipped on [DATE] via [CARRIER]. Once you receive it, contact us to explore resolution options. Thank you for your understanding.</p><p>Sincerely,<br>WooParts</p>"
+    },
+    {
+      "name": "For Awaiting Shipment Items",
+      "content": "<p>Hi,</p><p>Your order has been canceled and a full refund initiated; it will reflect within 1–5 business days.</p><p>Best regards,<br>WooParts</p>"
+    },
+    {
+      "name": "For Dropship Items",
+      "content": "<p>Hi,</p><p>Your order entered the shipping queue. We’ll try to intercept it but cannot guarantee. We’ll keep you updated.</p><p>Best regards,<br>WooParts</p>"
+    }
+  ],
+
+  "ASKING FOR DISCOUNT": [
+    {
+      "name": "Discount Request",
+      "content": "<p>Hi,</p><p>Thank you for your interest. Our current price reflects market value and delivers the utmost value for our customers.</p><p>Best regards,<br>WooParts</p>"
+    }
+  ],
+
+  "FEEDBACK RELATED": [
+    {
+      "name": "Requesting Positive Feedback",
+      "content": "<p>Hi,</p><p>We processed your refund and no return is needed. If satisfied, please leave positive feedback.</p><p>Thank you,<br>WooParts</p>"
+    },
+    {
+      "name": "Feedback Revision",
+      "content": "<p>Hi,</p><p>We’ve issued a full refund; no return is needed. Please consider updating your feedback. We’ll email you with instructions.</p><p>Best regards,<br>WooParts</p>"
+    },
+    {
+      "name": "Revision Accepted",
+      "content": "<p>Hi,</p><p>Thank you. Click “Accept Request” in the email to revise your feedback on eBay. Your original comments will no longer display after revision.</p><p>Best regards,<br>WooParts</p>"
+    }
+  ],
+
+  "OUT OF STOCK": [
+    {
+      "name": "Partial Refund",
+      "content": "<p>Hi,</p><p>One of your items is out of stock; we issued a partial refund which will reflect within 1–5 business days. Use code TENOFFOOS for 10% off your next purchase.</p><p>Thank you,<br>WooParts</p>"
+    },
+    {
+      "name": "Full Refund",
+      "content": "<p>Hi,</p><p>The item is out of stock; we issued a full refund which will reflect within 1–5 business days. You may keep or dispose of any system-glitched items. Use code TENOFFOOS/TENOFFOOSAPEX for 10% off a future purchase.</p><p>Sincerely,<br>WooParts</p>"
+    }
+  ],
+
+  "OEM INQUIRY": [
+    {
+      "name": "Response",
+      "content": "<p>Hi,</p><p>Our products are aftermarket replacements with a one-year warranty covering defects. They differ from OEM parts but serve the same purpose.</p><p>Best regards,<br>WooParts</p>"
+    }
+  ],
+
+  "MULTISHIPMENT": [
+    {
+      "name": "Initial Email",
+      "content": "<p>Hi,</p><p>Your order will arrive in multiple shipments. We’ll notify you as soon as each tracking number becomes available.</p><p>Regards,<br>WooParts</p>"
+    },
+    {
+      "name": "Final Email",
+      "content": "<p>Hi,</p><p>Your order has shipped in multiple packages. Track each here:</p><ol><li>[Tracking 1]</li><li>[Tracking 2]</li></ol><p>Thank you,<br>WooParts</p>"
     }
   ]
 }
