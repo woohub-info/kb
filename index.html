@@ -11,7 +11,7 @@
   <!-- Header -->
   <header class="bg-white shadow sticky top-0 z-10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-      <a href="/" class="text-2xl font-semibold text-indigo-600">WooHub</a>
+      <a href="#" onclick="event.preventDefault();" class="text-2xl font-semibold text-indigo-600">WooHub</a>
       <div class="relative w-1/3">
         <input id="search-input" type="search" placeholder="Search keywords..." aria-label="Search keywords"
                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
@@ -35,7 +35,7 @@
       <!-- Breadcrumbs -->
       <nav class="text-sm mb-4" aria-label="Breadcrumb">
         <ol class="list-reset flex text-gray-600">
-          <li><a href="/" class="hover:underline">Home</a></li>
+          <li><a href="#" onclick="event.preventDefault();" class="hover:underline">Home</a></li>
           <li><span class="mx-2">/</span></li>
           <li>Dashboard</li>
         </ol>
@@ -87,32 +87,32 @@
     ];
 
     // Element refs
-    const container       = document.getElementById('card-container');
+    const container = document.getElementById('card-container');
     const detailContainer = document.getElementById('detail-container');
-    const detailTitle     = document.getElementById('detail-title');
-    const detailList      = document.getElementById('detail-list');
-    const backBtn         = document.getElementById('back-btn');
-    const overlay         = document.getElementById('overlay');
-    const overlayClose    = document.getElementById('overlay-close');
-    const copyBtn         = document.getElementById('copy-btn');
-    const overlayHeader   = document.getElementById('overlay-header');
-    const overlayBody     = document.getElementById('overlay-body');
-    const contentCache    = {};
+    const detailTitle = document.getElementById('detail-title');
+    const detailList = document.getElementById('detail-list');
+    const backBtn = document.getElementById('back-btn');
+    const overlay = document.getElementById('overlay');
+    const overlayClose = document.getElementById('overlay-close');
+    const copyBtn = document.getElementById('copy-btn');
+    const overlayHeader = document.getElementById('overlay-header');
+    const overlayBody = document.getElementById('overlay-body');
+    const searchInput = document.getElementById('search-input');
+    const searchSuggestions = document.getElementById('search-suggestions');
+    const contentCache = {};
 
-    // Render cards; both title and button open detail view
+    // Render cards
     function renderCards() {
       container.innerHTML = '';
       cardsData.forEach(card => {
         const article = document.createElement('article');
         article.className = 'bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6 flex flex-col';
         article.innerHTML = `
-          <h3 class=\"text-xl font-semibold mb-2 hover:text-indigo-600 cursor-pointer\">${card.title}</h3>
-          <p class=\"text-gray-600 flex-1\">${card.description}</p>
-          <button class=\"mt-4 text-indigo-600 font-medium hover:underline\">View ${card.title} →</button>
+          <h3 class="text-xl font-semibold mb-2 hover:text-indigo-600 cursor-pointer">${card.title}</h3>
+          <p class="text-gray-600 flex-1">${card.description}</p>
+          <button class="mt-4 text-indigo-600 font-medium hover:underline">View ${card.title} →</button>
         `;
-        // Detail view on title click
         article.querySelector('h3').addEventListener('click', () => showContent(card.slug, card.title));
-        // Detail view on button click
         article.querySelector('button').addEventListener('click', () => showContent(card.slug, card.title));
         container.appendChild(article);
       });
@@ -128,7 +128,7 @@
       return data;
     }
 
-    // Show inline detail view
+    // Show detail view
     async function showContent(slug, title) {
       container.classList.add('hidden');
       detailContainer.classList.remove('hidden');
@@ -138,7 +138,7 @@
       try {
         const data = await fetchItems(slug);
         const groups = Array.isArray(data) ? { '': data } : data;
-        for (const [group, items] of Object.entries(groups)) {
+        Object.entries(groups).forEach(([group, items]) => {
           if (group) {
             const header = document.createElement('h3');
             header.className = 'text-lg font-semibold mt-4';
@@ -154,46 +154,36 @@
             li.appendChild(btn);
             detailList.appendChild(li);
           });
-        }
+        });
       } catch (e) {
         detailList.innerHTML = '<li class="text-red-500">Error loading content.</li>';
-        console.error(e);
       }
     }
 
-    // Show email template content in overlay with copy button
+    // Overlay
     function openEmailOverlay(name, htmlContent) {
       overlayHeader.textContent = name;
-      overlayBody.innerHTML = `<div class=\"prose max-w-none space-y-4\">${htmlContent}</div>`;
+      overlayBody.innerHTML = `<div class="prose max-w-none space-y-4">${htmlContent}</div>`;
       overlay.classList.remove('hidden');
       copyBtn.classList.remove('hidden');
       copyBtn.textContent = 'Copy';
       copyBtn.onclick = () => {
-        const text = overlayBody.innerText;
-        navigator.clipboard.writeText(text).then(() => {
-          copyBtn.textContent = 'Copied!';
-          setTimeout(() => copyBtn.textContent = 'Copy', 2000);
-        });
+        navigator.clipboard.writeText(overlayBody.innerText)
+          .then(() => { copyBtn.textContent = 'Copied!'; setTimeout(() => copyBtn.textContent = 'Copy', 2000); });
       };
     }
 
-    // Close overlay handlers
     overlayClose.addEventListener('click', () => overlay.classList.add('hidden'));
     overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.add('hidden'); });
-
-    // Back to dashboard cards
     backBtn.addEventListener('click', () => {
       detailContainer.classList.add('hidden');
       container.classList.remove('hidden');
       copyBtn.classList.add('hidden');
     });
 
-    // Recent Updates loader
+    // Recent Updates
     fetch('data/updates.json')
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
+      .then(r => r.json())
       .then(updates => {
         const ul = document.getElementById('updates-list');
         ul.innerHTML = '';
@@ -201,22 +191,48 @@
           .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
           .forEach(u => {
             const li = document.createElement('li');
-            const date = new Date(u.timestamp).toLocaleDateString('en-US', {
-              month: 'short', day: 'numeric'
-            });
-            li.textContent = `${date}: ${u.text}`;
+            const date = new Date(u.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             if (u.link) {
-              const a = document.createElement('a');
-              a.href = u.link;
-              a.textContent = li.textContent;
-              a.className = 'hover:underline';
-              li.textContent = '';
-              li.appendChild(a);
+              li.innerHTML = `<a href="${u.link}" class="hover:underline">${date}: ${u.text}</a>`;
+            } else {
+              li.textContent = `${date}: ${u.text}`;
             }
             ul.appendChild(li);
           });
       })
       .catch(err => console.error('Failed to load updates:', err));
+
+    // Search
+    searchInput.addEventListener('input', async e => {
+      const q = e.target.value.trim().toLowerCase();
+      searchSuggestions.innerHTML = '';
+      if (!q) return searchSuggestions.classList.add('hidden');
+      let items = [];
+      for (const c of cardsData) {
+        const data = await fetchItems(c.slug);
+        const groups = Array.isArray(data) ? { '': data } : data;
+        Object.values(groups).flat().forEach(i => items.push(i));
+      }
+      const matches = items.filter(i => i.name.toLowerCase().includes(q));
+      if (!matches.length) {
+        const li = document.createElement('li');
+        li.textContent = 'No result found';
+        li.className = 'px-4 py-2 text-gray-500';
+        searchSuggestions.append(li);
+      } else {
+        matches.forEach(i => {
+          const li = document.createElement('li');
+          li.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
+          li.textContent = i.name;
+          li.onclick = () => {
+            openEmailOverlay(i.name, i.content);
+            searchSuggestions.classList.add('hidden');
+          };
+          searchSuggestions.append(li);
+        });
+      }
+      searchSuggestions.classList.remove('hidden');
+    });
 
     // Initialize dashboard
     document.addEventListener('DOMContentLoaded', renderCards);
