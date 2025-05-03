@@ -1,40 +1,32 @@
 {
-  "VIN Decoders": [
+  "Links": [
     {
       "name": "Driving Tests VIN Decoder",
-      "link": "https://driving-tests.org/vin-decoder/"
+      "content": "<p><a href=\"https://driving-tests.org/vin-decoder/\" target=\"_blank\" rel=\"noopener\">https://driving-tests.org/vin-decoder/</a></p>"
     },
     {
       "name": "VINDecoderz",
-      "link": "https://www.vindecoderz.com/"
+      "content": "<p><a href=\"https://www.vindecoderz.com/\" target=\"_blank\" rel=\"noopener\">https://www.vindecoderz.com/</a></p>"
     },
     {
       "name": "TYC VIN Decoder",
-      "link": "https://tyc.mycarparts.net/"
-    }
-  ],
-  "KarParts360": [
+      "content": "<p><a href=\"https://tyc.mycarparts.net/\" target=\"_blank\" rel=\"noopener\">https://tyc.mycarparts.net/</a></p>"
+    },
     {
-      "name": "KarParts360 Home",
-      "link": "https://www.carparts.com/"
-    }
-  ],
-  "Perfect Fit Group (USAuto)": [
+      "name": "KarParts360",
+      "content": "<p><a href=\"https://www.carparts.com/\" target=\"_blank\" rel=\"noopener\">https://www.carparts.com/</a></p>"
+    },
     {
-      "name": "PFG Login",
-      "link": "https://www.carpartswholesale.com/login"
-    }
-  ],
-  "Product Info": [
+      "name": "Perfect Fit Group (USAuto)",
+      "content": "<p><a href=\"https://www.carpartswholesale.com/login\" target=\"_blank\" rel=\"noopener\">https://www.carpartswholesale.com/login</a></p>"
+    },
     {
       "name": "VIN Product Info",
-      "link": "https://chmpzu.github.io/vin-product-info/"
-    }
-  ],
-  "Report Generator": [
+      "content": "<p><a href=\"https://chmpzu.github.io/vin-product-info/\" target=\"_blank\" rel=\"noopener\">https://chmpzu.github.io/vin-product-info/</a></p>"
+    },
     {
       "name": "Report Generator",
-      "link": "https://chmpzu.github.io/report-generator/"
+      "content": "<p><a href=\"https://chmpzu.github.io/report-generator/\" target=\"_blank\" rel=\"noopener\">https://chmpzu.github.io/report-generator/</a></p>"
     }
   ]
 }
