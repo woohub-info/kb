@@ -86,18 +86,18 @@
     ];
 
     // Element refs
-    const container      = document.getElementById('card-container');
+    const container       = document.getElementById('card-container');
     const detailContainer = document.getElementById('detail-container');
     const detailTitle     = document.getElementById('detail-title');
     const detailList      = document.getElementById('detail-list');
     const backBtn         = document.getElementById('back-btn');
-    const overlay        = document.getElementById('overlay');
-    const overlayClose   = document.getElementById('overlay-close');
-    const overlayHeader  = document.getElementById('overlay-header');
-    const overlayBody    = document.getElementById('overlay-body');
-    const contentCache   = {};
+    const overlay         = document.getElementById('overlay');
+    const overlayClose    = document.getElementById('overlay-close');
+    const overlayHeader   = document.getElementById('overlay-header');
+    const overlayBody     = document.getElementById('overlay-body');
+    const contentCache    = {};
 
-    // Render cards; title => overlay, View => detail view
+    // Render cards; title opens overlay listing, View opens detail panel
     function renderCards() {
       container.innerHTML = '';
       cardsData.forEach(card => {
@@ -108,15 +108,15 @@
           <p class="text-gray-600 flex-1">${card.description}</p>
           <button class="mt-4 text-indigo-600 font-medium hover:underline">View ${card.title} →</button>
         `;
-        // Overlay on title click
-        article.querySelector('h3').addEventListener('click', () => openOverlay(card.slug, card.title));
-        // Detail view on button
+        // Detail view on title click
+        article.querySelector('h3').addEventListener('click', () => showContent(card.slug, card.title));
+        // Detail view on button click
         article.querySelector('button').addEventListener('click', () => showContent(card.slug, card.title));
         container.appendChild(article);
       });
     }
 
-    // Fetch JSON
+    // Fetch JSON data
     async function fetchItems(slug) {
       if (contentCache[slug]) return contentCache[slug];
       const res = await fetch(`data/${slug}.json`);
@@ -126,7 +126,7 @@
       return data;
     }
 
-    // Show detail inline
+    // Show inline detail view
     async function showContent(slug, title) {
       container.classList.add('hidden');
       detailContainer.classList.remove('hidden');
@@ -147,7 +147,7 @@
             const btn = document.createElement('button');
             btn.className = 'text-indigo-600 hover:underline focus:outline-none';
             btn.textContent = item.name;
-            btn.addEventListener('click', () => openOverlay(item.slug || slug, item.name, item.content));
+            btn.addEventListener('click', () => openEmailOverlay(item.name, item.content));
             li.appendChild(btn);
             detailList.appendChild(li);
           });
@@ -158,13 +158,13 @@
       }
     }
 
-    // Open overlay with grouped items
-    async function openOverlay(categorySlug, title) {
+    // Open overlay listing categories and items
+    async function openCategoryOverlay(slug, title) {
       overlayHeader.textContent = title;
       overlayBody.innerHTML = '<p class="text-center py-10">Loading…</p>';
       overlay.classList.remove('hidden');
       try {
-        const data = await fetchItems(categorySlug);
+        const data = await fetchItems(slug);
         overlayBody.innerHTML = '';
         const groups = Array.isArray(data) ? { '': data } : data;
         for (const [group, items] of Object.entries(groups)) {
@@ -179,9 +179,9 @@
           items.forEach(item => {
             const li = document.createElement('li');
             const btn = document.createElement('button');
-            btn.className = 'text-indigo-600 hover:underline focus:outline-none';
+              btn.className = 'text-indigo-600 hover:underline focus:outline-none';
             btn.textContent = item.name;
-            btn.addEventListener('click', () => showOverlayContent(item.name, item.content));
+            btn.addEventListener('click', () => openEmailOverlay(item.name, item.content));
             li.appendChild(btn);
             ul.appendChild(li);
           });
@@ -193,17 +193,17 @@
       }
     }
 
-    // Show actual email template in overlay
-    function showOverlayContent(name, html) {
+    // Show email template content in overlay
+    function openEmailOverlay(name, htmlContent) {
       overlayHeader.textContent = name;
-      overlayBody.innerHTML = `<div class="prose max-w-none">${html}</div>`;
+      overlayBody.innerHTML = `<div class="prose max-w-none">${htmlContent}</div>`;
     }
 
-    // Close overlay
+    // Close overlay handlers
     overlayClose.addEventListener('click', () => overlay.classList.add('hidden'));
     overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.add('hidden'); });
 
-    // Back to cards view
+    // Back to dashboard cards
     backBtn.addEventListener('click', () => {
       detailContainer.classList.add('hidden');
       container.classList.remove('hidden');
