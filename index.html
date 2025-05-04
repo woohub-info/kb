@@ -204,35 +204,66 @@
 
     // Search
     searchInput.addEventListener('input', async e => {
-      const q = e.target.value.trim().toLowerCase();
-      searchSuggestions.innerHTML = '';
-      if (!q) return searchSuggestions.classList.add('hidden');
-      let items = [];
-      for (const c of cardsData) {
-        const data = await fetchItems(c.slug);
-        const groups = Array.isArray(data) ? { '': data } : data;
-        Object.values(groups).flat().forEach(i => items.push(i));
+  const q = e.target.value.trim().toLowerCase();
+  searchSuggestions.innerHTML = '';
+  if (!q) return searchSuggestions.classList.add('hidden');
+
+  const matches = [];
+
+  // Search in visible cards
+  document.querySelectorAll('#card-container article').forEach(article => {
+    const title = article.querySelector('h3')?.textContent || '';
+    const desc = article.querySelector('p')?.textContent || '';
+    if (title.toLowerCase().includes(q) || desc.toLowerCase().includes(q)) {
+      matches.push({ name: title, content: desc });
+    }
+  });
+
+  // Search in detail view if visible
+  if (!detailContainer.classList.contains('hidden')) {
+    detailList.querySelectorAll('button').forEach(btn => {
+      const text = btn.textContent.toLowerCase();
+      if (text.includes(q)) {
+        matches.push({ name: btn.textContent, content: 'Click to view details' });
       }
-      const matches = items.filter(i => i.name.toLowerCase().includes(q));
-      if (!matches.length) {
-        const li = document.createElement('li');
-        li.textContent = 'No result found';
-        li.className = 'px-4 py-2 text-gray-500';
-        searchSuggestions.append(li);
-      } else {
-        matches.forEach(i => {
-          const li = document.createElement('li');
-          li.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
-          li.textContent = i.name;
-          li.onclick = () => {
-            openEmailOverlay(i.name, i.content);
-            searchSuggestions.classList.add('hidden');
-          };
-          searchSuggestions.append(li);
-        });
-      }
-      searchSuggestions.classList.remove('hidden');
     });
+  }
+
+  // Search through external JSON as fallback
+  for (const c of cardsData) {
+    try {
+      const data = await fetchItems(c.slug);
+      const groups = Array.isArray(data) ? { '': data } : data;
+      Object.values(groups).flat().forEach(i => {
+        if (i.name.toLowerCase().includes(q)) {
+          matches.push(i);
+        }
+      });
+    } catch (e) {
+      console.error(`Failed to load ${c.slug}:`, e);
+    }
+  }
+
+  if (!matches.length) {
+    const li = document.createElement('li');
+    li.textContent = 'No result found';
+    li.className = 'px-4 py-2 text-gray-500';
+    searchSuggestions.append(li);
+  } else {
+    matches.forEach(i => {
+      const li = document.createElement('li');
+      li.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
+      li.textContent = i.name;
+      li.onclick = () => {
+        openEmailOverlay(i.name, i.content);
+        searchSuggestions.classList.add('hidden');
+      };
+      searchSuggestions.append(li);
+    });
+  }
+
+  searchSuggestions.classList.remove('hidden');
+});
 
     // Initialize dashboard
     document.addEventListener('DOMContentLoaded', renderCards);
