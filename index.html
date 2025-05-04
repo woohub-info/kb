@@ -129,45 +129,58 @@
     }
 
     // Show detail view
-    async function showContent(slug, title) {
-      container.classList.add('hidden');
-      detailContainer.classList.remove('hidden');
-      detailTitle.textContent = title;
-      detailList.innerHTML = '';
-      copyBtn.classList.add('hidden');
-      try {
-        const data = await fetchItems(slug);
-        const groups = Array.isArray(data) ? { '': data } : data;
-        Object.entries(groups).forEach(([group, items]) => {
-          if (group) {
-            const header = document.createElement('h3');
-            header.className = 'text-lg font-semibold mt-4';
-            header.textContent = group;
-            detailList.appendChild(header);
-          }
-          items.forEach(item => {
-            const li = document.createElement('li');
-            const btn = document.createElement('button');
-            btn.className = 'text-indigo-600 hover:underline focus:outline-none';
-            btn.textContent = item.name;
-            btn.addEventListener('click', () => openEmailOverlay(item.name, item.content));
-            li.appendChild(btn);
-            detailList.appendChild(li);
-          });
+// Show content
+async function showContent(slug, title) {
+  container.classList.add('hidden');
+  detailContainer.classList.remove('hidden');
+  detailTitle.textContent = title;
+  detailList.innerHTML = '';
+  copyBtn.classList.add('hidden');
+  
+  if (slug === 'reports') {
+    // Directly show the image for the "Reports" card inline
+    detailList.innerHTML = `
+      <div class="prose max-w-none space-y-4">
+        <p>WooParts Metric Report</p>
+        <img src="/assets/reports/2025-04.png" alt="WooParts eBay and Amazon Performance - 2025" class="w-full h-auto rounded-lg shadow-md">
+      </div>
+    `;
+  } else {
+    // Fetch and display the other content (for non-"Reports" cards)
+    try {
+      const data = await fetchItems(slug);
+      const groups = Array.isArray(data) ? { '': data } : data;
+      Object.entries(groups).forEach(([group, items]) => {
+        if (group) {
+          const header = document.createElement('h3');
+          header.className = 'text-lg font-semibold mt-4';
+          header.textContent = group;
+          detailList.appendChild(header);
+        }
+        items.forEach(item => {
+          const li = document.createElement('li');
+          const btn = document.createElement('button');
+          btn.className = 'text-indigo-600 hover:underline focus:outline-none';
+          btn.textContent = item.name;
+          btn.addEventListener('click', () => openEmailOverlay(item.name, item.content, slug)); // Pass slug here
+          li.appendChild(btn);
+          detailList.appendChild(li);
         });
-      } catch (e) {
-        detailList.innerHTML = '<li class="text-red-500">Error loading content.</li>';
-      }
+      });
+    } catch (e) {
+      detailList.innerHTML = '<li class="text-red-500">Error loading content.</li>';
     }
+  }
+}
 
     // Overlay
     function openEmailOverlay(name, htmlContent) {
       overlayHeader.textContent = name;
-      if (slug === 'Reports') {
+      if (name === 'Reports') {
         overlayBody.innerHTML = `
           <div class="prose max-w-none space-y-4">
-            <p>WooParts Metric Report</p>
-            <img src="/assets/reports/2025-04.png" alt="WooParts eBay and Amazon Performance - 2025" class="w-full h-auto rounded-lg shadow-md">
+            <p>WooParts eBay and Amazon Performance - 2025:</p>
+            <img src="/assets/reports/2025-04.png" alt="WooParts Metric Report 2025" class="w-full h-auto rounded-lg shadow-md">
           </div>
         `;
       } else {
