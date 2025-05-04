@@ -79,9 +79,9 @@
     }
   ],
 
-  "ASKING FOR DISCOUNT": [
+  "DISCOUNT REQUEST": [
     {
-      "name": "Discount Request",
+      "name": "Buyer Asking for Discount",
       "content": "<p>Hi,</p><p>Thank you for contacting us and showing interest in our product.</p><p>We understand that you are looking for a more favorable price for the item you are interested in, and we're excited to let you know that the current price is already an excellent offer. We have thoroughly analyzed market trends, taken into account different factors, and established the price to guarantee it delivers the utmost value for our customers.</p><p>Thank you, and we look forward to serving you in the future.</p><p>Best regards,<br>WooParts</p>"
     }
   ],
@@ -103,18 +103,18 @@
 
   "OUT OF STOCK": [
     {
-      "name": "Partial Refund",
+      "name": "OOS - Partial Refund",
       "content": "<p>Hi,</p><p>We wanted to let you know that one of the items you recently purchased is currently out of stock. As a result, we've processed a partial refund for your order, which should appear in your account within 1-5 business days. We apologize for any inconvenience this may cause and understand it may be disappointing.</p><p>As a token of our appreciation for your patience, we're offering you a 10% discount on your next purchase. Use the code TENOFFOOS at checkout.</p><p>Thank you for your understanding and continued support. If you have any questions or need further assistance, please feel free to reach out.</p><p>Best regards,<br>WooParts</p>"
     },
     {
-      "name": "Full Refund",
+      "name": "OOS - Full Refund",
       "content": "<p>Hi,</p><p>We wanted to inform you that the item you purchased is currently out of stock. As a result, we’ve processed a full refund for your order, which should appear in your account within 1-5 business days. We sincerely apologize for any inconvenience this may cause.</p><p>You may also receive a different item due to a system glitch. There's no need to return it—you can keep or dispose of it as you like.</p><p>To make amends, we’re offering you a 10% discount on any future purchase with the code TENOFFOOS.</p><p>We appreciate your understanding and continued support. If you have any questions, please feel free to reach out.</p><p>Sincerely,<br>WooParts</p>"
     }
   ],
 
   "OEM INQUIRY": [
     {
-      "name": "OEM Response",
+      "name": "OEM Inquiry Response",
       "content": "<p>Hi,</p><p>Thank you for reaching out. We would like to inform you that our products differ from the Original Equipment Manufacturer (OEM) version as it is an aftermarket replacement, specifically designed to serve the same purpose. We provide a one-year warranty that encompasses any potential manufacturer defects to ensure our commitment to quality assurance.</p><p>Thank you and if you have further questions, please let us know.</p><p>Best regards,<br>WooParts</p>"
     }
   ],
