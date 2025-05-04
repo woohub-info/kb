@@ -26,7 +26,7 @@
     <aside class="w-64 mr-6 hidden lg:block">
       <div class="bg-white border border-gray-200 rounded-lg p-4 sticky top-24">
         <h2 class="text-lg font-semibold mb-2">Recent Updates</h2>
-        <ul id="updates-list" class="space-y-2 text-gray-700 max-h-64 overflow-y-auto"></ul>
+        <ul id="updates-list" class="space-y-2 text-gray-700 max-h-96 overflow-y-auto pr-2"></ul>
       </div>
     </aside>
 
@@ -187,18 +187,20 @@
       .then(updates => {
         const ul = document.getElementById('updates-list');
         ul.innerHTML = '';
-        updates
-          .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-          .forEach(u => {
-            const li = document.createElement('li');
-            const date = new Date(u.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            if (u.link) {
-              li.innerHTML = `<a href="${u.link}" class="hover:underline">${date}: ${u.text}</a>`;
-            } else {
-              li.textContent = `${date}: ${u.text}`;
-            }
-            ul.appendChild(li);
-          });
+updates
+  .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+  .forEach(u => {
+    const li = document.createElement('li');
+    li.className = 'py-2'; // adds vertical spacing between items
+
+    if (u.link) {
+      li.innerHTML = `<a href="${u.link}" class="block hover:underline">${u.text}</a>`;
+    } else {
+      li.innerHTML = `<span class="block">${u.text}</span>`;
+    }
+
+    ul.appendChild(li);
+  });
       })
       .catch(err => console.error('Failed to load updates:', err));
 
