@@ -163,10 +163,10 @@
     // Overlay
     function openEmailOverlay(name, htmlContent) {
       overlayHeader.textContent = name;
-      if (name === 'Reports') {
+      if (slug === 'Reports') {
         overlayBody.innerHTML = `
           <div class="prose max-w-none space-y-4">
-            <p>Here's a preview of the report screenshot:</p>
+            <p>WooParts Metric Report</p>
             <img src="/assets/reports/2025-04.png" alt="WooParts eBay and Amazon Performance - 2025" class="w-full h-auto rounded-lg shadow-md">
           </div>
         `;
