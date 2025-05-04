@@ -128,7 +128,6 @@
       return data;
     }
 
-    // Show detail view
 // Show content
 async function showContent(slug, title) {
   container.classList.add('hidden');
@@ -138,11 +137,17 @@ async function showContent(slug, title) {
   copyBtn.classList.add('hidden');
   
   if (slug === 'reports') {
+    console.log("Showing Reports Content"); // Debugging log
+
     // Directly show the image for the "Reports" card inline
+    const imagePath = "/assets/reports/2025-04.png";
+    console.log("Image Path:", imagePath); // Debugging log
+
+    // Directly show the image inline in the content
     detailList.innerHTML = `
       <div class="prose max-w-none space-y-4">
         <p>WooParts eBay and Amazon Performance - 2025</p>
-        <img src="/assets/reports/2025-04.png" alt="WooParts Metric Report" class="w-full h-auto rounded-lg shadow-md">
+        <img src="${imagePath}" alt="WooParts Metric Report" class="w-full h-auto rounded-lg shadow-md">
       </div>
     `;
   } else {
