@@ -213,25 +213,29 @@ async function showContent(slug, title) {
     });
 
     // Recent Updates
-    fetch('data/updates.json')
-      .then(r => r.json())
-      .then(updates => {
-        const ul = document.getElementById('updates-list');
-        ul.innerHTML = '';
-        updates
-          .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-          .forEach(u => {
-            const li = document.createElement('li');
-            const date = new Date(u.timestamp).toLocaleDateString('en-US');  // Format MM-DD-YYYY
-            if (u.link) {
-              li.innerHTML = `<a href="${u.link}" class="block py-2 hover:underline">${date}: ${u.text}</a>`;
-            } else {
-              li.innerHTML = `<span class="block py-2">${date}: ${u.text}</span>`;
-            }
-            ul.appendChild(li);
-          });
-      })
-      .catch(err => console.error('Failed to load updates:', err));
+fetch('data/updates.json')
+  .then(r => r.json())
+  .then(updates => {
+    const ul = document.getElementById('updates-list');
+    ul.innerHTML = '';
+    updates
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      .forEach(u => {
+        const li = document.createElement('li');
+        
+        // Format the timestamp (YYYY-MM-DD) to MM/DD/YYYY
+        const dateParts = u.timestamp.split('-');  // Split the date by '-'
+        const formattedDate = `${dateParts[1]}/${dateParts[2]}/${dateParts[0]}`;  // Format as MM/DD/YYYY
+        
+        if (u.link) {
+          li.innerHTML = `<a href="${u.link}" class="block py-2 hover:underline">${formattedDate}: ${u.text}</a>`;
+        } else {
+          li.innerHTML = `<span class="block py-2">${formattedDate}: ${u.text}</span>`;
+        }
+        ul.appendChild(li);
+      });
+  })
+  .catch(err => console.error('Failed to load updates:', err));
 
     // Search
     searchInput.addEventListener('input', async e => {
