@@ -1,22 +1,8 @@
 {
-  "Title": "Warehouse Managers",
-  "Name": "Warehouse Managers Details",
-  "Content": [
+  "Warehouse Managers": [
     {
-      "name": "Anthony Pitter and Carmen Wu - New Jersey",
-      "address": "100 RYAN ST STE 1 S PLAINFIELD, NJ 07080-4211"
-    },
-    {
-      "name": "Jimmy Chou - California",
-      "address": "CALIFORNIA"
-    },
-    {
-      "name": "Jannell Thomas - Georgia",
-      "address": "6325 MCDONOUGH DR STE C NORCROSS, GA 30093-1232"
-    },
-    {
-      "name": "Jason Homan - Illinois",
-      "address": "333 CHARLES CT STE 105 WEST CHICAGO, IL 60185-2604"
+      "name": "Warehouse Managers Details",
+      "content": "<p><strong>Anthony Pitter and Carmen Wu</strong> – New Jersey</p><p>Address: 100 RYAN ST STE 1 S PLAINFIELD, NJ 07080-4211</p><p><strong>Jimmy Chou</strong> – California</p><p>Address: CALIFORNIA</p><p><strong>Jannell Thomas</strong> – Georgia</p><p>Address: 6325 MCDONOUGH DR STE C NORCROSS, GA 30093-1232</p><p><strong>Jason Homan</strong> – Illinois</p><p>Address: 333 CHARLES CT STE 105 WEST CHICAGO, IL 60185-2604</p>"
     }
   ],
   "Claims Contacts": [
