@@ -1,40 +1,33 @@
 {
   "VIN Decoders": [
     {
-      "name": "Driving Tests VIN Decoder",
-      "content": "<p><a href=\"https://driving-tests.org/vin-decoder/\" target=\"_blank\" rel=\"noopener\">https://driving-tests.org/vin-decoder/</a></p>"
+      "name": "<a href=\"https://driving-tests.org/vin-decoder/\" target=\"_blank\" rel=\"noopener\">Driving Tests VIN Decoder</a>"
     },
     {
-      "name": "VINDecoderz",
-      "content": "<p><a href=\"https://www.vindecoderz.com/\" target=\"_blank\" rel=\"noopener\">https://www.vindecoderz.com/</a></p>"
+      "name": "<a href=\"https://www.vindecoderz.com/\" target=\"_blank\" rel=\"noopener\">VINDecoderz</a>"
     },
     {
-      "name": "TYC VIN Decoder",
-      "content": "<p><a href=\"https://tyc.mycarparts.net/\" target=\"_blank\" rel=\"noopener\">https://tyc.mycarparts.net/</a></p>"
+      "name": "<a href=\"https://tyc.mycarparts.net/\" target=\"_blank\" rel=\"noopener\">TYC VIN Decoder</a>"
     }
   ],
   "KarParts360": [
     {
-      "name": "KarParts360 Home",
-      "content": "<p><a href=\"https://www.carparts.com/\" target=\"_blank\" rel=\"noopener\">https://www.carparts.com/</a></p>"
+      "name": "<a href=\"https://www.carparts.com/\" target=\"_blank\" rel=\"noopener\">KarParts360 Website</a>"
     }
   ],
-  "Perfect Fit Group (USAuto)": [
+  "USAuto - Perfect Fit Group": [
     {
-      "name": "PFG",
-      "content": "<p><a href=\"https://www.carpartswholesale.com/login\" target=\"_blank\" rel=\"noopener\">https://www.carpartswholesale.com/login</a></p>"
+      "name": "<a href=\"https://www.carpartswholesale.com/login\" target=\"_blank\" rel=\"noopener\">PFG</a>"
     }
   ],
   "Product Info": [
     {
-      "name": "VIN Product Info",
-      "content": "<p><a href=\"https://chmpzu.github.io/vin-product-info/\" target=\"_blank\" rel=\"noopener\">https://chmpzu.github.io/vin-product-info/</a></p>"
+      "name": "<a href=\"https://chmpzu.github.io/vin-product-info/\" target=\"_blank\" rel=\"noopener\">VIN and Product Info</a>"
     }
   ],
   "Report Generator": [
     {
-      "name": "Report Generator",
-      "content": "<p><a href=\"https://chmpzu.github.io/report-generator/\" target=\"_blank\" rel=\"noopener\">https://chmpzu.github.io/report-generator/</a></p>"
+      "name": "<a href=\"https://chmpzu.github.io/report-generator/\" target=\"_blank\" rel=\"noopener\">Report Generator</a>"
     }
   ]
 }
