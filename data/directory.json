@@ -1,8 +1,7 @@
 {
-  "Warehouse Managers": [
-    {
-      "name": "Warehouse Managers Details",
-      "content": [
+  "Title": "Warehouse Managers",
+  "Name": "Warehouse Managers Details",
+  "Content": [
     {
       "name": "Anthony Pitter and Carmen Wu - New Jersey",
       "address": "100 RYAN ST STE 1 S PLAINFIELD, NJ 07080-4211"
