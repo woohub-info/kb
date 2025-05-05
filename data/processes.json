@@ -35,7 +35,7 @@
   ],
   "Return Process": [
     {
-      "name": "How to create a return order",
+      "name": "How to create a return label in ShipStation",
       "content": "<ol><li>From Order Details, select Returns icon in the left-side menu. Then, click the Create Return button.</li><li>Select the item, the quantity being returned, and the return reason (Others). Then, click Continue.</li><li>Configure the shipment details for the return label. Then download the return label.</li><ul><li>Return To: The WH that fulfilled the order. Do not change the carrier; edit the DIM.</li></ul><li>Screenshot the return label and paste on your reply in 3DSellers.</li></ol>"
     }
   ]
