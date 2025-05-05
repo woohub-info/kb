@@ -33,13 +33,6 @@
       "content": "<ol><li>In ShipStation, click \"New Order.\"</li><li>Change the Store to \"Manual Orders.\" Under \"Order #,\" enter the order number and then add \"-RS.\"</li><li>Under \"Recipient Information,\" input the buyer’s name and complete address.</li><li>Add \"Total Paid.\"</li><li>Under \"Order Line Items,\" click \"Add a Line Item.\" Input the golden SKU ordered, then add the price (Unit Cost).</li><li>Click \"Save Order.\"</li><li>Copy the order number with \"-RS\" and place it on the Return Tracker > Reshipment tab. Fill in all the necessary information in the sheet.</li></ol>"
     }
   ],
-  "Generate Return Label in ShipStation": [
-    {
-      "name": "How to generate a return label in ShipStation",
-      "content": "Placeholder for return label generation process."
-    }
-  ],
-  {
   "Return Process": [
     {
       "name": "How to create a return order",
