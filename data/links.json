@@ -15,19 +15,19 @@
   ],
   "KarParts360": [
     {
-      "name": "KarParts360 Home",
+      "name": "KarParts360 Website",
       "content": "<p><a href=\"https://www.carparts.com/\" target=\"_blank\" rel=\"noopener\">https://www.carparts.com/</a></p>"
     }
   ],
-  "Perfect Fit Group (USAuto)": [
+  "USAuto - Perfect Fit Group": [
     {
-      "name": "PFG",
+      "name": "USAuto PFG",
       "content": "<p><a href=\"https://www.carpartswholesale.com/login\" target=\"_blank\" rel=\"noopener\">https://www.carpartswholesale.com/login</a></p>"
     }
   ],
   "Product Info": [
     {
-      "name": "VIN Product Info",
+      "name": "VIN and Product Info",
       "content": "<p><a href=\"https://chmpzu.github.io/vin-product-info/\" target=\"_blank\" rel=\"noopener\">https://chmpzu.github.io/vin-product-info/</a></p>"
     }
   ],
