@@ -186,12 +186,13 @@ async function showContent(slug, title) {
     function openEmailOverlay(name, htmlContent) {
       overlayHeader.textContent = name;
       if (name === 'Reports') {
-        overlayBody.innerHTML = `
-          <div class="prose max-w-none space-y-4">
-            <p>WooParts eBay and Amazon Performance - 2025:</p>
-            <img src="/assets/reports/2025-04.png" alt="WooParts Metric Report 2025" class="w-full h-auto rounded-lg shadow-md">
-          </div>
-        `;
+  overlayBody.innerHTML = `
+    <div class="prose max-w-none space-y-4">
+      <p><a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl" target="_blank" class="text-blue-600 hover:underline">WooParts eBay and Amazon Performance - 2025</a>:</p>
+      <img src="/assets/reports/2025-04.png" alt="WooParts Metric Report 2025" class="w-full h-auto rounded-lg shadow-md">
+    </div>
+  `;
+}
       } else {
         overlayBody.innerHTML = `<div class="prose max-w-none space-y-4">${htmlContent}</div>`;
       }
