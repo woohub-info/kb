@@ -7,7 +7,7 @@
   ],
   "USAUTO Cancellation": [
     {
-      "name": "No “Thank You” Email or Not Showing in PFG",
+      "name": "No Email Confirmation in PMB and Not Showing in PFG",
       "content": "<p><strong>Tools:</strong> ShipStation, ZenMighty, Marketplaces, PMB</p><ol><li>In ZenMighty, if status is Awaiting Shipment and no Quote ID/Order ID, cancel in ZenMighty and file notification in HD.</li><li>In ShipStation, tag as Buyer Canceled, perform pre-cancel actions.</li><li>Paste order into All Supplier PO Spreadsheet.</li><li>In ChannelAdvisor, cancel the order if possible.</li><li>Message buyer confirming cancellation.</li><li>Cancel on marketplace / 3DSellers.</li></ol>"
     },
     {
