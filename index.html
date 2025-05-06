@@ -141,20 +141,40 @@
       copyBtn.classList.add('hidden');
       
       if (slug === 'reports') {
-        console.log("Showing Reports Content"); // Debugging log
-
-        // Directly show the image for the "Reports" card inline
-        const imagePath = "/assets/reports/2025-04.png";
-        console.log("Image Path:", imagePath); // Debugging log
-
-        // Directly show the image inline in the content
-        detailList.innerHTML = `
-          <div class="prose max-w-none space-y-4">
-            <p><a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl" target="_blank" class="text-blue-600 hover:underline">WooParts eBay and Amazon Performance - 2025</a></p>
-            <img src="${imagePath}" alt="WooParts Metric Report" class="w-full h-auto rounded-lg shadow-md">
-          </div>
-        `;
-      } else {
+ const imagePaths = [
+   "https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png",
+   "https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_amz.png"
+ ];
+ detailList.innerHTML = `
+<div class="prose max-w-none space-y-4">
+<p>
+<a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
+          target="_blank"
+          class="text-blue-600 hover:underline">
+         WooParts eBay and Amazon Performance - 2025
+</a>
+</p>
+<div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
+<div id="slider" class="flex transition-transform duration-300" style="transform: translateX(0%)">
+         ${imagePaths.map(path => `<img src="${path}" class="w-full flex-shrink-0 object-contain" alt="Report Image">`).join('')}
+</div>
+<button id="prevSlide" class="absolute top-1/2 left-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">‹</button>
+<button id="nextSlide" class="absolute top-1/2 right-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">›</button>
+</div>
+</div>
+ `;
+ let currentSlide = 0;
+ const slider = document.getElementById('slider');
+ const totalSlides = imagePaths.length;
+ document.getElementById('prevSlide').onclick = () => {
+   currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+   slider.style.transform = `translateX(-${currentSlide * 100}%)`;
+ };
+ document.getElementById('nextSlide').onclick = () => {
+   currentSlide = (currentSlide + 1) % totalSlides;
+   slider.style.transform = `translateX(-${currentSlide * 100}%)`;
+ };
+} else {
         // Fetch and display the other content (for non-"Reports" cards)
         try {
           const data = await fetchItems(slug);
