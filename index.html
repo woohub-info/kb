@@ -194,6 +194,32 @@
   </footer>
 
   <script>
+    // === persist “read” state across reloads ===
+    const badgeDataMap = {};
+    function getReadItems() {
+      try { return JSON.parse(localStorage.getItem('readItems') || '{}'); }
+      catch { return {}; }
+    }
+    function saveReadItems(obj) {
+      localStorage.setItem('readItems', JSON.stringify(obj));
+    }
+    function markItemRead(slug, id) {
+      const read = getReadItems();
+      read[slug] = read[slug] || [];
+      if (!read[slug].includes(id)) {
+        read[slug].push(id);
+        saveReadItems(read);
+      }
+    }
+    function isItemRead(slug, id) {
+      const read = getReadItems();
+      return Array.isArray(read[slug]) && read[slug].includes(id);
+    }
+    function hasUnreadForSlug(slug) {
+      const ids = badgeDataMap[slug] || [];
+      return ids.some(id => !isItemRead(slug, id));
+    }
+
     // Element refs
     const container               = document.getElementById('card-container');
     const detailContainer         = document.getElementById('detail-container');
@@ -245,7 +271,6 @@
       };
     }
 
-    // Fetch JSON with caching
     async function fetchItems(slug) {
       if (contentCache[slug]) return contentCache[slug];
       const res = await fetch(`data/${slug}.json`);
@@ -274,12 +299,13 @@
       });
     }
 
-    // Show content for a card
+    // Show content for a card, with unread-dot logic
     async function showContent(slug, title) {
       container.classList.add('hidden');
       detailContainer.classList.remove('hidden');
       detailTitle.textContent = title;
-      detailList.innerHTML = '<li class="animate-pulse"><span class="block h-4 bg-gray-200 rounded w-3/4 mb-2"></span></li>';
+      detailList.innerHTML = '';
+
       if (slug === 'reports') {
         const imagePaths = [
           'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
@@ -294,9 +320,7 @@
     </a></p>
     <div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
       <div id="slider" class="flex transition-transform duration-300" style="transform: translateX(0%)">
-        ${imagePaths.map(path => `<img src="${path}" loading="lazy"
-                                     class="w-full flex-shrink-0 object-contain"
-                                     alt="Report Image">`).join('')}
+        ${imagePaths.map(path => `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report Image">`).join('')}
       </div>
       <button id="prevSlide" class="absolute top-1/2 left-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">&lsaquo;</button>
       <button id="nextSlide" class="absolute top-1/2 right-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">&rsaquo;</button>
@@ -314,14 +338,27 @@
       } else {
         try {
           const data = await fetchItems(slug);
-          detailList.innerHTML = '';
           const items = Array.isArray(data) ? data : Object.values(data).flat();
           items.forEach(item => {
             const li = document.createElement('li');
             const btn = document.createElement('button');
-            btn.className = 'text-indigo-600 hover:underline focus:outline-none';
+            btn.className = 'flex items-center text-indigo-600 hover:underline focus:outline-none';
             btn.textContent = item.name;
-            btn.onclick = () => openEmailOverlay(item.name, item.content, slug);
+            const id = item.id || item.name;
+            // red dot for unread
+            const dot = document.createElement('span');
+            dot.className = 'ml-2 inline-block w-2 h-2 bg-red-600 rounded-full';
+            if (isItemRead(slug, id)) dot.classList.add('hidden');
+            btn.appendChild(dot);
+            btn.onclick = () => {
+              openEmailOverlay(item.name, item.content, slug);
+              markItemRead(slug, id);
+              dot.classList.add('hidden');
+              if (!hasUnreadForSlug(slug)) {
+                const badge = document.querySelector(`[data-slug="${slug}"] .badge`);
+                if (badge) badge.classList.add('hidden');
+              }
+            };
             li.appendChild(btn);
             detailList.appendChild(li);
           });
@@ -378,19 +415,19 @@
       });
     };
 
-    // Back to cards
+    // Back to grid
     backBtn.onclick = () => {
       detailContainer.classList.add('hidden');
       container.classList.remove('hidden');
     };
 
-    // Jump to top
+    // Jump to top button
     window.addEventListener('scroll', () => {
       toTopBtn.classList.toggle('hidden', window.scrollY < 300);
     });
     toTopBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Notification & card-badge logic
+    // Helper for notification icons
     function iconFor(type) {
       return {
         updates: '🔔',
@@ -403,6 +440,7 @@
       }[type] || '🆕';
     }
 
+    // Poll notifications and flag card badges
     let seenNotifIds = new Set();
     async function pollNotifications() {
       const sources = [
@@ -432,18 +470,24 @@
           const items = src.parser(json);
           items.forEach(item => {
             if (!seenNotifIds.has(item.id)) {
-              // Bell notification
+              // record for badge
+              badgeDataMap[src.type] = badgeDataMap[src.type] || [];
+              badgeDataMap[src.type].push(item.id);
+
+              // bell notification
               const li = document.createElement('li');
               li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between cursor-pointer';
               li.innerHTML = `<span>${iconFor(src.type)} ${item.text}</span>
                               <time class="text-xs text-gray-500">${new Date(item.time).toLocaleTimeString()}</time>`;
               notifListEl.prepend(li);
-              notifCountEl.textContent = String(Number(notifCountEl.textContent)||0 + 1);
-              // Card badge
-              if (src.type !== 'updates') {
-                const badge = document.querySelector(`[data-slug="${src.type}"] .badge`);
-                if (badge) badge.classList.remove('hidden');
+              notifCountEl.textContent = String((+notifCountEl.textContent || 0) + 1);
+
+              // show card badge if unread
+              if (src.type !== 'updates' && !isItemRead(src.type, item.id)) {
+                const badgeEl = document.querySelector(`[data-slug="${src.type}"] .badge`);
+                if (badgeEl) badgeEl.classList.remove('hidden');
               }
+
               seenNotifIds.add(item.id);
             }
           });
@@ -464,10 +508,6 @@
 
     // Recent updates panel
     let allUpdates = [], displayCount = 5;
-    function formatDate(iso) {
-      const d = new Date(iso);
-      return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
-    }
     async function pollUpdatesPanel() {
       try {
         const res = await fetch('data/updates.json');
@@ -481,9 +521,11 @@
     }
     function renderUpdatesPanel() {
       const filterVal = (updatesFilter?.value || mobileUpdatesFilter?.value || '').toLowerCase();
-      const filtered = allUpdates.filter(u => u.text.toLowerCase().includes(filterVal))
-                                 .sort((a,b)=>new Date(b.time)-new Date(a.time));
+      const filtered = allUpdates
+        .filter(u => u.text.toLowerCase().includes(filterVal))
+        .sort((a, b) => new Date(b.time) - new Date(a.time));
       const toShow = filtered.slice(0, displayCount);
+
       [updatesContainer, mobileUpdatesContainer].forEach(cn => {
         cn.innerHTML = '';
         if (!toShow.length) {
@@ -495,9 +537,9 @@
           toShow.forEach(u => {
             const li = document.createElement('li');
             if (u.link) {
-              li.innerHTML = `<a href="${u.link}" class="block py-2 hover:underline">${formatDate(u.time)}: ${u.text}</a>`;
+              li.innerHTML = `<a href="${u.link}" class="block py-2 hover:underline">${u.time}: ${u.text}</a>`;
             } else {
-              li.textContent = `${formatDate(u.time)}: ${u.text}`;
+              li.textContent = `${u.time}: ${u.text}`;
               li.className = 'py-2';
             }
             cn.appendChild(li);
