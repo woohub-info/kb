@@ -30,86 +30,75 @@
   <!-- Header -->
   <header role="banner" class="relative bg-white shadow sticky top-0 z-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-      <!-- Logo -->
       <a href="#" onclick="event.preventDefault();" class="text-2xl font-semibold text-indigo-600">WooHub</a>
-
-      <!-- Search -->
       <div class="relative flex-1 max-w-lg mx-4">
-        <input
-          id="search-input"
-          type="search"
-          placeholder="Search keywords..."
-          aria-label="Search keywords"
-          aria-controls="search-suggestions"
-          aria-expanded="false"
-          aria-autocomplete="list"
-          class="w-full px-4 py-2 border border-gray-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 placeholder-gray-500"
-        />
-        <ul
-          id="search-suggestions"
-          role="listbox"
-          class="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg hidden z-30 max-h-60 overflow-auto"
-        ></ul>
+        <input id="search-input" type="search" placeholder="Search keywords..."
+               aria-label="Search keywords" aria-controls="search-suggestions"
+               aria-expanded="false" aria-autocomplete="list"
+               class="w-full px-4 py-2 border border-gray-300 bg-white rounded-lg
+                      focus:outline-none focus:ring-2 focus:ring-indigo-500
+                      text-gray-800 placeholder-gray-500" />
+        <ul id="search-suggestions" role="listbox"
+            class="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg
+                   shadow-lg hidden z-30 max-h-60 overflow-auto"></ul>
       </div>
-
-      <!-- Notification Bell -->
       <div class="relative">
-        <button
-          id="notification-btn"
-          class="p-2 focus:outline-none"
-          aria-label="Notifications"
-          aria-haspopup="true"
-          aria-expanded="false"
-        >
-          <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <button id="notification-btn" class="p-2 focus:outline-none"
+                aria-label="Notifications" aria-haspopup="true" aria-expanded="false">
+          <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor"
+               viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-            />
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11
+                     a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595
+                     1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
-          <span
-            id="notification-count"
-            class="absolute -top-1 -right-1 inline-flex items-center justify-center px-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full"
-          >0</span>
+          <span id="notification-count"
+                class="absolute -top-1 -right-1 inline-flex items-center justify-center
+                       px-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">0</span>
         </button>
-        <div
-          id="notification-dropdown"
-          class="hidden absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-40"
-          role="menu"
-          aria-label="Recent notifications"
-        >
-          <ul id="notification-list" class="max-h-64 overflow-y-auto divide-y divide-gray-200" aria-live="polite"></ul>
+        <div id="notification-dropdown"
+             class="hidden absolute right-0 mt-2 w-80 bg-white border border-gray-200
+                    rounded-lg shadow-lg z-40"
+             role="menu" aria-label="Recent notifications">
+          <ul id="notification-list" class="max-h-64 overflow-y-auto divide-y divide-gray-200"
+              aria-live="polite"></ul>
           <div class="text-center p-2">
-            <button id="clear-notifications" class="text-indigo-600 hover:underline focus:outline-none">Clear All</button>
+            <button id="clear-notifications" class="text-indigo-600 hover:underline
+                                                   focus:outline-none">Clear All</button>
           </div>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- Mobile Accordion for Recent Updates -->
+  <!-- Mobile Recent Updates Accordion -->
   <details class="lg:hidden px-4 mt-2">
     <summary class="font-semibold cursor-pointer flex items-center justify-between" role="button">
       <span>Recent Updates</span>
-      <button id="mobile-updates-filter-toggle" class="p-1 focus:outline-none" aria-label="Show filter">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <button id="mobile-updates-filter-toggle" class="p-1 focus:outline-none" aria-label="Toggle filter">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-7.414 7.414a1 1 0 00-.293.707V19l-4-4v-4a1 1 0 00-.293-.707L3.293 6.707A1 1 0 013 6V4z" />
+                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2
+                   a1 1 0 01-.293.707l-7.414 7.414
+                   a1 1 0 00-.293.707V19l-4-4v-4
+                   a1 1 0 00-.293-.707L3.293 6.707
+                   A1 1 0 013 6V4z" />
         </svg>
       </button>
     </summary>
     <div class="mt-2 space-y-2">
-      <!-- Hidden filter container -->
       <div id="mobile-updates-filter-container" class="hidden">
-        <input
-          id="mobile-updates-filter"
-          type="text"
-          placeholder="Filter updates..."
-          aria-label="Filter updates"
-          class="w-full px-3 py-1 mb-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-800 placeholder-gray-500"
-        />
+        <input id="mobile-updates-filter" type="text" placeholder="Filter updates..."
+               aria-label="Filter updates"
+               class="w-full px-3 py-1 mb-2 border border-gray-300 rounded-lg
+                      focus:outline-none focus:ring-1 focus:ring-indigo-500
+                      text-gray-800 placeholder-gray-500" />
       </div>
-      <ul id="mobile-updates-container" class="max-h-60 overflow-y-auto pr-2 space-y-2" aria-live="polite"></ul>
-      <button id="mobile-load-more-btn" class="mt-2 w-full text-center text-indigo-600 hover:underline focus:outline-none">
+      <ul id="mobile-updates-container" class="max-h-60 overflow-y-auto pr-2 space-y-2"
+          aria-live="polite"></ul>
+      <button id="mobile-load-more-btn" class="mt-2 w-full text-center text-indigo-600
+                                           hover:underline focus:outline-none">
         Load More
       </button>
     </div>
@@ -122,25 +111,29 @@
       <div class="bg-white border border-gray-200 rounded-lg p-4 sticky top-24">
         <div class="flex items-center justify-between mb-2">
           <h2 class="text-lg font-semibold">Recent Updates</h2>
-          <button id="updates-filter-toggle" class="p-1 focus:outline-none" aria-label="Show filter">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <button id="updates-filter-toggle" class="p-1 focus:outline-none" aria-label="Toggle filter">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-7.414 7.414a1 1 0 00-.293.707V19l-4-4v-4a1 1 0 00-.293-.707L3.293 6.707A1 1 0 013 6V4z" />
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2
+                       a1 1 0 01-.293.707l-7.414 7.414
+                       a1 1 0 00-.293.707V19l-4-4v-4
+                       a1 1 0 00-.293-.707L3.293 6.707
+                       A1 1 0 013 6V4z" />
             </svg>
           </button>
         </div>
-        <!-- Hidden filter container -->
         <div id="updates-filter-container" class="hidden mb-2">
-          <input
-            id="updates-filter"
-            type="text"
-            placeholder="Filter updates..."
-            aria-label="Filter updates"
-            class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-800 placeholder-gray-500"
-          />
+          <input id="updates-filter" type="text" placeholder="Filter updates..."
+                 aria-label="Filter updates"
+                 class="w-full px-3 py-1 border border-gray-300 rounded-lg
+                        focus:outline-none focus:ring-1 focus:ring-indigo-500
+                        text-gray-800 placeholder-gray-500" />
         </div>
-        <ul id="updates-container" class="max-h-96 overflow-y-auto pr-2 space-y-2" aria-live="polite"></ul>
-        <button id="load-more-btn" class="mt-2 w-full text-center text-indigo-600 hover:underline focus:outline-none">
+        <ul id="updates-container" class="max-h-96 overflow-y-auto pr-2 space-y-2"
+            aria-live="polite"></ul>
+        <button id="load-more-btn" class="mt-2 w-full text-center text-indigo-600
+                                         hover:underline focus:outline-none">
           Load More
         </button>
       </div>
@@ -158,8 +151,11 @@
       </nav>
 
       <!-- Detail View -->
-      <section id="detail-container" class="hidden bg-white rounded-lg shadow p-6 mb-6" role="region" aria-labelledby="detail-title">
-        <button id="back-btn" class="text-indigo-600 hover:underline mb-4 focus:outline-none">← Back to Dashboard</button>
+      <section id="detail-container" class="hidden bg-white rounded-lg shadow p-6 mb-6"
+               role="region" aria-labelledby="detail-title">
+        <button id="back-btn" class="text-indigo-600 hover:underline mb-4 focus:outline-none">
+          ← Back to Dashboard
+        </button>
         <h2 id="detail-title" class="text-2xl font-semibold mb-4"></h2>
         <ul id="detail-list" class="list-disc pl-5 space-y-2"></ul>
       </section>
@@ -170,31 +166,28 @@
   </div>
 
   <!-- Overlay Modal -->
-  <div
-    id="overlay"
-    class="fixed inset-0 bg-black bg-opacity-50 hidden items-start justify-center overflow-y-auto z-40"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="overlay-header"
-    aria-describedby="overlay-body"
-  >
-    <div
-      class="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 max-h-[90vh] overflow-y-auto p-6 relative mt-20 mx-auto"
-      tabindex="-1"
-    >
-      <button id="overlay-close" aria-label="Close dialog" class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none">&times;</button>
-      <button id="copy-btn" class="absolute top-4 right-12 text-sm text-gray-500 hover:text-gray-700 hidden focus:outline-none">Copy</button>
+  <div id="overlay"
+       class="fixed inset-0 bg-black bg-opacity-50 hidden items-start justify-center overflow-y-auto z-40"
+       role="dialog" aria-modal="true" aria-labelledby="overlay-header" aria-describedby="overlay-body">
+    <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 max-h-[90vh] overflow-y-auto p-6
+                relative mt-20 mx-auto" tabindex="-1">
+      <button id="overlay-close" aria-label="Close dialog"
+              class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none">
+        &times;
+      </button>
+      <button id="copy-btn"
+              class="absolute top-4 right-12 text-sm text-gray-500 hover:text-gray-700 hidden focus:outline-none">
+        Copy
+      </button>
       <h2 id="overlay-header" class="text-2xl font-semibold mb-4"></h2>
       <div id="overlay-body" class="space-y-4" tabindex="0"></div>
     </div>
   </div>
 
   <!-- Jump to Top -->
-  <button
-    id="to-top"
-    class="fixed bottom-6 right-6 p-3 bg-indigo-600 text-white rounded-full shadow-lg hidden focus:outline-none"
-    aria-label="Scroll to top"
-  >↑</button>
+  <button id="to-top"
+          class="fixed bottom-6 right-6 p-3 bg-indigo-600 text-white rounded-full shadow-lg hidden focus:outline-none"
+          aria-label="Scroll to top">↑</button>
 
   <!-- Footer -->
   <footer class="bg-white py-6 border-t border-gray-200 mt-auto">
@@ -205,36 +198,36 @@
   </footer>
 
   <script>
-    // Element references
-    const container = document.getElementById('card-container');
-    const detailContainer = document.getElementById('detail-container');
-    const detailTitle = document.getElementById('detail-title');
-    const detailList = document.getElementById('detail-list');
-    const backBtn = document.getElementById('back-btn');
-    const overlay = document.getElementById('overlay');
-    const overlayDialog = overlay.querySelector('[tabindex="-1"]');
-    const overlayClose = document.getElementById('overlay-close');
-    const copyBtn = document.getElementById('copy-btn');
-    const overlayHeader = document.getElementById('overlay-header');
-    const overlayBody = document.getElementById('overlay-body');
-    const searchInput = document.getElementById('search-input');
-    const searchSuggestions = document.getElementById('search-suggestions');
-    const notifBtn = document.getElementById('notification-btn');
-    const notifCountEl = document.getElementById('notification-count');
-    const notifDropdown = document.getElementById('notification-dropdown');
-    const notifListEl = document.getElementById('notification-list');
-    const clearNotifsBtn = document.getElementById('clear-notifications');
-    const updatesFilterContainer = document.getElementById('updates-filter-container');
-    const updatesFilter = document.getElementById('updates-filter');
-    const updatesToggleBtn = document.getElementById('updates-filter-toggle');
+    // Element refs
+    const container               = document.getElementById('card-container');
+    const detailContainer         = document.getElementById('detail-container');
+    const detailTitle             = document.getElementById('detail-title');
+    const detailList              = document.getElementById('detail-list');
+    const backBtn                 = document.getElementById('back-btn');
+    const overlay                 = document.getElementById('overlay');
+    const overlayDialog           = overlay.querySelector('[tabindex="-1"]');
+    const overlayClose            = document.getElementById('overlay-close');
+    const copyBtn                 = document.getElementById('copy-btn');
+    const overlayHeader           = document.getElementById('overlay-header');
+    const overlayBody             = document.getElementById('overlay-body');
+    const searchInput             = document.getElementById('search-input');
+    const searchSuggestions       = document.getElementById('search-suggestions');
+    const notifBtn                = document.getElementById('notification-btn');
+    const notifCountEl            = document.getElementById('notification-count');
+    const notifDropdown           = document.getElementById('notification-dropdown');
+    const notifListEl             = document.getElementById('notification-list');
+    const clearNotifsBtn          = document.getElementById('clear-notifications');
+    const updatesFilterContainer  = document.getElementById('updates-filter-container');
+    const updatesFilter           = document.getElementById('updates-filter');
+    const updatesToggleBtn        = document.getElementById('updates-filter-toggle');
     const mobileUpdatesFilterContainer = document.getElementById('mobile-updates-filter-container');
-    const mobileUpdatesFilter = document.getElementById('mobile-updates-filter');
-    const mobileUpdatesToggleBtn = document.getElementById('mobile-updates-filter-toggle');
-    const updatesContainer = document.getElementById('updates-container');
-    const mobileUpdatesContainer = document.getElementById('mobile-updates-container');
-    const loadMoreBtn = document.getElementById('load-more-btn');
-    const mobileLoadMoreBtn = document.getElementById('mobile-load-more-btn');
-    const toTopBtn = document.getElementById('to-top');
+    const mobileUpdatesFilter     = document.getElementById('mobile-updates-filter');
+    const mobileUpdatesToggleBtn  = document.getElementById('mobile-updates-filter-toggle');
+    const updatesContainer        = document.getElementById('updates-container');
+    const mobileUpdatesContainer  = document.getElementById('mobile-updates-container');
+    const loadMoreBtn             = document.getElementById('load-more-btn');
+    const mobileLoadMoreBtn       = document.getElementById('mobile-load-more-btn');
+    const toTopBtn                = document.getElementById('to-top');
 
     const cardsData = [
       { title: 'Email Templates', slug: 'email-templates', description: 'Browse pre-built email templates.' },
@@ -273,7 +266,7 @@
           <p class="text-gray-600 flex-1">${card.description}</p>
           <button class="mt-4 text-indigo-600 font-medium hover:underline focus:outline-none">View ${card.title} →</button>
         `;
-        article.querySelector('h3').onclick = () => showContent(card.slug, card.title);
+        article.querySelector('h3').onclick    = () => showContent(card.slug, card.title);
         article.querySelector('button').onclick = () => showContent(card.slug, card.title);
         container.appendChild(article);
       });
@@ -284,22 +277,29 @@
       detailContainer.classList.remove('hidden');
       detailTitle.textContent = title;
       detailList.innerHTML = '<li class="animate-pulse"><span class="block h-4 bg-gray-200 rounded w-3/4 mb-2"></span></li>';
+
       if (slug === 'reports') {
         const imagePaths = [
           'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
           'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_amz.png'
         ];
         detailList.innerHTML = `
-<div class="prose max-w-none space-y-4">
-  <p><a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl" target="_blank" class="text-blue-600 hover:underline">WooParts eBay and Amazon Performance - 2025</a></p>
-  <div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
-    <div id="slider" class="flex transition-transform duration-300" style="transform: translateX(0%)">
-      ${imagePaths.map(path => `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report Image">`).join('')}
+  <div class="prose max-w-none space-y-4">
+    <p><a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
+          target="_blank"
+          class="text-blue-600 hover:underline">
+          WooParts eBay and Amazon Performance - 2025
+    </a></p>
+    <div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
+      <div id="slider" class="flex transition-transform duration-300" style="transform: translateX(0%)">
+        ${imagePaths.map(path => `<img src="${path}" loading="lazy"
+                                     class="w-full flex-shrink-0 object-contain"
+                                     alt="Report Image">`).join('')}
+      </div>
+      <button id="prevSlide" class="absolute top-1/2 left-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">&lsaquo;</button>
+      <button id="nextSlide" class="absolute top-1/2 right-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">&rsaquo;</button>
     </div>
-    <button id="prevSlide" class="absolute top-1/2 left-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">&lsaquo;</button>
-    <button id="nextSlide" class="absolute top-1/2 right-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">&rsaquo;</button>
-  </div>
-</div>`;
+  </div>`;
         let currentSlide = 0, sliderEl = document.getElementById('slider'), totalSlides = imagePaths.length;
         document.getElementById('prevSlide').onclick = () => {
           currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
@@ -319,7 +319,8 @@
             const btn = document.createElement('button');
             btn.className = 'text-indigo-600 hover:underline focus:outline-none';
             btn.textContent = item.name;
-            btn.onclick = () => openEmailOverlay(item.name, item.content);
+            // pass slug to overlay so we can show title
+            btn.onclick = () => openEmailOverlay(item.name, item.content, slug);
             li.appendChild(btn);
             detailList.appendChild(li);
           });
@@ -330,7 +331,8 @@
     }
 
     function trapFocus(e) {
-      const focusable = Array.from(overlayDialog.querySelectorAll('button, [href], input, textarea, [tabindex]:not([tabindex="-1"])')).filter(el => !el.disabled);
+      const focusable = Array.from(overlayDialog.querySelectorAll('button, [href], input, textarea, [tabindex]:not([tabindex="-1"])'))
+                             .filter(el => !el.disabled);
       if (!overlay.classList.contains('hidden') && e.key === 'Tab') {
         const idx = focusable.indexOf(document.activeElement);
         if (e.shiftKey && idx === 0) {
@@ -345,10 +347,15 @@
     document.addEventListener('keydown', trapFocus);
 
     let lastFocused;
-    function openEmailOverlay(name, html) {
+    function openEmailOverlay(name, htmlContent, slug) {
       lastFocused = document.activeElement;
       overlayHeader.textContent = name;
-      overlayBody.innerHTML = `<div class="prose max-w-none space-y-4">${html}</div>`;
+      // find card title from slug
+      const card = cardsData.find(c => c.slug === slug);
+      const titleHtml = card
+        ? `<h3 class="text-lg font-semibold mb-2">${card.title}</h3>`
+        : '';
+      overlayBody.innerHTML = titleHtml + `<div class="prose max-w-none space-y-4">${htmlContent}</div>`;
       overlay.classList.remove('hidden');
       overlayDialog.classList.add('opacity-100', 'scale-100');
       copyBtn.classList.remove('hidden');
@@ -383,13 +390,13 @@
 
     function iconFor(type) {
       const icons = {
-        'updates': '🔔',
+        updates: '🔔',
         'email-templates': '✉️',
-        'processes': '🛠️',
-        'reports': '📊',
-        'links': '🔗',
-        'tutorials': '🎥',
-        'directory': '📇'
+        processes: '🛠️',
+        reports: '📊',
+        links: '🔗',
+        tutorials: '🎥',
+        directory: '📇'
       };
       return icons[type] || '🆕';
     }
@@ -425,7 +432,8 @@
             if (!seenNotifIds.has(item.id)) {
               const li = document.createElement('li');
               li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between cursor-pointer';
-              li.innerHTML = `<span>${iconFor(src.type)} ${item.text}</span><time class="text-xs text-gray-500">${new Date(item.time).toLocaleTimeString()}</time>`;
+              li.innerHTML = `<span>${iconFor(src.type)} ${item.text}</span>
+                              <time class="text-xs text-gray-500">${new Date(item.time).toLocaleTimeString()}</time>`;
               notifListEl.prepend(li);
               seenNotifIds.add(item.id);
               const cnt = parseInt(notifCountEl.textContent) || 0;
@@ -500,7 +508,6 @@
     mobileUpdatesToggleBtn.onclick = () => {
       mobileUpdatesFilterContainer.classList.toggle('hidden');
     };
-
     if (updatesFilter) updatesFilter.addEventListener('input', debounce(renderUpdatesPanel, 200));
     if (mobileUpdatesFilter) mobileUpdatesFilter.addEventListener('input', debounce(renderUpdatesPanel, 200));
     loadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
@@ -543,7 +550,7 @@
         li.innerHTML = label;
         li.onclick = () => {
           if (r.item.isRoot) showContent(r.item.slug, r.item.name);
-          else openEmailOverlay(r.item.name, r.item.content);
+          else openEmailOverlay(r.item.name, r.item.content, r.item.slug);
           searchSuggestions.classList.add('hidden');
           searchInput.setAttribute('aria-expanded', 'false');
         };
