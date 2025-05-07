@@ -21,6 +21,12 @@
 </head>
 <body class="bg-gray-100 text-gray-800 antialiased flex flex-col min-h-screen">
 
+  <!-- Toast for new updates -->
+  <div id="update-toast" 
+       class="fixed bottom-4 right-4 bg-indigo-600 text-white px-4 py-2 rounded shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none">
+    🎉 You have new updates!
+  </div>
+
   <noscript>
     <div class="p-4 bg-yellow-100 text-yellow-800">
       JavaScript is required to use WooHub.
@@ -228,6 +234,18 @@
       localStorage.setItem('lastSeenUpdate', ts);
     }
 
+    // toast control
+    let initialUpdatesLoad = true;
+    function showUpdateToast() {
+      const toast = document.getElementById('update-toast');
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      toast.classList.add('opacity-100');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none');
+        toast.classList.remove('opacity-100');
+      }, 3000);
+    }
+
     // Element refs
     const container               = document.getElementById('card-container');
     const detailContainer         = document.getElementById('detail-container');
@@ -315,7 +333,6 @@
       detailList.innerHTML = '';
 
       if (slug === 'reports') {
-        // ... reports logic unchanged ...
         const imagePaths = [
           'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
           'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_amz.png'
@@ -323,7 +340,9 @@
         detailList.innerHTML = `
   <div class="prose max-w-none space-y-4">
     <p><a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
-          target="_blank" class="text-blue-600 hover:underline">WooParts eBay and Amazon Performance - 2025</a></p>
+          target="_blank" class="text-blue-600 hover:underline">
+          WooParts eBay and Amazon Performance - 2025
+    </a></p>
     <div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
       <div id="slider" class="flex transition-transform duration-300" style="transform: translateX(0%)">
         ${imagePaths.map(path => `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report Image">`).join('')}
@@ -557,23 +576,25 @@
               const a = document.createElement('a');
               a.href = u.link;
               a.className = 'block py-2 hover:underline';
-              if (i === 0 && isNew) {
+              // prepend "New " before date if first item and truly new on initial load
+              if (i === 0 && (initialUpdatesLoad && isNew)) {
                 const badge = document.createElement('span');
                 badge.textContent = 'New ';
                 badge.className = 'text-red-600 text-xs font-semibold';
                 a.appendChild(badge);
+                showUpdateToast();
               }
               a.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
               li.appendChild(a);
             } else {
-              if (i === 0 && isNew) {
+              if (i === 0 && (initialUpdatesLoad && isNew)) {
                 const badge = document.createElement('span');
                 badge.textContent = 'New ';
                 badge.className = 'text-red-600 text-xs font-semibold';
                 li.appendChild(badge);
+                showUpdateToast();
               }
-              const text = document.createTextNode(`${u.time}: ${u.text}`);
-              li.appendChild(text);
+              li.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
               li.className = 'py-2';
             }
             cn.appendChild(li);
@@ -581,9 +602,8 @@
         }
       });
 
-      if (isNew) {
-        setLastSeenUpdate(latestTime);
-      }
+      if (isNew) setLastSeenUpdate(latestTime);
+      initialUpdatesLoad = false;
     }
     setInterval(pollUpdatesPanel, 60000);
     pollUpdatesPanel();
