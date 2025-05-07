@@ -201,499 +201,512 @@
     </div>
   </footer>
 
-  <script>
-    // === persist “read” state across reloads ===
-    const badgeDataMap = {};
-    function getReadItems() {
-      try { return JSON.parse(localStorage.getItem('readItems') || '{}'); }
-      catch { return {}; }
+<script>
+  // === persist “read” state across reloads ===
+  const badgeDataMap = {};
+  function getReadItems() {
+    try { return JSON.parse(localStorage.getItem('readItems') || '{}'); }
+    catch { return {}; }
+  }
+  function saveReadItems(obj) {
+    localStorage.setItem('readItems', JSON.stringify(obj));
+  }
+  function markItemRead(slug, id) {
+    const read = getReadItems();
+    read[slug] = read[slug] || [];
+    if (!read[slug].includes(id)) {
+      read[slug].push(id);
+      saveReadItems(read);
     }
-    function saveReadItems(obj) {
-      localStorage.setItem('readItems', JSON.stringify(obj));
-    }
-    function markItemRead(slug, id) {
-      const read = getReadItems();
-      read[slug] = read[slug] || [];
-      if (!read[slug].includes(id)) {
-        read[slug].push(id);
-        saveReadItems(read);
-      }
-    }
-    function isItemRead(slug, id) {
-      const read = getReadItems();
-      return Array.isArray(read[slug]) && read[slug].includes(id);
-    }
-    function hasUnreadForSlug(slug) {
-      const ids = badgeDataMap[slug] || [];
-      return ids.some(id => !isItemRead(slug, id));
-    }
+  }
+  function isItemRead(slug, id) {
+    const read = getReadItems();
+    return Array.isArray(read[slug]) && read[slug].includes(id);
+  }
+  function hasUnreadForSlug(slug) {
+    const ids = badgeDataMap[slug] || [];
+    return ids.some(id => !isItemRead(slug, id));
+  }
 
-    // === persist “seen” state for notification bell ===
-    let seenNotifIds = new Set(JSON.parse(localStorage.getItem('seenNotifIds') || '[]'));
+  // === persist “seen” state for notification bell ===
+  let seenNotifIds = new Set(JSON.parse(localStorage.getItem('seenNotifIds') || '[]'));
 
-    // === persist “seen” state for Recent Updates ===
-    function getLastSeenUpdate() {
-      return localStorage.getItem('lastSeenUpdate');
-    }
-    function setLastSeenUpdate(ts) {
-      localStorage.setItem('lastSeenUpdate', ts);
-    }
+  // === persist “seen” state for Recent Updates ===
+  function getLastSeenUpdate() {
+    return localStorage.getItem('lastSeenUpdate');
+  }
+  function setLastSeenUpdate(ts) {
+    localStorage.setItem('lastSeenUpdate', ts);
+  }
 
-    // toast control
-    let initialUpdatesLoad = true;
-    // track whether the user has manually closed the toast
-    let toastClosed = false;
-
-    function showUpdateToast(message) {
-      if (toastClosed) return;              // do nothing if user already closed it
-      document.getElementById('update-toast-content').textContent = message;
-      const toast = document.getElementById('update-toast');
-      toast.classList.remove('opacity-0', 'pointer-events-none');
-      toast.classList.add('opacity-100');
-    }
-    document.getElementById('update-toast-close').onclick = () => {
-      toastClosed = true;                   // remember that user closed it
-      const toast = document.getElementById('update-toast');
-      toast.classList.add('opacity-0', 'pointer-events-none');
-    };
-
-    // Element refs
-    const container               = document.getElementById('card-container');
-    const detailContainer         = document.getElementById('detail-container');
-    const detailTitle             = document.getElementById('detail-title');
-    const detailList              = document.getElementById('detail-list');
-    const backBtn                 = document.getElementById('back-btn');
-    const overlay                 = document.getElementById('overlay');
-    const overlayDialog           = overlay.querySelector('[tabindex="-1"]');
-    const overlayClose            = document.getElementById('overlay-close');
-    const copyBtn                 = document.getElementById('copy-btn');
-    const overlayHeader           = document.getElementById('overlay-header');
-    const overlayBody             = document.getElementById('overlay-body');
-    const searchInput             = document.getElementById('search-input');
-    const searchSuggestions       = document.getElementById('search-suggestions');
-    const notifBtn                = document.getElementById('notification-btn');
-    const notifCountEl            = document.getElementById('notification-count');
-    const notifDropdown           = document.getElementById('notification-dropdown');
-    const notifListEl             = document.getElementById('notification-list');
-    const clearNotifsBtn          = document.getElementById('clear-notifications');
-    const updatesFilterContainer  = document.getElementById('updates-filter-container');
-    const updatesFilter           = document.getElementById('updates-filter');
-    const updatesToggleBtn        = document.getElementById('updates-filter-toggle');
-    const mobileUpdatesFilterContainer = document.getElementById('mobile-updates-filter-container');
-    const mobileUpdatesFilter     = document.getElementById('mobile-updates-filter');
-    const mobileUpdatesToggleBtn  = document.getElementById('mobile-updates-filter-toggle');
-    const updatesContainer        = document.getElementById('updates-container');
-    const mobileUpdatesContainer  = document.getElementById('mobile-updates-container');
-    const loadMoreBtn             = document.getElementById('load-more-btn');
-    const mobileLoadMoreBtn       = document.getElementById('mobile-load-more-btn');
-    const toTopBtn                = document.getElementById('to-top');
-
-    // Card data
-    const cardsData = [
-      { title: 'Email Templates', slug: 'email-templates', description: 'Browse pre-built email templates.' },
-      { title: 'Processes',      slug: 'processes',      description: 'Step-by-step how-to guides and workflows.' },
-      { title: 'Reports',        slug: 'reports',        description: 'Access performance and usage reports.' },
-      { title: 'Links',          slug: 'links',          description: 'Quick access to essential resources.' },
-      { title: 'Tutorials',      slug: 'tutorials',      description: 'Video lessons to guide you through every step.' },
-      { title: 'Directory',      slug: 'directory',      description: 'Key people to contact.' }
-    ];
-
-    // Caching & debounce
-    const contentCache = {};
-    function debounce(fn, ms) {
-      let t;
-      return (...args) => {
-        clearTimeout(t);
-        t = setTimeout(() => fn(...args), ms);
-      };
-    }
-
-    async function fetchItems(slug) {
-      if (contentCache[slug]) return contentCache[slug];
-      const res = await fetch(`data/${slug}.json`);
-      if (!res.ok) throw new Error('Failed to load data');
-      const data = await res.json();
-      contentCache[slug] = data;
-      return data;
-    }
-
-    // Render dashboard cards with unread badges
-    function renderCards() {
-      container.innerHTML = '';
-      cardsData.forEach(card => {
-        const article = document.createElement('article');
-        article.dataset.slug = card.slug;
-        article.className = 'relative bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6 flex flex-col';
-        article.innerHTML = `
-          <span class="badge absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full hidden">new</span>
-          <h3 tabindex="0" class="text-xl font-semibold mb-2 hover:text-indigo-600 cursor-pointer">${card.title}</h3>
-          <p class="text-gray-600 flex-1">${card.description}</p>
-          <button class="mt-4 text-indigo-600 font-medium hover:underline focus:outline-none">View ${card.title} →</button>
-        `;
-        article.querySelector('h3').onclick    = () => showContent(card.slug, card.title);
-        article.querySelector('button').onclick = () => showContent(card.slug, card.title);
-        container.appendChild(article);
-      });
-    }
-
-    // Show content for a card…
-    async function showContent(slug, title) {
-      container.classList.add('hidden');
-      detailContainer.classList.remove('hidden');
-      detailTitle.textContent = title;
-      detailList.innerHTML = '';
-
-      if (slug === 'reports') {
-        const imagePaths = [
-          'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
-          'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_amz.png'
-        ];
-        detailList.innerHTML = `
-  <div class="prose max-w-none space-y-4">
-    <p><a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
-          target="_blank"
-          class="text-blue-600 hover:underline">WooParts eBay and Amazon Performance - 2025</a></p>
-    <div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
-      <div id="slider" class="flex transition-transform duration-300" style="transform: translateX(0%)">
-        ${imagePaths.map(path => `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report Image">`).join('')}
-      </div>
-      <button id="prevSlide" class="absolute top-1/2 left-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">&lsaquo;</button>
-      <button id="nextSlide" class="absolute top-1/2 right-0 transform -translate-y-1/2px-3 py-1 bg-white text-gray-700 shadow-md">&rsaquo;</button>
-    </div>
-  </div>`;
-        let currentSlide = 0,
-            sliderEl     = document.getElementById('slider'),
-            totalSlides  = imagePaths.length;
-        document.getElementById('prevSlide').onclick = () => {
-          currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-          sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
-        };
-        document.getElementById('nextSlide').onclick = () => {
-          currentSlide = (currentSlide + 1) % totalSlides;
-          sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
-        };
-      } else {
-        try {
-          const data   = await fetchItems(slug);
-          const groups = Array.isArray(data) ? { '': data } : data;
-          Object.entries(groups).forEach(([category, items]) => {
-            if (category) {
-              const hdr = document.createElement('h3');
-              hdr.className = 'text-lg font-semibold mt-4';
-              hdr.textContent = category;
-              detailList.appendChild(hdr);
-            }
-            items.forEach(item => {
-              const li  = document.createElement('li');
-              const btn = document.createElement('button');
-              btn.className = 'flex items-center text-indigo-600 hover:underline focus:outline-none';
-              btn.textContent = item.name;
-              const id = item.id || item.name;
-              const dot = document.createElement('span');
-              dot.className = 'ml-2 inline-block w-2 h-2 bg-red-600 rounded-full';
-              if (isItemRead(slug, id)) dot.classList.add('hidden');
-              btn.appendChild(dot);
-              btn.onclick = () => {
-                openEmailOverlay(item.name, item.content, slug);
-                markItemRead(slug, id);
-                dot.classList.add('hidden');
-                if (!hasUnreadForSlug(slug)) {
-                  const badge = document.querySelector(`[data-slug="${slug}"] .badge`);
-                  if (badge) badge.classList.add('hidden');
-                }
-              };
-              li.appendChild(btn);
-              detailList.appendChild(li);
-            });
-          });
-        } catch {
-          detailList.innerHTML = `<li class="text-red-500">This page is under construction – check back soon!</li>`;
-        }
-      }
-    }
-
-    // Trap focus in modal for accessibility
-    function trapFocus(e) {
-      const focusable = Array.from(overlayDialog.querySelectorAll('button, [href], input, textarea, [tabindex]:not([tabindex="-1"])'))
-                             .filter(el => !el.disabled);
-      if (!overlay.classList.contains('hidden') && e.key === 'Tab') {
-        const idx = focusable.indexOf(document.activeElement);
-        if (e.shiftKey && idx === 0) {
-          focusable[focusable.length - 1].focus();
-          e.preventDefault();
-        } else if (!e.shiftKey && idx === focusable.length - 1) {
-          focusable[0].focus();
-          e.preventDefault();
-        }
-      }
-    }
-    document.addEventListener('keydown', trapFocus);
-
-    // Overlay open/close
-    let lastFocused;
-    function openEmailOverlay(name, htmlContent, slug) {
-      lastFocused = document.activeElement;
-      overlayHeader.textContent = name;
-      const card     = cardsData.find(c => c.slug === slug);
-      const titleHtml = card ? `<h3 class="text-lg font-semibold mb-2">${card.title}</h3>` : '';
-      overlayBody.innerHTML = titleHtml + `<div class="prose max-w-none space-y-4">${htmlContent}</div>`;
-      overlay.classList.remove('hidden');
-      overlayDialog.classList.add('opacity-100','scale-100');
-      copyBtn.classList.remove('hidden');
-      overlayClose.focus();
-    }
-    overlayClose.onclick = () => {
-      overlay.classList.add('hidden');
-      overlayDialog.classList.remove('opacity-100','scale-100');
-      lastFocused?.focus();
-    };
-    overlay.onclick = e => {
-      if (e.target === overlay) {
-        overlayClose.click();
-      }
-    };
-    copyBtn.onclick = () => {
-      navigator.clipboard.writeText(overlayBody.innerText).then(() => {
-        copyBtn.textContent = 'Copied!';
-        setTimeout(() => (copyBtn.textContent = 'Copy'), 2000);
-      });
-    };
-
-    // Back to grid
-    backBtn.onclick = () => {
-      detailContainer.classList.add('hidden');
-      container.classList.remove('hidden');
-    };
-
-    // Jump to top button
-    window.addEventListener('scroll', () => {
-      toTopBtn.classList.toggle('hidden', window.scrollY < 300);
+  // toast control
+  let initialUpdatesLoad = true;
+  // track whether the user has manually closed the toast
+  let toastClosed = false;
+  // sync each card badge to unread items
+  function updateCardBadges() {
+    cardsData.forEach(c => {
+      const badge = document.querySelector(`[data-slug="${c.slug}"] .badge`);
+      if (!badge) return;
+      badge.classList.toggle('hidden', !hasUnreadForSlug(c.slug));
     });
-    toTopBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
-    // Helper for notification icons
-    function iconFor(type) {
-      return {
-        updates: '🔔',
-        'email-templates': '✉️',
-        processes: '🛠️',
-        reports: '📊',
-        links: '🔗',
-        tutorials: '🎥',
-        directory: '📇'
-      }[type] || '🆕';
-    }
+  function showUpdateToast(message) {
+    if (toastClosed) return;
+    document.getElementById('update-toast-content').textContent = message;
+    const toast = document.getElementById('update-toast');
+    toast.classList.remove('opacity-0', 'pointer-events-none');
+    toast.classList.add('opacity-100');
+  }
+  document.getElementById('update-toast-close').onclick = () => {
+    toastClosed = true;
+    const toast = document.getElementById('update-toast');
+    toast.classList.add('opacity-0', 'pointer-events-none');
+  };
 
-    // Poll notifications and flag card badges
-    async function pollNotifications() {
-      const sources = [
-        { url: 'data/updates.json', type: 'updates', parser: data => data.map(u => ({ id: u.id || u.timestamp + u.text, text: u.text, time: u.timestamp })) }
+  // Element refs
+  const container               = document.getElementById('card-container');
+  const detailContainer         = document.getElementById('detail-container');
+  const detailTitle             = document.getElementById('detail-title');
+  const detailList              = document.getElementById('detail-list');
+  const backBtn                 = document.getElementById('back-btn');
+  const overlay                 = document.getElementById('overlay');
+  const overlayDialog           = overlay.querySelector('[tabindex="-1"]');
+  const overlayClose            = document.getElementById('overlay-close');
+  const copyBtn                 = document.getElementById('copy-btn');
+  const overlayHeader           = document.getElementById('overlay-header');
+  const overlayBody             = document.getElementById('overlay-body');
+  const searchInput             = document.getElementById('search-input');
+  const searchSuggestions       = document.getElementById('search-suggestions');
+  const notifBtn                = document.getElementById('notification-btn');
+  const notifCountEl            = document.getElementById('notification-count');
+  const notifDropdown           = document.getElementById('notification-dropdown');
+  const notifListEl             = document.getElementById('notification-list');
+  const clearNotifsBtn          = document.getElementById('clear-notifications');
+  const updatesFilterContainer  = document.getElementById('updates-filter-container');
+  const updatesFilter           = document.getElementById('updates-filter');
+  const updatesToggleBtn        = document.getElementById('updates-filter-toggle');
+  const mobileUpdatesFilterContainer = document.getElementById('mobile-updates-filter-container');
+  const mobileUpdatesFilter     = document.getElementById('mobile-updates-filter');
+  const mobileUpdatesToggleBtn  = document.getElementById('mobile-updates-filter-toggle');
+  const updatesContainer        = document.getElementById('updates-container');
+  const mobileUpdatesContainer  = document.getElementById('mobile-updates-container');
+  const loadMoreBtn             = document.getElementById('load-more-btn');
+  const mobileLoadMoreBtn       = document.getElementById('mobile-load-more-btn');
+  const toTopBtn                = document.getElementById('to-top');
+
+  // Card data
+  const cardsData = [
+    { title: 'Email Templates', slug: 'email-templates', description: 'Browse pre-built email templates.' },
+    { title: 'Processes',      slug: 'processes',      description: 'Step-by-step how-to guides and workflows.' },
+    { title: 'Reports',        slug: 'reports',        description: 'Access performance and usage reports.' },
+    { title: 'Links',          slug: 'links',          description: 'Quick access to essential resources.' },
+    { title: 'Tutorials',      slug: 'tutorials',      description: 'Video lessons to guide you through every step.' },
+    { title: 'Directory',      slug: 'directory',      description: 'Key people to contact.' }
+  ];
+
+  // Caching & debounce
+  const contentCache = {};
+  function debounce(fn, ms) {
+    let t;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(...args), ms);
+    };
+  }
+
+  async function fetchItems(slug) {
+    if (contentCache[slug]) return contentCache[slug];
+    const res = await fetch(`data/${slug}.json`);
+    if (!res.ok) throw new Error('Failed to load data');
+    const data = await res.json();
+    contentCache[slug] = data;
+    return data;
+  }
+
+  // Render dashboard cards with unread badges
+  function renderCards() {
+    container.innerHTML = '';
+    cardsData.forEach(card => {
+      const article = document.createElement('article');
+      article.dataset.slug = card.slug;
+      article.className = 'relative bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6 flex flex-col';
+      article.innerHTML = `
+        <span class="badge absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full hidden">new</span>
+        <h3 tabindex="0" class="text-xl font-semibold mb-2 hover:text-indigo-600 cursor-pointer">${card.title}</h3>
+        <p class="text-gray-600 flex-1">${card.description}</p>
+        <button class="mt-4 text-indigo-600 font-medium hover:underline focus:outline-none">View ${card.title} →</button>
+      `;
+      article.querySelector('h3').onclick    = () => showContent(card.slug, card.title);
+      article.querySelector('button').onclick = () => showContent(card.slug, card.title);
+      container.appendChild(article);
+    });
+    // sync badges on initial render
+    updateCardBadges();
+  }
+
+  // Show content for a card…
+  async function showContent(slug, title) {
+    container.classList.add('hidden');
+    detailContainer.classList.remove('hidden');
+    detailTitle.textContent = title;
+    detailList.innerHTML = '';
+
+    if (slug === 'reports') {
+      const imagePaths = [
+        'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
+        'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_amz.png'
       ];
-      cardsData.forEach(c => {
-        if (c.slug === 'reports') return;
-        sources.push({
-          url: `data/${c.slug}.json`,
-          type: c.slug,
-          parser: data => {
-            const arr = Array.isArray(data) ? data : Object.values(data).flat();
-            return arr.map(i => ({
-              id: `${c.slug}|${i.name}`,
-              text: `New ${c.title}: ${i.name}`,
-              time: new Date().toISOString()
-            }));
-          }
-        });
-      });
-
-      for (const src of sources) {
-        try {
-          const res = await fetch(src.url);
-          if (!res.ok) continue;
-          const json = await res.json();
-          const items = src.parser(json);
-          items.forEach(item => {
-            if (!seenNotifIds.has(item.id)) {
-              badgeDataMap[src.type] = badgeDataMap[src.type] || [];
-              badgeDataMap[src.type].push(item.id);
-
-              const li = document.createElement('li');
-              li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between cursor-pointer';
-              li.innerHTML = `<span>${iconFor(src.type)} ${item.text}</span>
-                              <time class="text-xs text-gray-500">${new Date(item.time).toLocaleTimeString()}</time>`;
-              notifListEl.prepend(li);
-              notifCountEl.textContent = String((+notifCountEl.textContent || 0) + 1);
-
-              // persist this ID so it won’t reappear after reload
-              seenNotifIds.add(item.id);
-              localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
-
-              if (src.type !== 'updates' && !isItemRead(src.type, item.id)) {
-                const badgeEl = document.querySelector(`[data-slug="${src.type}"] .badge`);
-                if (badgeEl) badgeEl.classList.remove('hidden');
-              }
-            }
-          });
-        } catch (e) {
-          console.error('Notification poll error for', src.url, e);
-        }
-      }
-    }
-    setInterval(pollNotifications, 60000);
-    pollNotifications();
-
-    notifBtn.onclick = () => {
-      const open = notifDropdown.classList.toggle('hidden');
-      notifBtn.setAttribute('aria-expanded', String(!open));
-      if (!open) notifCountEl.textContent = '0';
-    };
-    clearNotifsBtn.onclick = () => {
-      notifListEl.innerHTML = '';
-      seenNotifIds.clear();
-      localStorage.removeItem('seenNotifIds');
-      notifCountEl.textContent = '0';
-    };
-
-    // Recent updates panel
-    let allUpdates = [], displayCount = 5;
-    async function pollUpdatesPanel() {
+      detailList.innerHTML = `
+<div class="prose max-w-none space-y-4">
+  <p><a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
+        target="_blank"
+        class="text-blue-600 hover:underline">WooParts eBay and Amazon Performance - 2025</a></p>
+  <div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
+    <div id="slider" class="flex transition-transform duration-300" style="transform: translateX(0%)">
+      ${imagePaths.map(path => `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report Image">`).join('')}
+    </div>
+    <button id="prevSlide" class="absolute top-1/2 left-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">&lsaquo;</button>
+    <button id="nextSlide" class="absolute top-1/2 right-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">&rsaquo;</button>
+  </div>
+</div>`;
+      let currentSlide = 0,
+          sliderEl     = document.getElementById('slider'),
+          totalSlides  = imagePaths.length;
+      document.getElementById('prevSlide').onclick = () => {
+        currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+        sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
+      };
+      document.getElementById('nextSlide').onclick = () => {
+        currentSlide = (currentSlide + 1) % totalSlides;
+        sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
+      };
+    } else {
       try {
-        const res = await fetch('data/updates.json');
-        if (!res.ok) return;
-        const json = await res.json();
-        allUpdates = json.map(u => ({ text: u.text, time: u.timestamp, link: u.link }));
-        renderUpdatesPanel();
+        const data   = await fetchItems(slug);
+        const groups = Array.isArray(data) ? { '': data } : data;
+        Object.entries(groups).forEach(([category, items]) => {
+          if (category) {
+            const hdr = document.createElement('h3');
+            hdr.className = 'text-lg font-semibold mt-4';
+            hdr.textContent = category;
+            detailList.appendChild(hdr);
+          }
+          items.forEach(item => {
+            const li  = document.createElement('li');
+            const btn = document.createElement('button');
+            btn.className = 'flex items-center text-indigo-600 hover:underline focus:outline-none';
+            btn.textContent = item.name;
+            const id = item.id || item.name;
+            const dot = document.createElement('span');
+            dot.className = 'ml-2 inline-block w-2 h-2 bg-red-600 rounded-full';
+            if (isItemRead(slug, id)) dot.classList.add('hidden');
+            btn.appendChild(dot);
+            btn.onclick = () => {
+              openEmailOverlay(item.name, item.content, slug);
+              markItemRead(slug, id);
+              dot.classList.add('hidden');
+              if (!hasUnreadForSlug(slug)) {
+                const badge = document.querySelector(`[data-slug="${slug}"] .badge`);
+                if (badge) badge.classList.add('hidden');
+              }
+            };
+            li.appendChild(btn);
+            detailList.appendChild(li);
+          });
+        });
       } catch {
-        console.error('Updates panel error');
+        detailList.innerHTML = `<li class="text-red-500">This page is under construction – check back soon!</li>`;
       }
     }
-    function renderUpdatesPanel() {
-      const filterVal = (updatesFilter?.value || mobileUpdatesFilter?.value || '').toLowerCase();
-      const filtered = allUpdates
-        .filter(u => u.text.toLowerCase().includes(filterVal))
-        .sort((a, b) => new Date(b.time) - new Date(a.time));
-      const toShow = filtered.slice(0, displayCount);
+  }
 
-      const lastSeen = getLastSeenUpdate();
-      const latestTime = toShow[0]?.time;
-      const isNew = latestTime && latestTime !== lastSeen;
+  // Trap focus in modal for accessibility
+  function trapFocus(e) {
+    const focusable = Array.from(overlayDialog.querySelectorAll('button, [href], input, textarea, [tabindex]:not([tabindex="-1"])'))
+                           .filter(el => !el.disabled);
+    if (!overlay.classList.contains('hidden') && e.key === 'Tab') {
+      const idx = focusable.indexOf(document.activeElement);
+      if (e.shiftKey && idx === 0) {
+        focusable[focusable.length - 1].focus();
+        e.preventDefault();
+      } else if (!e.shiftKey && idx === focusable.length - 1) {
+        focusable[0].focus();
+        e.preventDefault();
+      }
+    }
+  }
+  document.addEventListener('keydown', trapFocus);
 
-      [updatesContainer, mobileUpdatesContainer].forEach(cn => {
-        cn.innerHTML = '';
-        if (!toShow.length) {
-          const li = document.createElement('li');
-          li.textContent = 'No updates available.';  
-          li.className = 'py-2 text-gray-500';
-          cn.appendChild(li);
-        } else {
-          toShow.forEach((u, i) => {
-            const li = document.createElement('li');
-            if (u.link) {
-              const a = document.createElement('a');
-              a.href = u.link;
-              a.className = 'block py-2 hover:underline';
-              if (i === 0 && initialUpdatesLoad) {
-                const badge = document.createElement('span');
-                badge.textContent = 'New ';
-                badge.className = 'text-red-600 text-xs font-semibold';
-                a.appendChild(badge);
-                showUpdateToast(u.text);
-              }
-              a.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
-              li.appendChild(a);
-            } else {
-              if (i === 0 && initialUpdatesLoad) {
-                const badge = document.createElement('span');
-                badge.textContent = 'New ';
-                badge.className = 'text-red-600 text-xs font-semibold';
-                li.appendChild(badge);
-                showUpdateToast(u.text);
-              }
-              li.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
-              li.className = 'py-2';
-            }
-            cn.appendChild(li);
-          });
+  // Overlay open/close
+  let lastFocused;
+  function openEmailOverlay(name, htmlContent, slug) {
+    lastFocused = document.activeElement;
+    overlayHeader.textContent = name;
+    const card     = cardsData.find(c => c.slug === slug);
+    const titleHtml = card ? `<h3 class="text-lg font-semibold mb-2">${card.title}</h3>` : '';
+    overlayBody.innerHTML = titleHtml + `<div class="prose max-w-none space-y-4">${htmlContent}</div>`;
+    overlay.classList.remove('hidden');
+    overlayDialog.classList.add('opacity-100','scale-100');
+    copyBtn.classList.remove('hidden');
+    overlayClose.focus();
+  }
+  overlayClose.onclick = () => {
+    overlay.classList.add('hidden');
+    overlayDialog.classList.remove('opacity-100','scale-100');
+    lastFocused?.focus();
+  };
+  overlay.onclick = e => {
+    if (e.target === overlay) {
+      overlayClose.click();
+    }
+  };
+  copyBtn.onclick = () => {
+    navigator.clipboard.writeText(overlayBody.innerText).then(() => {
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => (copyBtn.textContent = 'Copy'), 2000);
+    });
+  };
+
+  // Back to grid
+  backBtn.onclick = () => {
+    detailContainer.classList.add('hidden');
+    container.classList.remove('hidden');
+  };
+
+  // Jump to top button
+  window.addEventListener('scroll', () => {
+    toTopBtn.classList.toggle('hidden', window.scrollY < 300);
+  });
+  toTopBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Helper for notification icons
+  function iconFor(type) {
+    return {
+      updates: '🔔',
+      'email-templates': '✉️',
+      processes: '🛠️',
+      reports: '📊',
+      links: '🔗',
+      tutorials: '🎥',
+      directory: '📇'
+    }[type] || '🆕';
+  }
+
+  // Poll notifications and flag card badges
+  async function pollNotifications() {
+    const sources = [
+      { url: 'data/updates.json', type: 'updates', parser: data => data.map(u => ({ id: u.id || u.timestamp + u.text, text: u.text, time: u.timestamp })) }
+    ];
+    cardsData.forEach(c => {
+      if (c.slug === 'reports') return;
+      sources.push({
+        url: `data/${c.slug}.json`,
+        type: c.slug,
+        parser: data => {
+          const arr = Array.isArray(data) ? data : Object.values(data).flat();
+          return arr.map(i => ({
+            id: `${c.slug}|${i.name}`,
+            text: `New ${c.title}: ${i.name}`,
+            time: new Date().toISOString()
+          }));
         }
       });
+    });
 
-      if (isNew) setLastSeenUpdate(latestTime);
-      initialUpdatesLoad = false;
-    }
-    setInterval(pollUpdatesPanel, 60000);
-    pollUpdatesPanel();
+    for (const src of sources) {
+      try {
+        const res = await fetch(src.url);
+        if (!res.ok) continue;
+        const json = await res.json();
+        const items = src.parser(json);
+        items.forEach(item => {
+          if (!seenNotifIds.has(item.id)) {
+            badgeDataMap[src.type] = badgeDataMap[src.type] || [];
+            badgeDataMap[src.type].push(item.id);
 
-    updatesToggleBtn.onclick = () => updatesFilterContainer.classList.toggle('hidden');
-    mobileUpdatesToggleBtn.onclick = () => mobileUpdatesFilterContainer.classList.toggle('hidden');
-    if (updatesFilter) updatesFilter.addEventListener('input', debounce(renderUpdatesPanel, 200));
-    if (mobileUpdatesFilter) mobileUpdatesFilter.addEventListener('input', debounce(renderUpdatesPanel, 200));
-    loadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
-    mobileLoadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
+            const li = document.createElement('li');
+            li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between cursor-pointer';
+            li.innerHTML = `<span>${iconFor(src.type)} ${item.text}</span>
+                            <time class="text-xs text-gray-500">${new Date(item.time).toLocaleTimeString()}</time>`;
+            notifListEl.prepend(li);
+            notifCountEl.textContent = String((+notifCountEl.textContent || 0) + 1);
 
-    // Fuzzy search
-    let fuse;
-    async function buildSearchIndex() {
-      const items = cardsData.map(c => ({ name: c.title, content: c.description, slug: c.slug, isRoot: true }));
-      for (const c of cardsData) {
-        if (c.slug === 'reports') continue;
-        try {
-          const data = await fetchItems(c.slug);
-          const arr = Array.isArray(data) ? data : Object.values(data).flat();
-          arr.forEach(i => items.push({ name: i.name, content: i.content, slug: c.slug, isRoot: false }));
-        } catch {}
-      }
-      fuse = new Fuse(items, { keys: ['name','content'], includeMatches: true, threshold: 0.4 });
-    }
-    function renderSuggestions(results) {
-      searchSuggestions.innerHTML = '';
-      if (!results.length) {
-        searchSuggestions.innerHTML = '<li class="px-4 py-2 text-gray-500">No results</li>';
-      } else {
-        results.forEach(r => {
-          let label = r.item.name;
-          const match = r.matches.find(m=>m.key==='name');
-          if (match) {
-            let h='', last=0;
-            match.indices.forEach(([s,e])=>{
-              h+=label.slice(last,s)+`<mark>${label.slice(s,e+1)}</mark>`;
-              last=e+1;
-            });
-            h+=label.slice(last);
-            label=h;
+            // persist this ID so it won’t reappear after reload
+            seenNotifIds.add(item.id);
+            localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
+
+            if (src.type !== 'updates' && !isItemRead(src.type, item.id)) {
+              const badgeEl = document.querySelector(`[data-slug="${src.type}"] .badge`);
+              if (badgeEl) badgeEl.classList.remove('hidden');
+            }
           }
+        });
+      } catch (e) {
+        console.error('Notification poll error for', src.url, e);
+      }
+    }
+
+    // re-sync badges when new notifications arrive
+    updateCardBadges();
+  }
+  setInterval(pollNotifications, 60000);
+  pollNotifications();
+
+  notifBtn.onclick = () => {
+    const open = notifDropdown.classList.toggle('hidden');
+    notifBtn.setAttribute('aria-expanded', String(!open));
+    if (!open) notifCountEl.textContent = '0';
+  };
+  clearNotifsBtn.onclick = () => {
+    notifListEl.innerHTML = '';
+    seenNotifIds.clear();
+    localStorage.removeItem('seenNotifIds');
+    notifCountEl.textContent = '0';
+  };
+
+  // Recent updates panel
+  let allUpdates = [], displayCount = 5;
+  async function pollUpdatesPanel() {
+    try {
+      const res = await fetch('data/updates.json');
+      if (!res.ok) return;
+      const json = await res.json();
+      allUpdates = json.map(u => ({ text: u.text, time: u.timestamp, link: u.link }));
+      renderUpdatesPanel();
+    } catch {
+      console.error('Updates panel error');
+    }
+  }
+  function renderUpdatesPanel() {
+    const filterVal = (updatesFilter?.value || mobileUpdatesFilter?.value || '').toLowerCase();
+    const filtered = allUpdates
+      .filter(u => u.text.toLowerCase().includes(filterVal))
+      .sort((a, b) => new Date(b.time) - new Date(a.time));
+    const toShow = filtered.slice(0, displayCount);
+
+    const lastSeen = getLastSeenUpdate();
+    const latestTime = toShow[0]?.time;
+    const isNew = latestTime && latestTime !== lastSeen;
+
+    [updatesContainer, mobileUpdatesContainer].forEach(cn => {
+      cn.innerHTML = '';
+      if (!toShow.length) {
+        const li = document.createElement('li');
+        li.textContent = 'No updates available.';
+        li.className = 'py-2 text-gray-500';
+        cn.appendChild(li);
+      } else {
+        toShow.forEach((u, i) => {
           const li = document.createElement('li');
-          li.role='option';
-          li.className='px-4 py-2 hover:bg-gray-100 cursor-pointer';
-          li.innerHTML=label;
-          li.onclick=() => {
-            if(r.item.isRoot) showContent(r.item.slug, r.item.name);
-            else openEmailOverlay(r.item.name, r.item.content, r.item.slug);
-            searchSuggestions.classList.add('hidden');
-            searchInput.setAttribute('aria-expanded','false');
-          };
-          searchSuggestions.appendChild(li);
+          if (u.link) {
+            const a = document.createElement('a');
+            a.href = u.link;
+            a.className = 'block py-2 hover:underline';
+            if (i === 0 && initialUpdatesLoad) {
+              const badge = document.createElement('span');
+              badge.textContent = 'New ';
+              badge.className = 'text-red-600 text-xs font-semibold';
+              a.appendChild(badge);
+              showUpdateToast(u.text);
+            }
+            a.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
+            li.appendChild(a);
+          } else {
+            if (i === 0 && initialUpdatesLoad) {
+              const badge = document.createElement('span');
+              badge.textContent = 'New ';
+              badge.className = 'text-red-600 text-xs font-semibold';
+              li.appendChild(badge);
+              showUpdateToast(u.text);
+            }
+            li.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
+            li.className = 'py-2';
+          }
+          cn.appendChild(li);
         });
       }
-    }
-    const handleSearch = debounce(async e => {
-      const q=e.target.value.trim();
-      if(!q) return searchSuggestions.classList.add('hidden');
-      if(!fuse) await buildSearchIndex();
-      renderSuggestions(fuse.search(q));
-      searchSuggestions.classList.remove('hidden');
-      searchInput.setAttribute('aria-expanded','true');
-    }, 250);
-    searchInput.addEventListener('input', handleSearch);
-    document.addEventListener('keydown', e => {
-      if (e.key==='/' && document.activeElement!==searchInput) {
-        e.preventDefault();
-        searchInput.focus();
-      }
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
-      renderCards();
-      buildSearchIndex();
-    });
-  </script>
+    if (isNew) setLastSeenUpdate(latestTime);
+    initialUpdatesLoad = false;
+  }
+  setInterval(pollUpdatesPanel, 60000);
+  pollUpdatesPanel();
+
+  updatesToggleBtn.onclick = () => updatesFilterContainer.classList.toggle('hidden');
+  mobileUpdatesToggleBtn.onclick = () => mobileUpdatesFilterContainer.classList.toggle('hidden');
+  if (updatesFilter) updatesFilter.addEventListener('input', debounce(renderUpdatesPanel, 200));
+  if (mobileUpdatesFilter) mobileUpdatesFilter.addEventListener('input', debounce(renderUpdatesPanel, 200));
+  loadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
+  mobileLoadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
+
+  // Fuzzy search
+  let fuse;
+  async function buildSearchIndex() {
+    const items = cardsData.map(c => ({ name: c.title, content: c.description, slug: c.slug, isRoot: true }));
+    for (const c of cardsData) {
+      if (c.slug === 'reports') continue;
+      try {
+        const data = await fetchItems(c.slug);
+        const arr = Array.isArray(data) ? data : Object.values(data).flat();
+        arr.forEach(i => items.push({ name: i.name, content: i.content, slug: c.slug, isRoot: false }));
+      } catch {}
+    }
+    fuse = new Fuse(items, { keys: ['name','content'], includeMatches: true, threshold: 0.4 });
+  }
+  function renderSuggestions(results) {
+    searchSuggestions.innerHTML = '';
+    if (!results.length) {
+      searchSuggestions.innerHTML = '<li class="px-4 py-2 text-gray-500">No results</li>';
+    } else {
+      results.forEach(r => {
+        let label = r.item.name;
+        const match = r.matches.find(m=>m.key==='name');
+        if (match) {
+          let h='', last=0;
+          match.indices.forEach(([s,e])=>{
+            h+=label.slice(last,s)+`<mark>${label.slice(s,e+1)}</mark>`;
+            last=e+1;
+          });
+          h+=label.slice(last);
+          label=h;
+        }
+        const li = document.createElement('li');
+        li.role='option';
+        li.className='px-4 py-2 hover:bg-gray-100.cursor-pointer';
+        li.innerHTML=label;
+        li.onclick=() => {
+          if(r.item.isRoot) showContent(r.item.slug, r.item.name);
+          else openEmailOverlay(r.item.name, r.item.content, r.item.slug);
+          searchSuggestions.classList.add('hidden');
+          searchInput.setAttribute('aria-expanded','false');
+        };
+        searchSuggestions.appendChild(li);
+      });
+    }
+  }
+  const handleSearch = debounce(async e => {
+    const q=e.target.value.trim();
+    if(!q) return searchSuggestions.classList.add('hidden');
+    if(!fuse) await buildSearchIndex();
+    renderSuggestions(fuse.search(q));
+    searchSuggestions.classList.remove('hidden');
+    searchInput.setAttribute('aria-expanded','true');
+  }, 250);
+  searchInput.addEventListener('input', handleSearch);
+  document.addEventListener('keydown', e => {
+    if (e.key==='/' && document.activeElement!==searchInput) {
+      e.preventDefault();
+      searchInput.focus();
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    renderCards();
+    buildSearchIndex();
+  });
+</script>
 </body>
 </html>
