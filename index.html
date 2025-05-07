@@ -241,13 +241,18 @@
 
     // toast control
     let initialUpdatesLoad = true;
+    // track whether the user has manually closed the toast
+    let toastClosed = false;
+
     function showUpdateToast(message) {
+      if (toastClosed) return;              // do nothing if user already closed it
       document.getElementById('update-toast-content').textContent = message;
       const toast = document.getElementById('update-toast');
       toast.classList.remove('opacity-0', 'pointer-events-none');
       toast.classList.add('opacity-100');
     }
     document.getElementById('update-toast-close').onclick = () => {
+      toastClosed = true;                   // remember that user closed it
       const toast = document.getElementById('update-toast');
       toast.classList.add('opacity-0', 'pointer-events-none');
     };
@@ -353,7 +358,7 @@
         ${imagePaths.map(path => `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report Image">`).join('')}
       </div>
       <button id="prevSlide" class="absolute top-1/2 left-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">&lsaquo;</button>
-      <button id="nextSlide" class="absolute top-1/2 right-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">&rsaquo;</button>
+      <button id="nextSlide" class="absolute top-1/2 right-0 transform -translate-y-1/2px-3 py-1 bg-white text-gray-700 shadow-md">&rsaquo;</button>
     </div>
   </div>`;
         let currentSlide = 0,
@@ -576,7 +581,7 @@
         cn.innerHTML = '';
         if (!toShow.length) {
           const li = document.createElement('li');
-          li.textContent = 'No updates available.';
+          li.textContent = 'No updates available.';  
           li.className = 'py-2 text-gray-500';
           cn.appendChild(li);
         } else {
