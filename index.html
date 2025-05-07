@@ -89,17 +89,26 @@
   <!-- Mobile Accordion for Recent Updates -->
   <details class="lg:hidden px-4 mt-2">
     <summary class="font-semibold cursor-pointer flex items-center justify-between" role="button">
-      Recent Updates
+      <span>Recent Updates</span>
+      <button id="mobile-updates-filter-toggle" class="p-1 focus:outline-none" aria-label="Show filter">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-7.414 7.414a1 1 0 00-.293.707V19l-4-4v-4a1 1 0 00-.293-.707L3.293 6.707A1 1 0 013 6V4z" />
+        </svg>
+      </button>
     </summary>
     <div class="mt-2 space-y-2">
-      <input
-        id="mobile-updates-filter"
-        type="text"
-        placeholder="Filter updates..."
-        aria-label="Filter updates"
-        class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-800 placeholder-gray-500"
-      />
-      <ul id="mobile-updates-container" class="mt-2 max-h-60 overflow-y-auto pr-2 space-y-2" aria-live="polite"></ul>
+      <!-- Hidden filter container -->
+      <div id="mobile-updates-filter-container" class="hidden">
+        <input
+          id="mobile-updates-filter"
+          type="text"
+          placeholder="Filter updates..."
+          aria-label="Filter updates"
+          class="w-full px-3 py-1 mb-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-800 placeholder-gray-500"
+        />
+      </div>
+      <ul id="mobile-updates-container" class="max-h-60 overflow-y-auto pr-2 space-y-2" aria-live="polite"></ul>
       <button id="mobile-load-more-btn" class="mt-2 w-full text-center text-indigo-600 hover:underline focus:outline-none">
         Load More
       </button>
@@ -111,13 +120,25 @@
     <!-- Desktop Recent Updates Panel -->
     <aside role="complementary" class="w-64 mr-6 hidden lg:block">
       <div class="bg-white border border-gray-200 rounded-lg p-4 sticky top-24">
-        <input
-          id="updates-filter"
-          type="text"
-          placeholder="Filter updates..."
-          aria-label="Filter updates"
-          class="w-full mb-2 px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-800 placeholder-gray-500"
-        />
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-lg font-semibold">Recent Updates</h2>
+          <button id="updates-filter-toggle" class="p-1 focus:outline-none" aria-label="Show filter">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-7.414 7.414a1 1 0 00-.293.707V19l-4-4v-4a1 1 0 00-.293-.707L3.293 6.707A1 1 0 013 6V4z" />
+            </svg>
+          </button>
+        </div>
+        <!-- Hidden filter container -->
+        <div id="updates-filter-container" class="hidden mb-2">
+          <input
+            id="updates-filter"
+            type="text"
+            placeholder="Filter updates..."
+            aria-label="Filter updates"
+            class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-800 placeholder-gray-500"
+          />
+        </div>
         <ul id="updates-container" class="max-h-96 overflow-y-auto pr-2 space-y-2" aria-live="polite"></ul>
         <button id="load-more-btn" class="mt-2 w-full text-center text-indigo-600 hover:underline focus:outline-none">
           Load More
@@ -161,9 +182,7 @@
       class="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 max-h-[90vh] overflow-y-auto p-6 relative mt-20 mx-auto"
       tabindex="-1"
     >
-      <button id="overlay-close" aria-label="Close dialog" class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none">
-        &times;
-      </button>
+      <button id="overlay-close" aria-label="Close dialog" class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none">&times;</button>
       <button id="copy-btn" class="absolute top-4 right-12 text-sm text-gray-500 hover:text-gray-700 hidden focus:outline-none">Copy</button>
       <h2 id="overlay-header" class="text-2xl font-semibold mb-4"></h2>
       <div id="overlay-body" class="space-y-4" tabindex="0"></div>
@@ -205,15 +224,18 @@
     const notifDropdown = document.getElementById('notification-dropdown');
     const notifListEl = document.getElementById('notification-list');
     const clearNotifsBtn = document.getElementById('clear-notifications');
+    const updatesFilterContainer = document.getElementById('updates-filter-container');
+    const updatesFilter = document.getElementById('updates-filter');
+    const updatesToggleBtn = document.getElementById('updates-filter-toggle');
+    const mobileUpdatesFilterContainer = document.getElementById('mobile-updates-filter-container');
+    const mobileUpdatesFilter = document.getElementById('mobile-updates-filter');
+    const mobileUpdatesToggleBtn = document.getElementById('mobile-updates-filter-toggle');
     const updatesContainer = document.getElementById('updates-container');
     const mobileUpdatesContainer = document.getElementById('mobile-updates-container');
-    const updatesFilter = document.getElementById('updates-filter');
-    const mobileUpdatesFilter = document.getElementById('mobile-updates-filter');
     const loadMoreBtn = document.getElementById('load-more-btn');
     const mobileLoadMoreBtn = document.getElementById('mobile-load-more-btn');
     const toTopBtn = document.getElementById('to-top');
 
-    // Card data
     const cardsData = [
       { title: 'Email Templates', slug: 'email-templates', description: 'Browse pre-built email templates.' },
       { title: 'Processes',      slug: 'processes',      description: 'Step-by-step how-to guides and workflows.' },
@@ -223,7 +245,6 @@
       { title: 'Directory',      slug: 'directory',      description: 'Key people to contact.' }
     ];
 
-    // Caching & debounce utility
     const contentCache = {};
     function debounce(fn, ms) {
       let t;
@@ -233,7 +254,6 @@
       };
     }
 
-    // Fetch JSON with caching
     async function fetchItems(slug) {
       if (contentCache[slug]) return contentCache[slug];
       const res = await fetch(`data/${slug}.json`);
@@ -243,7 +263,6 @@
       return data;
     }
 
-    // Render dashboard cards
     function renderCards() {
       container.innerHTML = '';
       cardsData.forEach(card => {
@@ -260,28 +279,19 @@
       });
     }
 
-    // Show content for a card
     async function showContent(slug, title) {
       container.classList.add('hidden');
       detailContainer.classList.remove('hidden');
       detailTitle.textContent = title;
       detailList.innerHTML = '<li class="animate-pulse"><span class="block h-4 bg-gray-200 rounded w-3/4 mb-2"></span></li>';
-
       if (slug === 'reports') {
-        // Image slider for reports
         const imagePaths = [
           'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
           'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_amz.png'
         ];
         detailList.innerHTML = `
 <div class="prose max-w-none space-y-4">
-  <p>
-    <a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
-       target="_blank"
-       class="text-blue-600 hover:underline">
-      WooParts eBay and Amazon Performance - 2025
-    </a>
-  </p>
+  <p><a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl" target="_blank" class="text-blue-600 hover:underline">WooParts eBay and Amazon Performance - 2025</a></p>
   <div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
     <div id="slider" class="flex transition-transform duration-300" style="transform: translateX(0%)">
       ${imagePaths.map(path => `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report Image">`).join('')}
@@ -300,7 +310,6 @@
           sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
         };
       } else {
-        // Other cards: list items from JSON
         try {
           const data = await fetchItems(slug);
           detailList.innerHTML = '';
@@ -320,7 +329,6 @@
       }
     }
 
-    // Modal focus trap for accessibility
     function trapFocus(e) {
       const focusable = Array.from(overlayDialog.querySelectorAll('button, [href], input, textarea, [tabindex]:not([tabindex="-1"])')).filter(el => !el.disabled);
       if (!overlay.classList.contains('hidden') && e.key === 'Tab') {
@@ -337,10 +345,10 @@
     document.addEventListener('keydown', trapFocus);
 
     let lastFocused;
-    function openEmailOverlay(name, htmlContent) {
+    function openEmailOverlay(name, html) {
       lastFocused = document.activeElement;
       overlayHeader.textContent = name;
-      overlayBody.innerHTML = `<div class="prose max-w-none space-y-4">${htmlContent}</div>`;
+      overlayBody.innerHTML = `<div class="prose max-w-none space-y-4">${html}</div>`;
       overlay.classList.remove('hidden');
       overlayDialog.classList.add('opacity-100', 'scale-100');
       copyBtn.classList.remove('hidden');
@@ -368,13 +376,11 @@
       container.classList.remove('hidden');
     };
 
-    // Jump-to-top button
     window.addEventListener('scroll', () => {
       toTopBtn.classList.toggle('hidden', window.scrollY < 300);
     });
     toTopBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Function to choose an icon based on source type
     function iconFor(type) {
       const icons = {
         'updates': '🔔',
@@ -388,10 +394,8 @@
       return icons[type] || '🆕';
     }
 
-    // Poll for notifications from updates.json + all other JSONs
     let seenNotifIds = new Set();
     async function pollNotifications() {
-      // Build sources: updates.json plus each card slug except reports
       const sources = [
         { url: 'data/updates.json', type: 'updates', parser: data => data.map(u => ({ id: u.id || u.timestamp + u.text, text: u.text, time: u.timestamp })) }
       ];
@@ -424,7 +428,6 @@
               li.innerHTML = `<span>${iconFor(src.type)} ${item.text}</span><time class="text-xs text-gray-500">${new Date(item.time).toLocaleTimeString()}</time>`;
               notifListEl.prepend(li);
               seenNotifIds.add(item.id);
-              // increment badge
               const cnt = parseInt(notifCountEl.textContent) || 0;
               notifCountEl.textContent = cnt + 1;
             }
@@ -444,16 +447,15 @@
     };
     clearNotifsBtn.onclick = () => { notifListEl.innerHTML = ''; };
 
-    // Recent updates panel logic
     let allUpdates = [], displayCount = 5;
     function formatDate(iso) {
       const d = new Date(iso);
       return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
     }
     function renderUpdatesPanel() {
-      const filter = (updatesFilter?.value || mobileUpdatesFilter?.value || '').toLowerCase();
+      const filterVal = (updatesFilter?.value || mobileUpdatesFilter?.value || '').toLowerCase();
       const filtered = allUpdates
-        .filter(u => u.text.toLowerCase().includes(filter))
+        .filter(u => u.text.toLowerCase().includes(filterVal))
         .sort((a, b) => new Date(b.time) - new Date(a.time));
       const toShow = filtered.slice(0, displayCount);
 
@@ -487,21 +489,23 @@
         renderUpdatesPanel();
       } catch (e) {
         console.error('Updates panel error', e);
-        const banner = document.createElement('div');
-        banner.className = 'bg-red-100 text-red-700 p-2 text-center';
-        banner.textContent = 'Failed to load updates.';
-        document.body.insertBefore(banner, document.querySelector('header').nextSibling);
       }
     }
     setInterval(pollUpdatesPanel, 60000);
     pollUpdatesPanel();
+
+    updatesToggleBtn.onclick = () => {
+      updatesFilterContainer.classList.toggle('hidden');
+    };
+    mobileUpdatesToggleBtn.onclick = () => {
+      mobileUpdatesFilterContainer.classList.toggle('hidden');
+    };
 
     if (updatesFilter) updatesFilter.addEventListener('input', debounce(renderUpdatesPanel, 200));
     if (mobileUpdatesFilter) mobileUpdatesFilter.addEventListener('input', debounce(renderUpdatesPanel, 200));
     loadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
     mobileLoadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
 
-    // Fuzzy search setup
     let fuse;
     async function buildSearchIndex() {
       const items = cardsData.map(c => ({ name: c.title, content: c.description, slug: c.slug, isRoot: true }));
@@ -538,11 +542,8 @@
         li.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
         li.innerHTML = label;
         li.onclick = () => {
-          if (r.item.isRoot) {
-            showContent(r.item.slug, r.item.name);
-          } else {
-            openEmailOverlay(r.item.name, r.item.content);
-          }
+          if (r.item.isRoot) showContent(r.item.slug, r.item.name);
+          else openEmailOverlay(r.item.name, r.item.content);
           searchSuggestions.classList.add('hidden');
           searchInput.setAttribute('aria-expanded', 'false');
         };
@@ -560,7 +561,6 @@
     }, 250);
     searchInput.addEventListener('input', handleSearch);
 
-    // Slash shortcut to focus search
     document.addEventListener('keydown', e => {
       if (e.key === '/' && document.activeElement !== searchInput) {
         e.preventDefault();
@@ -568,7 +568,6 @@
       }
     });
 
-    // Initialize
     document.addEventListener('DOMContentLoaded', () => {
       renderCards();
       buildSearchIndex();
