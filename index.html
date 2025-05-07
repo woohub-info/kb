@@ -16,8 +16,7 @@
   <link rel="preload" href="data/tutorials.json" as="fetch" crossorigin />
   <link rel="preload" href="data/directory.json" as="fetch" crossorigin />
   <style>
-    #overlay ol,
-    #modal ol { list-style-type: decimal; }
+    #overlay ol, #modal ol { list-style-type: decimal; }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800 antialiased flex flex-col min-h-screen">
@@ -31,26 +30,53 @@
   <!-- Header -->
   <header role="banner" class="relative bg-white shadow sticky top-0 z-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+      <!-- Logo -->
       <a href="#" onclick="event.preventDefault();" class="text-2xl font-semibold text-indigo-600">WooHub</a>
+
+      <!-- Search -->
       <div class="relative flex-1 max-w-lg mx-4">
-        <input id="search-input" type="search" placeholder="Search keywords..."
-          aria-label="Search keywords" aria-controls="search-suggestions" aria-expanded="false" aria-autocomplete="list"
-          class="w-full px-4 py-2 border border-gray-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 placeholder-gray-500" />
-        <ul id="search-suggestions" role="listbox"
-          class="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg hidden z-30 max-h-60 overflow-auto"></ul>
+        <input
+          id="search-input"
+          type="search"
+          placeholder="Search keywords..."
+          aria-label="Search keywords"
+          aria-controls="search-suggestions"
+          aria-expanded="false"
+          aria-autocomplete="list"
+          class="w-full px-4 py-2 border border-gray-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 placeholder-gray-500"
+        />
+        <ul
+          id="search-suggestions"
+          role="listbox"
+          class="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg hidden z-30 max-h-60 overflow-auto"
+        ></ul>
       </div>
+
+      <!-- Notification Bell -->
       <div class="relative">
-        <button id="notification-btn" class="p-2 focus:outline-none" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">
+        <button
+          id="notification-btn"
+          class="p-2 focus:outline-none"
+          aria-label="Notifications"
+          aria-haspopup="true"
+          aria-expanded="false"
+        >
           <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+            />
           </svg>
-          <span id="notification-count"
-            class="absolute -top-1 -right-1 inline-flex items-center justify-center px-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">0</span>
+          <span
+            id="notification-count"
+            class="absolute -top-1 -right-1 inline-flex items-center justify-center px-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full"
+          >0</span>
         </button>
-        <div id="notification-dropdown"
-          class="hidden transition-dropdown opacity-0 transform origin-top-right -translate-y-2 absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-40"
-          role="menu" aria-label="Recent notifications">
+        <div
+          id="notification-dropdown"
+          class="hidden absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-40"
+          role="menu"
+          aria-label="Recent notifications"
+        >
           <ul id="notification-list" class="max-h-64 overflow-y-auto divide-y divide-gray-200" aria-live="polite"></ul>
           <div class="text-center p-2">
             <button id="clear-notifications" class="text-indigo-600 hover:underline focus:outline-none">Clear All</button>
@@ -66,27 +92,42 @@
       Recent Updates
     </summary>
     <div class="mt-2 space-y-2">
-      <input id="mobile-updates-filter" type="text" placeholder="Filter updates..." aria-label="Filter updates"
-        class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-800 placeholder-gray-500" />
+      <input
+        id="mobile-updates-filter"
+        type="text"
+        placeholder="Filter updates..."
+        aria-label="Filter updates"
+        class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-800 placeholder-gray-500"
+      />
       <ul id="mobile-updates-container" class="mt-2 max-h-60 overflow-y-auto pr-2 space-y-2" aria-live="polite"></ul>
-      <button id="mobile-load-more-btn"
-        class="mt-2 w-full text-center text-indigo-600 hover:underline focus:outline-none">Load More</button>
+      <button id="mobile-load-more-btn" class="mt-2 w-full text-center text-indigo-600 hover:underline focus:outline-none">
+        Load More
+      </button>
     </div>
   </details>
 
   <!-- Content Wrapper -->
   <div class="flex flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full">
+    <!-- Desktop Recent Updates Panel -->
     <aside role="complementary" class="w-64 mr-6 hidden lg:block">
       <div class="bg-white border border-gray-200 rounded-lg p-4 sticky top-24">
-        <input id="updates-filter" type="text" placeholder="Filter updates..." aria-label="Filter updates"
-          class="w-full mb-2 px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-800 placeholder-gray-500" />
+        <input
+          id="updates-filter"
+          type="text"
+          placeholder="Filter updates..."
+          aria-label="Filter updates"
+          class="w-full mb-2 px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-800 placeholder-gray-500"
+        />
         <ul id="updates-container" class="max-h-96 overflow-y-auto pr-2 space-y-2" aria-live="polite"></ul>
-        <button id="load-more-btn"
-          class="mt-2 w-full text-center text-indigo-600 hover:underline focus:outline-none">Load More</button>
+        <button id="load-more-btn" class="mt-2 w-full text-center text-indigo-600 hover:underline focus:outline-none">
+          Load More
+        </button>
       </div>
     </aside>
 
+    <!-- Main content -->
     <main role="main" class="flex-1 flex flex-col">
+      <!-- Breadcrumbs -->
       <nav role="navigation" class="text-sm mb-4" aria-label="Breadcrumb">
         <ol class="list-reset flex text-gray-600">
           <li><a href="#" onclick="event.preventDefault();" class="hover:underline">Home</a></li>
@@ -95,36 +136,48 @@
         </ol>
       </nav>
 
-      <section id="detail-container" class="hidden bg-white rounded-lg shadow p-6 mb-6" role="region"
-        aria-labelledby="detail-title">
+      <!-- Detail View -->
+      <section id="detail-container" class="hidden bg-white rounded-lg shadow p-6 mb-6" role="region" aria-labelledby="detail-title">
         <button id="back-btn" class="text-indigo-600 hover:underline mb-4 focus:outline-none">← Back to Dashboard</button>
         <h2 id="detail-title" class="text-2xl font-semibold mb-4"></h2>
         <ul id="detail-list" class="list-disc pl-5 space-y-2"></ul>
       </section>
 
+      <!-- Card Grid -->
       <section id="card-container" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></section>
     </main>
   </div>
 
-  <div id="overlay"
+  <!-- Overlay Modal -->
+  <div
+    id="overlay"
     class="fixed inset-0 bg-black bg-opacity-50 hidden items-start justify-center overflow-y-auto z-40"
-    role="dialog" aria-modal="true" aria-labelledby="overlay-header" aria-describedby="overlay-body">
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="overlay-header"
+    aria-describedby="overlay-body"
+  >
     <div
-      class="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 max-h-[90vh] overflow-y-auto p-6 relative mt-20 mx-auto transition-dropdown opacity-0 transform scale-95"
-      tabindex="-1">
-      <button id="overlay-close" aria-label="Close dialog"
-        class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none">&times;</button>
-      <button id="copy-btn"
-        class="absolute top-4 right-12 text-sm text-gray-500 hover:text-gray-700 hidden focus:outline-none">Copy</button>
+      class="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 max-h-[90vh] overflow-y-auto p-6 relative mt-20 mx-auto"
+      tabindex="-1"
+    >
+      <button id="overlay-close" aria-label="Close dialog" class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none">
+        &times;
+      </button>
+      <button id="copy-btn" class="absolute top-4 right-12 text-sm text-gray-500 hover:text-gray-700 hidden focus:outline-none">Copy</button>
       <h2 id="overlay-header" class="text-2xl font-semibold mb-4"></h2>
       <div id="overlay-body" class="space-y-4" tabindex="0"></div>
     </div>
   </div>
 
-  <button id="to-top"
+  <!-- Jump to Top -->
+  <button
+    id="to-top"
     class="fixed bottom-6 right-6 p-3 bg-indigo-600 text-white rounded-full shadow-lg hidden focus:outline-none"
-    aria-label="Scroll to top">↑</button>
+    aria-label="Scroll to top"
+  >↑</button>
 
+  <!-- Footer -->
   <footer class="bg-white py-6 border-t border-gray-200 mt-auto">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-sm text-gray-500 flex justify-between">
       <p>&copy; 2025 WooHub. All rights reserved.</p>
@@ -133,14 +186,14 @@
   </footer>
 
   <script>
-    // Element refs...
+    // Element references
     const container = document.getElementById('card-container');
     const detailContainer = document.getElementById('detail-container');
     const detailTitle = document.getElementById('detail-title');
     const detailList = document.getElementById('detail-list');
     const backBtn = document.getElementById('back-btn');
     const overlay = document.getElementById('overlay');
-    const overlayDialog = overlay.querySelector('div[tabindex="-1"]');
+    const overlayDialog = overlay.querySelector('[tabindex="-1"]');
     const overlayClose = document.getElementById('overlay-close');
     const copyBtn = document.getElementById('copy-btn');
     const overlayHeader = document.getElementById('overlay-header');
@@ -159,241 +212,364 @@
     const loadMoreBtn = document.getElementById('load-more-btn');
     const mobileLoadMoreBtn = document.getElementById('mobile-load-more-btn');
     const toTopBtn = document.getElementById('to-top');
+
+    // Card data
     const cardsData = [
       { title: 'Email Templates', slug: 'email-templates', description: 'Browse pre-built email templates.' },
-      { title: 'Processes', slug: 'processes', description: 'Step-by-step how-to guides and workflows.' },
-      { title: 'Reports', slug: 'reports', description: 'Access performance and usage reports.' },
-      { title: 'Links', slug: 'links', description: 'Quick access to essential resources.' },
-      { title: 'Tutorials', slug: 'tutorials', description: 'Video lessons to guide you through every step.' },
-      { title: 'Directory', slug: 'directory', description: 'Key people to contact.' }
+      { title: 'Processes',      slug: 'processes',      description: 'Step-by-step how-to guides and workflows.' },
+      { title: 'Reports',        slug: 'reports',        description: 'Access performance and usage reports.' },
+      { title: 'Links',          slug: 'links',          description: 'Quick access to essential resources.' },
+      { title: 'Tutorials',      slug: 'tutorials',      description: 'Video lessons to guide you through every step.' },
+      { title: 'Directory',      slug: 'directory',      description: 'Key people to contact.' }
     ];
+
+    // Caching & debounce utility
     const contentCache = {};
+    function debounce(fn, ms) {
+      let t;
+      return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), ms);
+      };
+    }
 
-    function debounce(fn, ms) { let t; return(...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); }; }
-
+    // Fetch JSON with caching
     async function fetchItems(slug) {
-      if(contentCache[slug]) return contentCache[slug];
-      const res=await fetch(`data/${slug}.json`);
-      if(!res.ok) throw new Error('Failed to load data');
-      const data=await res.json();
-      contentCache[slug]=data;
+      if (contentCache[slug]) return contentCache[slug];
+      const res = await fetch(`data/${slug}.json`);
+      if (!res.ok) throw new Error('Failed to load data');
+      const data = await res.json();
+      contentCache[slug] = data;
       return data;
     }
 
+    // Render dashboard cards
     function renderCards() {
-      container.innerHTML='';
-      cardsData.forEach(card=>{
-        const article=document.createElement('article');
-        article.className='bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6 flex flex-col';
-        article.innerHTML=`
+      container.innerHTML = '';
+      cardsData.forEach(card => {
+        const article = document.createElement('article');
+        article.className = 'bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6 flex flex-col';
+        article.innerHTML = `
           <h3 tabindex="0" class="text-xl font-semibold mb-2 hover:text-indigo-600 cursor-pointer">${card.title}</h3>
           <p class="text-gray-600 flex-1">${card.description}</p>
           <button class="mt-4 text-indigo-600 font-medium hover:underline focus:outline-none">View ${card.title} →</button>
         `;
-        article.querySelector('h3').onclick=()=>showContent(card.slug,card.title);
-        article.querySelector('button').onclick=()=>showContent(card.slug,card.title);
+        article.querySelector('h3').onclick = () => showContent(card.slug, card.title);
+        article.querySelector('button').onclick = () => showContent(card.slug, card.title);
         container.appendChild(article);
       });
     }
 
-    async function showContent(slug,title){
+    // Show content for a card
+    async function showContent(slug, title) {
       container.classList.add('hidden');
       detailContainer.classList.remove('hidden');
-      detailTitle.textContent=title;
-      detailList.innerHTML='<li class="animate-pulse"><span class="block h-4 bg-gray-200 rounded w-3/4 mb-2"></span></li>';
-      if(slug==='reports'){
-        const imagePaths=[
+      detailTitle.textContent = title;
+      detailList.innerHTML = '<li class="animate-pulse"><span class="block h-4 bg-gray-200 rounded w-3/4 mb-2"></span></li>';
+
+      if (slug === 'reports') {
+        // Image slider for reports
+        const imagePaths = [
           'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
           'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_amz.png'
         ];
-        detailList.innerHTML=`
+        detailList.innerHTML = `
 <div class="prose max-w-none space-y-4">
-  <p><a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl" target="_blank" class="text-blue-600 hover:underline">WooParts eBay and Amazon Performance - 2025</a></p>
+  <p>
+    <a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
+       target="_blank"
+       class="text-blue-600 hover:underline">
+      WooParts eBay and Amazon Performance - 2025
+    </a>
+  </p>
   <div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
     <div id="slider" class="flex transition-transform duration-300" style="transform: translateX(0%)">
-      ${imagePaths.map(path=>`<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report Image">`).join('')}
+      ${imagePaths.map(path => `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report Image">`).join('')}
     </div>
     <button id="prevSlide" class="absolute top-1/2 left-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">&lsaquo;</button>
     <button id="nextSlide" class="absolute top-1/2 right-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">&rsaquo;</button>
   </div>
 </div>`;
-        let currentSlide=0,sliderEl=document.getElementById('slider'),totalSlides=imagePaths.length;
-        document.getElementById('prevSlide').onclick=()=>{
-          currentSlide=(currentSlide-1+totalSlides)%totalSlides;
-          sliderEl.style.transform=`translateX(-${currentSlide*100}%)`;
+        let currentSlide = 0, sliderEl = document.getElementById('slider'), totalSlides = imagePaths.length;
+        document.getElementById('prevSlide').onclick = () => {
+          currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+          sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
         };
-        document.getElementById('nextSlide').onclick=()=>{
-          currentSlide=(currentSlide+1)%totalSlides;
-          sliderEl.style.transform=`translateX(-${currentSlide*100}%)`;
+        document.getElementById('nextSlide').onclick = () => {
+          currentSlide = (currentSlide + 1) % totalSlides;
+          sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
         };
-        return;
-      }
-      try{
-        const data=await fetchItems(slug);
-        detailList.innerHTML='';
-        const groups=Array.isArray(data)?{'':data}:data;
-        Object.entries(groups).forEach(([group,items])=>{
-          if(group){
-            const h3=document.createElement('h3');
-            h3.className='text-lg font-semibold mt-4';
-            h3.textContent=group;
-            detailList.appendChild(h3);
-          }
-          items.forEach(item=>{
-            const li=document.createElement('li');
-            const btn=document.createElement('button');
-            btn.className='text-indigo-600 hover:underline focus:outline-none';
-            btn.textContent=item.name;
-            btn.onclick=()=>openEmailOverlay(item.name,item.content);
+      } else {
+        // Other cards: list items from JSON
+        try {
+          const data = await fetchItems(slug);
+          detailList.innerHTML = '';
+          const items = Array.isArray(data) ? data : Object.values(data).flat();
+          items.forEach(item => {
+            const li = document.createElement('li');
+            const btn = document.createElement('button');
+            btn.className = 'text-indigo-600 hover:underline focus:outline-none';
+            btn.textContent = item.name;
+            btn.onclick = () => openEmailOverlay(item.name, item.content);
             li.appendChild(btn);
             detailList.appendChild(li);
           });
-        });
-      }catch{
-        detailList.innerHTML=`<li class="text-red-500">This page is under construction – check back soon!</li>`;
-      }
-    }
-
-    // Modal focus trap
-    function trapFocus(e){
-      const focusable=Array.from(overlayDialog.querySelectorAll('button, [href], input, textarea, [tabindex]:not([tabindex="-1"])')).filter(el=>!el.disabled);
-      if(!overlay.classList.contains('hidden')&&e.key==='Tab'){
-        const idx=focusable.indexOf(document.activeElement);
-        if(e.shiftKey&&idx===0){
-          focusable[focusable.length-1].focus();e.preventDefault();
-        }else if(!e.shiftKey&&idx===focusable.length-1){
-          focusable[0].focus();e.preventDefault();
+        } catch {
+          detailList.innerHTML = `<li class="text-red-500">This page is under construction – check back soon!</li>`;
         }
       }
     }
-    document.addEventListener('keydown',trapFocus);
+
+    // Modal focus trap for accessibility
+    function trapFocus(e) {
+      const focusable = Array.from(overlayDialog.querySelectorAll('button, [href], input, textarea, [tabindex]:not([tabindex="-1"])')).filter(el => !el.disabled);
+      if (!overlay.classList.contains('hidden') && e.key === 'Tab') {
+        const idx = focusable.indexOf(document.activeElement);
+        if (e.shiftKey && idx === 0) {
+          focusable[focusable.length - 1].focus();
+          e.preventDefault();
+        } else if (!e.shiftKey && idx === focusable.length - 1) {
+          focusable[0].focus();
+          e.preventDefault();
+        }
+      }
+    }
+    document.addEventListener('keydown', trapFocus);
 
     let lastFocused;
-    function openEmailOverlay(name,html){
-      lastFocused=document.activeElement;
-      overlayHeader.textContent=name;
-      overlayBody.innerHTML=`<div class="prose max-w-none space-y-4">${html}</div>`;
+    function openEmailOverlay(name, htmlContent) {
+      lastFocused = document.activeElement;
+      overlayHeader.textContent = name;
+      overlayBody.innerHTML = `<div class="prose max-w-none space-y-4">${htmlContent}</div>`;
       overlay.classList.remove('hidden');
-      overlayDialog.classList.add('opacity-100','scale-100');
+      overlayDialog.classList.add('opacity-100', 'scale-100');
       copyBtn.classList.remove('hidden');
       overlayClose.focus();
     }
-    overlayClose.onclick=()=>{
+    overlayClose.onclick = () => {
       overlay.classList.add('hidden');
-      overlayDialog.classList.remove('opacity-100','scale-100');
+      overlayDialog.classList.remove('opacity-100', 'scale-100');
       lastFocused?.focus();
     };
-    overlay.onclick=e=>{
-      if(e.target===overlay){
-        overlay.classList.add('hidden');
-        overlayDialog.classList.remove('opacity-100','scale-100');
-        lastFocused?.focus();
+    overlay.onclick = e => {
+      if (e.target === overlay) {
+        overlayClose.click();
       }
     };
-    copyBtn.onclick=()=>{
-      navigator.clipboard.writeText(overlayBody.innerText).then(()=>{
-        copyBtn.textContent='Copied!';setTimeout(()=>copyBtn.textContent='Copy',2000);
+    copyBtn.onclick = () => {
+      navigator.clipboard.writeText(overlayBody.innerText).then(() => {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => (copyBtn.textContent = 'Copy'), 2000);
       });
     };
 
-    backBtn.onclick=()=>{
+    backBtn.onclick = () => {
       detailContainer.classList.add('hidden');
       container.classList.remove('hidden');
     };
-    window.addEventListener('scroll',()=>{toTopBtn.classList.toggle('hidden',window.scrollY<300);});
-    toTopBtn.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 
-    // Recent Updates
-    let allUpdates=[],displayCount=5;
-    function formatDate(iso){const [y,m,d]=iso.split('-');return`${m}/${d}/${y}`;}
-    function renderUpdates(){
-      const filter=(updatesFilter?.value||mobileUpdatesFilter?.value||'').toLowerCase();
-      const filtered=allUpdates.filter(u=>u.text.toLowerCase().includes(filter)).sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
-      const toShow=filtered.slice(0,displayCount);
-      [updatesContainer,mobileUpdatesContainer].forEach(container=>{
-        container.innerHTML='';
-        if(!toShow.length){
-          const li=document.createElement('li');
-          li.textContent='No updates available.';li.className='py-2 text-gray-500';
-          container.appendChild(li);
-        }else toShow.forEach(u=>{
-          const li=document.createElement('li');
-          const date=formatDate(u.timestamp.slice(0,10));
-          if(u.link) li.innerHTML=`<a href="${u.link}" class="block py-2 hover:underline">${date}: ${u.text}</a>`;
-          else{li.textContent=`${date}: ${u.text}`;li.className='py-2';}
-          container.appendChild(li);
+    // Jump-to-top button
+    window.addEventListener('scroll', () => {
+      toTopBtn.classList.toggle('hidden', window.scrollY < 300);
+    });
+    toTopBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Function to choose an icon based on source type
+    function iconFor(type) {
+      const icons = {
+        'updates': '🔔',
+        'email-templates': '✉️',
+        'processes': '🛠️',
+        'reports': '📊',
+        'links': '🔗',
+        'tutorials': '🎥',
+        'directory': '📇'
+      };
+      return icons[type] || '🆕';
+    }
+
+    // Poll for notifications from updates.json + all other JSONs
+    let seenNotifIds = new Set();
+    async function pollNotifications() {
+      // Build sources: updates.json plus each card slug except reports
+      const sources = [
+        { url: 'data/updates.json', type: 'updates', parser: data => data.map(u => ({ id: u.id || u.timestamp + u.text, text: u.text, time: u.timestamp })) }
+      ];
+      cardsData.forEach(c => {
+        if (c.slug === 'reports') return;
+        sources.push({
+          url: `data/${c.slug}.json`,
+          type: c.slug,
+          parser: data => {
+            const arr = Array.isArray(data) ? data : Object.values(data).flat();
+            return arr.map(i => ({
+              id: `${c.slug}|${i.name}`,
+              text: `New ${c.title}: ${i.name}`,
+              time: new Date().toISOString()
+            }));
+          }
         });
       });
+
+      for (const src of sources) {
+        try {
+          const res = await fetch(src.url);
+          if (!res.ok) continue;
+          const json = await res.json();
+          const items = src.parser(json);
+          items.forEach(item => {
+            if (!seenNotifIds.has(item.id)) {
+              const li = document.createElement('li');
+              li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between cursor-pointer';
+              li.innerHTML = `<span>${iconFor(src.type)} ${item.text}</span><time class="text-xs text-gray-500">${new Date(item.time).toLocaleTimeString()}</time>`;
+              notifListEl.prepend(li);
+              seenNotifIds.add(item.id);
+              // increment badge
+              const cnt = parseInt(notifCountEl.textContent) || 0;
+              notifCountEl.textContent = cnt + 1;
+            }
+          });
+        } catch (e) {
+          console.error('Notification poll error for', src.url, e);
+        }
+      }
     }
-    function pollUpdates(){
-      fetch('data/updates.json').then(r=>r.json()).then(arr=>{
-        allUpdates=arr;renderUpdates();
-      }).catch(err=>{
-        const banner=document.createElement('div');
-        banner.className='bg-red-100 text-red-700 p-2 text-center';
-        banner.textContent='Failed to load updates.';
-        document.body.insertBefore(banner,document.querySelector('header').nextSibling);
-        console.error(err);
+    setInterval(pollNotifications, 60000);
+    pollNotifications();
+
+    notifBtn.onclick = () => {
+      const open = notifDropdown.classList.toggle('hidden');
+      notifBtn.setAttribute('aria-expanded', String(!open));
+      if (!open) notifCountEl.textContent = '0';
+    };
+    clearNotifsBtn.onclick = () => { notifListEl.innerHTML = ''; };
+
+    // Recent updates panel logic
+    let allUpdates = [], displayCount = 5;
+    function formatDate(iso) {
+      const d = new Date(iso);
+      return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
+    }
+    function renderUpdatesPanel() {
+      const filter = (updatesFilter?.value || mobileUpdatesFilter?.value || '').toLowerCase();
+      const filtered = allUpdates
+        .filter(u => u.text.toLowerCase().includes(filter))
+        .sort((a, b) => new Date(b.time) - new Date(a.time));
+      const toShow = filtered.slice(0, displayCount);
+
+      [updatesContainer, mobileUpdatesContainer].forEach(container => {
+        container.innerHTML = '';
+        if (!toShow.length) {
+          const li = document.createElement('li');
+          li.textContent = 'No updates available.';
+          li.className = 'py-2 text-gray-500';
+          container.appendChild(li);
+        } else {
+          toShow.forEach(u => {
+            const li = document.createElement('li');
+            if (u.link) {
+              li.innerHTML = `<a href="${u.link}" class="block py-2 hover:underline">${formatDate(u.time)}: ${u.text}</a>`;
+            } else {
+              li.textContent = `${formatDate(u.time)}: ${u.text}`;
+              li.className = 'py-2';
+            }
+            container.appendChild(li);
+          });
+        }
       });
     }
-    setInterval(pollUpdates,60000);
-    pollUpdates();
-
-    // Notifications simplified
-    notifBtn.onclick=()=>{
-      notifDropdown.classList.toggle('hidden');
-      notifDropdown.classList.toggle('opacity-0');
-      notifDropdown.classList.toggle('opacity-100');
-      notifBtn.setAttribute('aria-expanded',notifDropdown.classList.contains('hidden')?'false':'true');
-    };
-    clearNotifsBtn.onclick=()=>{notifListEl.innerHTML='';};
-
-    // Search index
-    let fuse;
-    async function buildSearchIndex(){
-      const items=cardsData.map(c=>({name:c.title,content:c.description,slug:c.slug,isRoot:true}));
-      await Promise.all(cardsData.map(async c=>{
-        if(c.slug==='reports')return;
-        try{
-          const data=await fetchItems(c.slug);
-          const groups=Array.isArray(data)?{'':data}:data;
-          Object.values(groups).flat().forEach(i=>items.push({name:i.name,content:i.content,slug:c.slug,isRoot:false}));
-        }catch{}
-      }));
-      fuse=new Fuse(items,{keys:['name','content'],includeMatches:true,threshold:0.4});
-    }
-    function renderSuggestions(res){
-      searchSuggestions.innerHTML='';
-      if(!res.length){
-        searchSuggestions.innerHTML='<li class="px-4 py-2 text-gray-500">No results</li>';return;
+    async function pollUpdatesPanel() {
+      try {
+        const res = await fetch('data/updates.json');
+        if (!res.ok) return;
+        const json = await res.json();
+        allUpdates = json.map(u => ({ text: u.text, time: u.timestamp, link: u.link }));
+        renderUpdatesPanel();
+      } catch (e) {
+        console.error('Updates panel error', e);
+        const banner = document.createElement('div');
+        banner.className = 'bg-red-100 text-red-700 p-2 text-center';
+        banner.textContent = 'Failed to load updates.';
+        document.body.insertBefore(banner, document.querySelector('header').nextSibling);
       }
-      res.forEach(r=>{
-        let label=r.item.name;
-        const m=r.matches.find(m=>m.key==='name');
-        if(m){let h='',last=0;m.indices.forEach(([s,e])=>{h+=label.slice(last,s)+`<mark>${label.slice(s,e+1)}</mark>`;last=e+1;});h+=label.slice(last);label=h;}
-        const li=document.createElement('li');
-        li.role='option';li.className='px-4 py-2 hover:bg-gray-100 cursor-pointer';li.innerHTML=label;
-        li.onclick=()=>{
-          if(r.item.isRoot) showContent(r.item.slug,r.item.name);
-          else openEmailOverlay(r.item.name,r.item.content);
+    }
+    setInterval(pollUpdatesPanel, 60000);
+    pollUpdatesPanel();
+
+    if (updatesFilter) updatesFilter.addEventListener('input', debounce(renderUpdatesPanel, 200));
+    if (mobileUpdatesFilter) mobileUpdatesFilter.addEventListener('input', debounce(renderUpdatesPanel, 200));
+    loadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
+    mobileLoadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
+
+    // Fuzzy search setup
+    let fuse;
+    async function buildSearchIndex() {
+      const items = cardsData.map(c => ({ name: c.title, content: c.description, slug: c.slug, isRoot: true }));
+      for (const c of cardsData) {
+        if (c.slug === 'reports') continue;
+        try {
+          const data = await fetchItems(c.slug);
+          const arr = Array.isArray(data) ? data : Object.values(data).flat();
+          arr.forEach(i => items.push({ name: i.name, content: i.content, slug: c.slug, isRoot: false }));
+        } catch {}
+      }
+      fuse = new Fuse(items, { keys: ['name', 'content'], includeMatches: true, threshold: 0.4 });
+    }
+    function renderSuggestions(results) {
+      searchSuggestions.innerHTML = '';
+      if (!results.length) {
+        searchSuggestions.innerHTML = '<li class="px-4 py-2 text-gray-500">No results</li>';
+        return;
+      }
+      results.forEach(r => {
+        let label = r.item.name;
+        const match = r.matches.find(m => m.key === 'name');
+        if (match) {
+          let h = '', last = 0;
+          match.indices.forEach(([s, e]) => {
+            h += label.slice(last, s) + `<mark>${label.slice(s, e+1)}</mark>`;
+            last = e + 1;
+          });
+          h += label.slice(last);
+          label = h;
+        }
+        const li = document.createElement('li');
+        li.role = 'option';
+        li.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
+        li.innerHTML = label;
+        li.onclick = () => {
+          if (r.item.isRoot) {
+            showContent(r.item.slug, r.item.name);
+          } else {
+            openEmailOverlay(r.item.name, r.item.content);
+          }
           searchSuggestions.classList.add('hidden');
-          searchInput.setAttribute('aria-expanded','false');
+          searchInput.setAttribute('aria-expanded', 'false');
         };
         searchSuggestions.appendChild(li);
       });
     }
-    const handleSearch=debounce(async e=>{
-      const q=e.target.value.trim();
-      if(!q) return searchSuggestions.classList.add('hidden');
-      if(!fuse) await buildSearchIndex();
-      const res=fuse.search(q);
-      renderSuggestions(res);
+    const handleSearch = debounce(async e => {
+      const q = e.target.value.trim();
+      if (!q) return searchSuggestions.classList.add('hidden');
+      if (!fuse) await buildSearchIndex();
+      const results = fuse.search(q);
+      renderSuggestions(results);
       searchSuggestions.classList.remove('hidden');
-      searchInput.setAttribute('aria-expanded','true');
-    },250);
-    searchInput.addEventListener('input',handleSearch);
+      searchInput.setAttribute('aria-expanded', 'true');
+    }, 250);
+    searchInput.addEventListener('input', handleSearch);
 
-    document.addEventListener('DOMContentLoaded',()=>{
+    // Slash shortcut to focus search
+    document.addEventListener('keydown', e => {
+      if (e.key === '/' && document.activeElement !== searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+      }
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
       renderCards();
       buildSearchIndex();
     });
