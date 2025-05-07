@@ -247,10 +247,13 @@
       toast.classList.remove('opacity-0', 'pointer-events-none');
       toast.classList.add('opacity-100');
     }
-    document.getElementById('update-toast-close').onclick = () => {
-      const toast = document.getElementById('update-toast');
-      toast.classList.add('opacity-0', 'pointer-events-none');
-    };
+    
+   // wire up the "×" close button
+  	const toastCloseBtn = document.getElementById('update-toast-close');
+  	toastCloseBtn.addEventListener('click', () => {
+    	const toast = document.getElementById('update-toast');
+    	toast.classList.add('opacity-0', 'pointer-events-none');
+    });
 
     // Element refs
     const container               = document.getElementById('card-container');
