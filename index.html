@@ -172,13 +172,9 @@
     <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 max-h-[90vh] overflow-y-auto p-6
                 relative mt-20 mx-auto" tabindex="-1">
       <button id="overlay-close" aria-label="Close dialog"
-              class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none">
-        &times;
-      </button>
+              class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none">&times;</button>
       <button id="copy-btn"
-              class="absolute top-4 right-12 text-sm text-gray-500 hover:text-gray-700 hidden focus:outline-none">
-        Copy
-      </button>
+              class="absolute top-4 right-12 text-sm text-gray-500 hover:text-gray-700 hidden focus:outline-none">Copy</button>
       <h2 id="overlay-header" class="text-2xl font-semibold mb-4"></h2>
       <div id="overlay-body" class="space-y-4" tabindex="0"></div>
     </div>
@@ -229,6 +225,7 @@
     const mobileLoadMoreBtn       = document.getElementById('mobile-load-more-btn');
     const toTopBtn                = document.getElementById('to-top');
 
+    // Card data
     const cardsData = [
       { title: 'Email Templates', slug: 'email-templates', description: 'Browse pre-built email templates.' },
       { title: 'Processes',      slug: 'processes',      description: 'Step-by-step how-to guides and workflows.' },
@@ -238,6 +235,7 @@
       { title: 'Directory',      slug: 'directory',      description: 'Key people to contact.' }
     ];
 
+    // Caching & debounce
     const contentCache = {};
     function debounce(fn, ms) {
       let t;
@@ -247,6 +245,7 @@
       };
     }
 
+    // Fetch JSON with caching
     async function fetchItems(slug) {
       if (contentCache[slug]) return contentCache[slug];
       const res = await fetch(`data/${slug}.json`);
@@ -256,12 +255,15 @@
       return data;
     }
 
+    // Render dashboard cards with hidden "new" badge
     function renderCards() {
       container.innerHTML = '';
       cardsData.forEach(card => {
         const article = document.createElement('article');
-        article.className = 'bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6 flex flex-col';
+        article.dataset.slug = card.slug;
+        article.className = 'relative bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6 flex flex-col';
         article.innerHTML = `
+          <span class="badge absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full hidden">new</span>
           <h3 tabindex="0" class="text-xl font-semibold mb-2 hover:text-indigo-600 cursor-pointer">${card.title}</h3>
           <p class="text-gray-600 flex-1">${card.description}</p>
           <button class="mt-4 text-indigo-600 font-medium hover:underline focus:outline-none">View ${card.title} →</button>
@@ -272,12 +274,12 @@
       });
     }
 
+    // Show content for a card
     async function showContent(slug, title) {
       container.classList.add('hidden');
       detailContainer.classList.remove('hidden');
       detailTitle.textContent = title;
       detailList.innerHTML = '<li class="animate-pulse"><span class="block h-4 bg-gray-200 rounded w-3/4 mb-2"></span></li>';
-
       if (slug === 'reports') {
         const imagePaths = [
           'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
@@ -319,7 +321,6 @@
             const btn = document.createElement('button');
             btn.className = 'text-indigo-600 hover:underline focus:outline-none';
             btn.textContent = item.name;
-            // pass slug to overlay so we can show title
             btn.onclick = () => openEmailOverlay(item.name, item.content, slug);
             li.appendChild(btn);
             detailList.appendChild(li);
@@ -330,6 +331,7 @@
       }
     }
 
+    // Trap focus in modal for accessibility
     function trapFocus(e) {
       const focusable = Array.from(overlayDialog.querySelectorAll('button, [href], input, textarea, [tabindex]:not([tabindex="-1"])'))
                              .filter(el => !el.disabled);
@@ -346,24 +348,22 @@
     }
     document.addEventListener('keydown', trapFocus);
 
+    // Overlay open/close
     let lastFocused;
     function openEmailOverlay(name, htmlContent, slug) {
       lastFocused = document.activeElement;
       overlayHeader.textContent = name;
-      // find card title from slug
       const card = cardsData.find(c => c.slug === slug);
-      const titleHtml = card
-        ? `<h3 class="text-lg font-semibold mb-2">${card.title}</h3>`
-        : '';
+      const titleHtml = card ? `<h3 class="text-lg font-semibold mb-2">${card.title}</h3>` : '';
       overlayBody.innerHTML = titleHtml + `<div class="prose max-w-none space-y-4">${htmlContent}</div>`;
       overlay.classList.remove('hidden');
-      overlayDialog.classList.add('opacity-100', 'scale-100');
+      overlayDialog.classList.add('opacity-100','scale-100');
       copyBtn.classList.remove('hidden');
       overlayClose.focus();
     }
     overlayClose.onclick = () => {
       overlay.classList.add('hidden');
-      overlayDialog.classList.remove('opacity-100', 'scale-100');
+      overlayDialog.classList.remove('opacity-100','scale-100');
       lastFocused?.focus();
     };
     overlay.onclick = e => {
@@ -378,18 +378,21 @@
       });
     };
 
+    // Back to cards
     backBtn.onclick = () => {
       detailContainer.classList.add('hidden');
       container.classList.remove('hidden');
     };
 
+    // Jump to top
     window.addEventListener('scroll', () => {
       toTopBtn.classList.toggle('hidden', window.scrollY < 300);
     });
     toTopBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
+    // Notification & card-badge logic
     function iconFor(type) {
-      const icons = {
+      return {
         updates: '🔔',
         'email-templates': '✉️',
         processes: '🛠️',
@@ -397,8 +400,7 @@
         links: '🔗',
         tutorials: '🎥',
         directory: '📇'
-      };
-      return icons[type] || '🆕';
+      }[type] || '🆕';
     }
 
     let seenNotifIds = new Set();
@@ -430,14 +432,19 @@
           const items = src.parser(json);
           items.forEach(item => {
             if (!seenNotifIds.has(item.id)) {
+              // Bell notification
               const li = document.createElement('li');
               li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between cursor-pointer';
               li.innerHTML = `<span>${iconFor(src.type)} ${item.text}</span>
                               <time class="text-xs text-gray-500">${new Date(item.time).toLocaleTimeString()}</time>`;
               notifListEl.prepend(li);
+              notifCountEl.textContent = String(Number(notifCountEl.textContent)||0 + 1);
+              // Card badge
+              if (src.type !== 'updates') {
+                const badge = document.querySelector(`[data-slug="${src.type}"] .badge`);
+                if (badge) badge.classList.remove('hidden');
+              }
               seenNotifIds.add(item.id);
-              const cnt = parseInt(notifCountEl.textContent) || 0;
-              notifCountEl.textContent = cnt + 1;
             }
           });
         } catch (e) {
@@ -455,25 +462,35 @@
     };
     clearNotifsBtn.onclick = () => { notifListEl.innerHTML = ''; };
 
+    // Recent updates panel
     let allUpdates = [], displayCount = 5;
     function formatDate(iso) {
       const d = new Date(iso);
       return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
     }
+    async function pollUpdatesPanel() {
+      try {
+        const res = await fetch('data/updates.json');
+        if (!res.ok) return;
+        const json = await res.json();
+        allUpdates = json.map(u => ({ text: u.text, time: u.timestamp, link: u.link }));
+        renderUpdatesPanel();
+      } catch {
+        console.error('Updates panel error');
+      }
+    }
     function renderUpdatesPanel() {
       const filterVal = (updatesFilter?.value || mobileUpdatesFilter?.value || '').toLowerCase();
-      const filtered = allUpdates
-        .filter(u => u.text.toLowerCase().includes(filterVal))
-        .sort((a, b) => new Date(b.time) - new Date(a.time));
+      const filtered = allUpdates.filter(u => u.text.toLowerCase().includes(filterVal))
+                                 .sort((a,b)=>new Date(b.time)-new Date(a.time));
       const toShow = filtered.slice(0, displayCount);
-
-      [updatesContainer, mobileUpdatesContainer].forEach(container => {
-        container.innerHTML = '';
+      [updatesContainer, mobileUpdatesContainer].forEach(cn => {
+        cn.innerHTML = '';
         if (!toShow.length) {
           const li = document.createElement('li');
           li.textContent = 'No updates available.';
           li.className = 'py-2 text-gray-500';
-          container.appendChild(li);
+          cn.appendChild(li);
         } else {
           toShow.forEach(u => {
             const li = document.createElement('li');
@@ -483,36 +500,22 @@
               li.textContent = `${formatDate(u.time)}: ${u.text}`;
               li.className = 'py-2';
             }
-            container.appendChild(li);
+            cn.appendChild(li);
           });
         }
       });
     }
-    async function pollUpdatesPanel() {
-      try {
-        const res = await fetch('data/updates.json');
-        if (!res.ok) return;
-        const json = await res.json();
-        allUpdates = json.map(u => ({ text: u.text, time: u.timestamp, link: u.link }));
-        renderUpdatesPanel();
-      } catch (e) {
-        console.error('Updates panel error', e);
-      }
-    }
     setInterval(pollUpdatesPanel, 60000);
     pollUpdatesPanel();
 
-    updatesToggleBtn.onclick = () => {
-      updatesFilterContainer.classList.toggle('hidden');
-    };
-    mobileUpdatesToggleBtn.onclick = () => {
-      mobileUpdatesFilterContainer.classList.toggle('hidden');
-    };
+    updatesToggleBtn.onclick = () => updatesFilterContainer.classList.toggle('hidden');
+    mobileUpdatesToggleBtn.onclick = () => mobileUpdatesFilterContainer.classList.toggle('hidden');
     if (updatesFilter) updatesFilter.addEventListener('input', debounce(renderUpdatesPanel, 200));
     if (mobileUpdatesFilter) mobileUpdatesFilter.addEventListener('input', debounce(renderUpdatesPanel, 200));
     loadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
     mobileLoadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
 
+    // Fuzzy search
     let fuse;
     async function buildSearchIndex() {
       const items = cardsData.map(c => ({ name: c.title, content: c.description, slug: c.slug, isRoot: true }));
@@ -524,52 +527,50 @@
           arr.forEach(i => items.push({ name: i.name, content: i.content, slug: c.slug, isRoot: false }));
         } catch {}
       }
-      fuse = new Fuse(items, { keys: ['name', 'content'], includeMatches: true, threshold: 0.4 });
+      fuse = new Fuse(items, { keys: ['name','content'], includeMatches: true, threshold: 0.4 });
     }
     function renderSuggestions(results) {
       searchSuggestions.innerHTML = '';
       if (!results.length) {
         searchSuggestions.innerHTML = '<li class="px-4 py-2 text-gray-500">No results</li>';
-        return;
+      } else {
+        results.forEach(r => {
+          let label = r.item.name;
+          const match = r.matches.find(m=>m.key==='name');
+          if (match) {
+            let h='', last=0;
+            match.indices.forEach(([s,e])=>{
+              h+=label.slice(last,s)+`<mark>${label.slice(s,e+1)}</mark>`;
+              last=e+1;
+            });
+            h+=label.slice(last);
+            label=h;
+          }
+          const li = document.createElement('li');
+          li.role='option';
+          li.className='px-4 py-2 hover:bg-gray-100 cursor-pointer';
+          li.innerHTML=label;
+          li.onclick=() => {
+            if(r.item.isRoot) showContent(r.item.slug, r.item.name);
+            else openEmailOverlay(r.item.name, r.item.content, r.item.slug);
+            searchSuggestions.classList.add('hidden');
+            searchInput.setAttribute('aria-expanded','false');
+          };
+          searchSuggestions.appendChild(li);
+        });
       }
-      results.forEach(r => {
-        let label = r.item.name;
-        const match = r.matches.find(m => m.key === 'name');
-        if (match) {
-          let h = '', last = 0;
-          match.indices.forEach(([s, e]) => {
-            h += label.slice(last, s) + `<mark>${label.slice(s, e+1)}</mark>`;
-            last = e + 1;
-          });
-          h += label.slice(last);
-          label = h;
-        }
-        const li = document.createElement('li');
-        li.role = 'option';
-        li.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
-        li.innerHTML = label;
-        li.onclick = () => {
-          if (r.item.isRoot) showContent(r.item.slug, r.item.name);
-          else openEmailOverlay(r.item.name, r.item.content, r.item.slug);
-          searchSuggestions.classList.add('hidden');
-          searchInput.setAttribute('aria-expanded', 'false');
-        };
-        searchSuggestions.appendChild(li);
-      });
     }
     const handleSearch = debounce(async e => {
-      const q = e.target.value.trim();
-      if (!q) return searchSuggestions.classList.add('hidden');
-      if (!fuse) await buildSearchIndex();
-      const results = fuse.search(q);
-      renderSuggestions(results);
+      const q=e.target.value.trim();
+      if(!q) return searchSuggestions.classList.add('hidden');
+      if(!fuse) await buildSearchIndex();
+      renderSuggestions(fuse.search(q));
       searchSuggestions.classList.remove('hidden');
-      searchInput.setAttribute('aria-expanded', 'true');
+      searchInput.setAttribute('aria-expanded','true');
     }, 250);
     searchInput.addEventListener('input', handleSearch);
-
     document.addEventListener('keydown', e => {
-      if (e.key === '/' && document.activeElement !== searchInput) {
+      if (e.key==='/' && document.activeElement!==searchInput) {
         e.preventDefault();
         searchInput.focus();
       }
