@@ -220,6 +220,14 @@
       return ids.some(id => !isItemRead(slug, id));
     }
 
+    // === persist “seen” state for Recent Updates ===
+    function getLastSeenUpdate() {
+      return localStorage.getItem('lastSeenUpdate');
+    }
+    function setLastSeenUpdate(ts) {
+      localStorage.setItem('lastSeenUpdate', ts);
+    }
+
     // Element refs
     const container               = document.getElementById('card-container');
     const detailContainer         = document.getElementById('detail-container');
@@ -299,7 +307,7 @@
       });
     }
 
-    // Show content for a card, with unread-dot logic
+    // Show content for a card, grouping by JSON titles and with unread-dot logic
     async function showContent(slug, title) {
       container.classList.add('hidden');
       detailContainer.classList.remove('hidden');
@@ -307,6 +315,7 @@
       detailList.innerHTML = '';
 
       if (slug === 'reports') {
+        // ... reports logic unchanged ...
         const imagePaths = [
           'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
           'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_amz.png'
@@ -314,10 +323,7 @@
         detailList.innerHTML = `
   <div class="prose max-w-none space-y-4">
     <p><a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
-          target="_blank"
-          class="text-blue-600 hover:underline">
-          WooParts eBay and Amazon Performance - 2025
-    </a></p>
+          target="_blank" class="text-blue-600 hover:underline">WooParts eBay and Amazon Performance - 2025</a></p>
     <div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
       <div id="slider" class="flex transition-transform duration-300" style="transform: translateX(0%)">
         ${imagePaths.map(path => `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report Image">`).join('')}
@@ -338,29 +344,36 @@
       } else {
         try {
           const data = await fetchItems(slug);
-          const items = Array.isArray(data) ? data : Object.values(data).flat();
-          items.forEach(item => {
-            const li = document.createElement('li');
-            const btn = document.createElement('button');
-            btn.className = 'flex items-center text-indigo-600 hover:underline focus:outline-none';
-            btn.textContent = item.name;
-            const id = item.id || item.name;
-            // red dot for unread
-            const dot = document.createElement('span');
-            dot.className = 'ml-2 inline-block w-2 h-2 bg-red-600 rounded-full';
-            if (isItemRead(slug, id)) dot.classList.add('hidden');
-            btn.appendChild(dot);
-            btn.onclick = () => {
-              openEmailOverlay(item.name, item.content, slug);
-              markItemRead(slug, id);
-              dot.classList.add('hidden');
-              if (!hasUnreadForSlug(slug)) {
-                const badge = document.querySelector(`[data-slug="${slug}"] .badge`);
-                if (badge) badge.classList.add('hidden');
-              }
-            };
-            li.appendChild(btn);
-            detailList.appendChild(li);
+          const groups = Array.isArray(data) ? { '': data } : data;
+          Object.entries(groups).forEach(([category, items]) => {
+            if (category) {
+              const hdr = document.createElement('h3');
+              hdr.className = 'text-lg font-semibold mt-4';
+              hdr.textContent = category;
+              detailList.appendChild(hdr);
+            }
+            items.forEach(item => {
+              const li = document.createElement('li');
+              const btn = document.createElement('button');
+              btn.className = 'flex items-center text-indigo-600 hover:underline focus:outline-none';
+              btn.textContent = item.name;
+              const id = item.id || item.name;
+              const dot = document.createElement('span');
+              dot.className = 'ml-2 inline-block w-2 h-2 bg-red-600 rounded-full';
+              if (isItemRead(slug, id)) dot.classList.add('hidden');
+              btn.appendChild(dot);
+              btn.onclick = () => {
+                openEmailOverlay(item.name, item.content, slug);
+                markItemRead(slug, id);
+                dot.classList.add('hidden');
+                if (!hasUnreadForSlug(slug)) {
+                  const badge = document.querySelector(`[data-slug="${slug}"] .badge`);
+                  if (badge) badge.classList.add('hidden');
+                }
+              };
+              li.appendChild(btn);
+              detailList.appendChild(li);
+            });
           });
         } catch {
           detailList.innerHTML = `<li class="text-red-500">This page is under construction – check back soon!</li>`;
@@ -513,7 +526,7 @@
         const res = await fetch('data/updates.json');
         if (!res.ok) return;
         const json = await res.json();
-        allUpdates = json.map(u => ({ text: u.text, time: u.timestamp, link: u.link }));
+        allUpdates = json.map(u => ({ text: u.text, time: u.time || u.timestamp, link: u.link }));
         renderUpdatesPanel();
       } catch {
         console.error('Updates panel error');
@@ -526,6 +539,10 @@
         .sort((a, b) => new Date(b.time) - new Date(a.time));
       const toShow = filtered.slice(0, displayCount);
 
+      const lastSeen = getLastSeenUpdate();
+      const latestTime = toShow[0]?.time;
+      const isNew = latestTime && latestTime !== lastSeen;
+
       [updatesContainer, mobileUpdatesContainer].forEach(cn => {
         cn.innerHTML = '';
         if (!toShow.length) {
@@ -534,7 +551,7 @@
           li.className = 'py-2 text-gray-500';
           cn.appendChild(li);
         } else {
-          toShow.forEach(u => {
+          toShow.forEach((u, i) => {
             const li = document.createElement('li');
             if (u.link) {
               li.innerHTML = `<a href="${u.link}" class="block py-2 hover:underline">${u.time}: ${u.text}</a>`;
@@ -542,10 +559,20 @@
               li.textContent = `${u.time}: ${u.text}`;
               li.className = 'py-2';
             }
+            if (i === 0 && isNew) {
+              const badge = document.createElement('span');
+              badge.textContent = 'New';
+              badge.className = 'ml-2 text-red-600 text-xs font-semibold';
+              li.appendChild(badge);
+            }
             cn.appendChild(li);
           });
         }
       });
+
+      if (isNew) {
+        setLastSeenUpdate(latestTime);
+      }
     }
     setInterval(pollUpdatesPanel, 60000);
     pollUpdatesPanel();
