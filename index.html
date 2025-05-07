@@ -704,7 +704,6 @@
   });
 
 document.addEventListener('DOMContentLoaded', () => {
-  // your original init calls
   renderCards();
   buildSearchIndex();
 
@@ -713,25 +712,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const closeBtn     = document.getElementById('update-toast-close');
   const toastContent = document.getElementById('update-toast-content');
 
-  // Start hidden via Tailwind’s .hidden
+  // Start hidden
   toast.classList.add('hidden');
 
-  // Override showUpdateToast to use .hidden instead of pointer-events
+  // Override showUpdateToast to bail if closed/removed
   const _origShow = showUpdateToast;
   showUpdateToast = message => {
-    if (toastClosed) return;          // honor manual close
+    if (toastClosed || !document.getElementById('update-toast')) return;
     toastContent.textContent = message;
     toast.classList.remove('hidden');
     toast.classList.add('opacity-100');
   };
 
-  // Attach the close handler now that elements exist
+  // Close handler completely removes the toast
   closeBtn.addEventListener('click', () => {
-    toastClosed = true;               // remember closed this session
-    toast.classList.add('hidden');
+    toastClosed = true;   // mark it closed for this session
+    toast.remove();       // remove from DOM
   });
 
-  // Finally, sync badges on initial load
+  // Sync badges on initial load
   updateCardBadges();
 });
 
