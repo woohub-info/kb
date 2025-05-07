@@ -239,22 +239,18 @@
       localStorage.setItem('lastSeenUpdate', ts);
     }
 
-// toast control
-let initialUpdatesLoad = true;
-function showUpdateToast(message, time) {
-  document.getElementById('update-toast-content').textContent = message;
-  document.getElementById('update-toast-time').textContent    = time;
-  const toast = document.getElementById('update-toast');
-  toast.classList.remove('opacity-0', 'pointer-events-none');
-  toast.classList.add('opacity-100');
-}
-
-// wire up the "×" close button (attach immediately)
-const toastCloseBtn = document.getElementById('update-toast-close');
-toastCloseBtn.addEventListener('click', () => {
-  const toast = document.getElementById('update-toast');
-  toast.classList.add('opacity-0', 'pointer-events-none');
-});
+    // toast control
+    let initialUpdatesLoad = true;
+    function showUpdateToast(message) {
+      document.getElementById('update-toast-content').textContent = message;
+      const toast = document.getElementById('update-toast');
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      toast.classList.add('opacity-100');
+    }
+    document.getElementById('update-toast-close').onclick = () => {
+      const toast = document.getElementById('update-toast');
+      toast.classList.add('opacity-0', 'pointer-events-none');
+    };
 
     // Element refs
     const container               = document.getElementById('card-container');
