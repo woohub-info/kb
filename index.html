@@ -247,7 +247,10 @@
       toast.classList.remove('opacity-0', 'pointer-events-none');
       toast.classList.add('opacity-100');
     }
-    document.getElementById('update-toast-close'); // no-op here
+    document.getElementById('update-toast-close').onclick = () => {
+      const toast = document.getElementById('update-toast');
+      toast.classList.add('opacity-0', 'pointer-events-none');
+    };
 
     // Element refs
     const container               = document.getElementById('card-container');
@@ -530,6 +533,20 @@
         }
       }
     }
+    setInterval(pollNotifications, 60000);
+    pollNotifications();
+
+    notifBtn.onclick = () => {
+      const open = notifDropdown.classList.toggle('hidden');
+      notifBtn.setAttribute('aria-expanded', String(!open));
+      if (!open) notifCountEl.textContent = '0';
+    };
+    clearNotifsBtn.onclick = () => {
+      notifListEl.innerHTML = '';
+      seenNotifIds.clear();
+      localStorage.removeItem('seenNotifIds');
+      notifCountEl.textContent = '0';
+    };
 
     // Recent updates panel
     let allUpdates = [], displayCount = 5;
@@ -597,6 +614,8 @@
       if (isNew) setLastSeenUpdate(latestTime);
       initialUpdatesLoad = false;
     }
+    setInterval(pollUpdatesPanel, 60000);
+    pollUpdatesPanel();
 
     updatesToggleBtn.onclick = () => updatesFilterContainer.classList.toggle('hidden');
     mobileUpdatesToggleBtn.onclick = () => mobileUpdatesFilterContainer.classList.toggle('hidden');
@@ -659,8 +678,6 @@
       searchInput.setAttribute('aria-expanded','true');
     }, 250);
     searchInput.addEventListener('input', handleSearch);
-
-    // Keyboard shortcut for search
     document.addEventListener('keydown', e => {
       if (e.key==='/' && document.activeElement!==searchInput) {
         e.preventDefault();
@@ -668,21 +685,9 @@
       }
     });
 
-    // Initialize on DOM ready
     document.addEventListener('DOMContentLoaded', () => {
-      // wire up the toast close button after DOM is ready
-      const closeBtn = document.getElementById('update-toast-close');
-      const toast    = document.getElementById('update-toast');
-      closeBtn.addEventListener('click', () => {
-        toast.classList.add('opacity-0', 'pointer-events-none');
-      });
-
       renderCards();
       buildSearchIndex();
-      pollNotifications();
-      pollUpdatesPanel();
-      setInterval(pollNotifications, 60000);
-      setInterval(pollUpdatesPanel, 60000);
     });
   </script>
 </body>
