@@ -147,7 +147,7 @@
 
     <!-- Main content -->
     <main role="main" class="flex-1 flex flex-col">
-      <!-- Breadcrumbs -->
+      <!-- Breadcrumbs -->  
       <nav role="navigation" class="text-sm mb-4" aria-label="Breadcrumb">
         <ol class="list-reset flex text-gray-600">
           <li><a href="#" onclick="event.preventDefault();" class="hover:underline">Home</a></li>
@@ -367,7 +367,7 @@
           Object.entries(groups).forEach(([category, items]) => {
             if (category) {
               const hdr = document.createElement('h3');
-              hdr.className = 'text-lg font-semibold mt-4';
+              hdr.className = 'text-lg font-semibold mt-4';  
               hdr.textContent = category;
               detailList.appendChild(hdr);
             }
@@ -378,7 +378,7 @@
               btn.textContent = item.name;
               const id = item.id || item.name;
               const dot = document.createElement('span');
-              dot.className = 'ml-2 inline-block w-2 h-2 bg-red-600 rounded-full';
+              dot.className = 'ml-2 inline-block w-2 h-2 bg-red-600 rounded-full';  
               if (isItemRead(slug, id)) dot.classList.add('hidden');
               btn.appendChild(dot);
               btn.onclick = () => {
@@ -399,7 +399,7 @@
         }
       }
     }
-
+    
     // Trap focus in modal for accessibility
     function trapFocus(e) {
       const focusable = Array.from(overlayDialog.querySelectorAll('button, [href], input, textarea, [tabindex]:not([tabindex="-1"])'))
@@ -473,7 +473,8 @@
     }
 
     // Poll notifications and flag card badges
-    let seenNotifIds = new Set();
+    // Load seen notification IDs from localStorage:
+    let seenNotifIds = new Set(JSON.parse(localStorage.getItem('seenNotifIds') || '[]'));
     async function pollNotifications() {
       const sources = [
         { url: 'data/updates.json', type: 'updates', parser: data => data.map(u => ({ id: u.id || u.timestamp + u.text, text: u.text, time: u.timestamp })) }
@@ -514,13 +515,15 @@
               notifListEl.prepend(li);
               notifCountEl.textContent = String((+notifCountEl.textContent || 0) + 1);
 
+              // persist this ID so it won't reappear after reload
+              seenNotifIds.add(item.id);
+              localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
+
               // show card badge if unread
               if (src.type !== 'updates' && !isItemRead(src.type, item.id)) {
                 const badgeEl = document.querySelector(`[data-slug="${src.type}"] .badge`);
                 if (badgeEl) badgeEl.classList.remove('hidden');
               }
-
-              seenNotifIds.add(item.id);
             }
           });
         } catch (e) {
@@ -554,6 +557,7 @@
     function renderUpdatesPanel() {
       const filterVal = (updatesFilter?.value || mobileUpdatesFilter?.value || '').toLowerCase();
       const filtered = allUpdates
+
         .filter(u => u.text.toLowerCase().includes(filterVal))
         .sort((a, b) => new Date(b.time) - new Date(a.time));
       const toShow = filtered.slice(0, displayCount);
@@ -576,8 +580,7 @@
               const a = document.createElement('a');
               a.href = u.link;
               a.className = 'block py-2 hover:underline';
-              // prepend "New " before date if first item and truly new on initial load
-              if (i === 0 && (initialUpdatesLoad && isNew)) {
+              if (i === 0 && initialUpdatesLoad) {
                 const badge = document.createElement('span');
                 badge.textContent = 'New ';
                 badge.className = 'text-red-600 text-xs font-semibold';
@@ -587,7 +590,7 @@
               a.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
               li.appendChild(a);
             } else {
-              if (i === 0 && (initialUpdatesLoad && isNew)) {
+              if (i === 0 && initialUpdatesLoad) {
                 const badge = document.createElement('span');
                 badge.textContent = 'New ';
                 badge.className = 'text-red-600 text-xs font-semibold';
