@@ -526,7 +526,7 @@
         const res = await fetch('data/updates.json');
         if (!res.ok) return;
         const json = await res.json();
-        allUpdates = json.map(u => ({ text: u.text, time: u.time || u.timestamp, link: u.link }));
+        allUpdates = json.map(u => ({ text: u.text, time: u.timestamp, link: u.link }));
         renderUpdatesPanel();
       } catch {
         console.error('Updates panel error');
@@ -554,16 +554,27 @@
           toShow.forEach((u, i) => {
             const li = document.createElement('li');
             if (u.link) {
-              li.innerHTML = `<a href="${u.link}" class="block py-2 hover:underline">${u.time}: ${u.text}</a>`;
+              const a = document.createElement('a');
+              a.href = u.link;
+              a.className = 'block py-2 hover:underline';
+              if (i === 0 && isNew) {
+                const badge = document.createElement('span');
+                badge.textContent = 'New ';
+                badge.className = 'text-red-600 text-xs font-semibold';
+                a.appendChild(badge);
+              }
+              a.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
+              li.appendChild(a);
             } else {
-              li.textContent = `${u.time}: ${u.text}`;
+              if (i === 0 && isNew) {
+                const badge = document.createElement('span');
+                badge.textContent = 'New ';
+                badge.className = 'text-red-600 text-xs font-semibold';
+                li.appendChild(badge);
+              }
+              const text = document.createTextNode(`${u.time}: ${u.text}`);
+              li.appendChild(text);
               li.className = 'py-2';
-            }
-            if (i === 0 && isNew) {
-              const badge = document.createElement('span');
-              badge.textContent = 'New';
-              badge.className = 'ml-2 text-red-600 text-xs font-semibold';
-              li.appendChild(badge);
             }
             cn.appendChild(li);
           });
