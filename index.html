@@ -239,18 +239,30 @@
       localStorage.setItem('lastSeenUpdate', ts);
     }
 
-    // toast control
-    let initialUpdatesLoad = true;
-    function showUpdateToast(message) {
-      document.getElementById('update-toast-content').textContent = message;
-      const toast = document.getElementById('update-toast');
-      toast.classList.remove('opacity-0', 'pointer-events-none');
-      toast.classList.add('opacity-100');
-    }
-    document.getElementById('update-toast-close').onclick = () => {
-      const toast = document.getElementById('update-toast');
-      toast.classList.add('opacity-0', 'pointer-events-none');
-    };
+// toast control
+let initialUpdatesLoad = true;
+function showUpdateToast(message, time) {
+  const contentEl = document.getElementById('update-toast-content');
+  const timeEl    = document.getElementById('update-toast-time');
+  const toast     = document.getElementById('update-toast');
+
+  contentEl.textContent = message;
+  timeEl.textContent    = time;
+  toast.classList.remove('opacity-0', 'pointer-events-none');
+  toast.classList.add('opacity-100');
+
+  // auto-close after 2 minutes
+  setTimeout(() => {
+    toast.classList.add('opacity-0', 'pointer-events-none');
+  }, 120000);
+}
+
+// make sure your close-button listener still sits here:
+const toastCloseBtn = document.getElementById('update-toast-close');
+toastCloseBtn.addEventListener('click', () => {
+  const toast = document.getElementById('update-toast');
+  toast.classList.add('opacity-0', 'pointer-events-none');
+});
 
     // Element refs
     const container               = document.getElementById('card-container');
