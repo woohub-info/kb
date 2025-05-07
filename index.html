@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title id="page-title">WooHub</title>
-  <!-- PWA theme -->
-  <meta name="theme-color" content="#4F46E5" />
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Fuse.js for fuzzy search -->
@@ -19,12 +17,11 @@
   <link rel="preload" href="data/directory.json" as="fetch" crossorigin />
   <style>
     #overlay ol,
-    #modal ol {
-      list-style-type: decimal;
-    }
+    #modal ol { list-style-type: decimal; }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800 antialiased flex flex-col min-h-screen">
+
   <noscript>
     <div class="p-4 bg-yellow-100 text-yellow-800">
       JavaScript is required to use WooHub.
@@ -32,30 +29,32 @@
   </noscript>
 
   <!-- Header -->
-  <header class="bg-white shadow sticky top-0 z-10">
+  <header class="relative bg-white shadow sticky top-0 z-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-      <!-- Logo -->
-      <a href="#" onclick="event.preventDefault();" class="text-2xl font-semibold text-indigo-600">
-        WooHub
-      </a>
-
-      <!-- Search -->
+      <a href="#" onclick="event.preventDefault();" class="text-2xl font-semibold text-indigo-600">WooHub</a>
       <div class="relative flex-1 max-w-lg mx-4">
-        <input
-          id="search-input"
-          type="search"
-          placeholder="Search keywords..."
-          aria-label="Search keywords"
-          aria-controls="search-suggestions"
-          aria-expanded="false"
-          aria-autocomplete="list"
-          class="w-full px-4 py-2 border border-gray-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 placeholder-gray-500"
-        />
-        <ul
-          id="search-suggestions"
-          role="listbox"
-          class="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg hidden z-20 max-h-60 overflow-auto"
-        ></ul>
+        <input id="search-input" type="search" placeholder="Search keywords..."
+          aria-label="Search keywords" aria-controls="search-suggestions" aria-expanded="false" aria-autocomplete="list"
+          class="w-full px-4 py-2 border border-gray-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 placeholder-gray-500" />
+        <ul id="search-suggestions" role="listbox"
+          class="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg hidden z-30 max-h-60 overflow-auto"></ul>
+      </div>
+      <div class="relative">
+        <button id="notification-btn" class="p-2 focus:outline-none">
+          <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span id="notification-count"
+            class="absolute -top-1 -right-1 inline-flex items-center justify-center px-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">0</span>
+        </button>
+        <div id="notification-dropdown"
+          class="hidden absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-40">
+          <ul id="notification-list" class="max-h-64 overflow-y-auto divide-y divide-gray-200"></ul>
+          <div class="text-center p-2">
+            <button id="clear-notifications" class="text-indigo-600 hover:underline focus:outline-none">Clear All</button>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -64,27 +63,13 @@
   <details class="lg:hidden px-4 mt-2">
     <summary class="font-semibold cursor-pointer flex items-center justify-between">
       Recent Updates
-      <span
-        id="mobile-updates-badge"
-        class="ml-2 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center"
-      >0</span>
     </summary>
     <div class="mt-2 space-y-2">
-      <input
-        id="mobile-updates-filter"
-        type="text"
-        placeholder="Filter updates..."
-        aria-label="Filter updates"
-        class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-800 placeholder-gray-500"
-      />
-      <div
-        id="mobile-updates-container"
-        class="mt-2 max-h-60 overflow-y-auto pr-2 space-y-2"
-      ></div>
-      <button
-        id="mobile-load-more-btn"
-        class="mt-2 w-full text-center text-indigo-600 hover:underline focus:outline-none"
-      >Load More</button>
+      <input id="mobile-updates-filter" type="text" placeholder="Filter updates..." aria-label="Filter updates"
+        class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-800 placeholder-gray-500" />
+      <ul id="mobile-updates-container" class="mt-2 max-h-60 overflow-y-auto pr-2 space-y-2"></ul>
+      <button id="mobile-load-more-btn"
+        class="mt-2 w-full text-center text-indigo-600 hover:underline focus:outline-none">Load More</button>
     </div>
   </details>
 
@@ -93,27 +78,11 @@
     <!-- Desktop Recent Updates Panel -->
     <aside class="w-64 mr-6 hidden lg:block">
       <div class="bg-white border border-gray-200 rounded-lg p-4 sticky top-24">
-        <div class="flex items-center justify-between mb-2">
-          <input
-            id="updates-filter"
-            type="text"
-            placeholder="Filter updates..."
-            aria-label="Filter updates"
-            class="flex-1 px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-800 placeholder-gray-500"
-          />
-          <span
-            id="updates-badge"
-            class="ml-2 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center"
-          >0</span>
-        </div>
-        <h2 class="text-lg font-semibold mb-2">
-          Recent Updates
-        </h2>
-        <div id="updates-container" class="max-h-96 overflow-y-auto pr-2 space-y-2"></div>
-        <button
-          id="load-more-btn"
-          class="mt-2 w-full text-center text-indigo-600 hover:underline focus:outline-none"
-        >Load More</button>
+        <input id="updates-filter" type="text" placeholder="Filter updates..." aria-label="Filter updates"
+          class="w-full mb-2 px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-800 placeholder-gray-500" />
+        <ul id="updates-container" class="max-h-96 overflow-y-auto pr-2 space-y-2"></ul>
+        <button id="load-more-btn"
+          class="mt-2 w-full text-center text-indigo-600 hover:underline focus:outline-none">Load More</button>
       </div>
     </aside>
 
@@ -122,24 +91,16 @@
       <!-- Breadcrumbs -->
       <nav class="text-sm mb-4" aria-label="Breadcrumb">
         <ol class="list-reset flex text-gray-600">
-          <li>
-            <a href="#" onclick="event.preventDefault();" class="hover:underline">Home</a>
-          </li>
+          <li><a href="#" onclick="event.preventDefault();" class="hover:underline">Home</a></li>
           <li><span class="mx-2">/</span></li>
           <li>Dashboard</li>
         </ol>
       </nav>
 
       <!-- Detail View -->
-      <section
-        id="detail-container"
-        class="hidden bg-white rounded-lg shadow p-6 mb-6"
-        role="region"
-        aria-labelledby="detail-title"
-      >
-        <button id="back-btn" class="text-indigo-600 hover:underline mb-4 focus:outline-none">
-          ← Back to Dashboard
-        </button>
+      <section id="detail-container" class="hidden bg-white rounded-lg shadow p-6 mb-6" role="region"
+        aria-labelledby="detail-title">
+        <button id="back-btn" class="text-indigo-600 hover:underline mb-4 focus:outline-none">← Back to Dashboard</button>
         <h2 id="detail-title" class="text-2xl font-semibold mb-4"></h2>
         <ul id="detail-list" class="list-disc pl-5 space-y-2"></ul>
       </section>
@@ -150,49 +111,35 @@
   </div>
 
   <!-- Overlay Modal -->
-  <div
-    id="overlay"
+  <div id="overlay"
     class="fixed inset-0 bg-black bg-opacity-50 hidden items-start justify-center overflow-y-auto z-40"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="overlay-header"
-    aria-describedby="overlay-body"
-  >
-    <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 max-h-[90vh] overflow-y-auto p-6 relative mt-20 mx-auto">
-      <button
-        id="overlay-close"
-        aria-label="Close dialog"
-        class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none"
-      >&times;</button>
-      <button
-        id="copy-btn"
-        class="absolute top-4 right-12 text-sm text-gray-500 hover:text-gray-700 hidden focus:outline-none"
-      >Copy</button>
+    role="dialog" aria-modal="true" aria-labelledby="overlay-header" aria-describedby="overlay-body">
+    <div
+      class="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 max-h-[90vh] overflow-y-auto p-6 relative mt-20 mx-auto">
+      <button id="overlay-close" aria-label="Close dialog"
+        class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none">&times;</button>
+      <button id="copy-btn"
+        class="absolute top-4 right-12 text-sm text-gray-500 hover:text-gray-700 hidden focus:outline-none">Copy</button>
       <h2 id="overlay-header" class="text-2xl font-semibold mb-4"></h2>
       <div id="overlay-body" class="space-y-4" tabindex="0"></div>
     </div>
   </div>
 
   <!-- Jump to Top -->
-  <button
-    id="to-top"
+  <button id="to-top"
     class="fixed bottom-6 right-6 p-3 bg-indigo-600 text-white rounded-full shadow-lg hidden focus:outline-none"
-    aria-label="Scroll to top"
-  >↑</button>
+    aria-label="Scroll to top">↑</button>
 
   <!-- Footer -->
   <footer class="bg-white py-6 border-t border-gray-200 mt-auto">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-sm text-gray-500 flex justify-between">
       <p>&copy; 2025 WooHub. All rights reserved.</p>
-      <div class="space-x-4">
-        <a href="#" class="hover:underline">Developed By: Christine Anastacio</a>
-      </div>
+      <div class="space-x-4"><a href="#" class="hover:underline">Developed By: Christine Anastacio</a></div>
     </div>
   </footer>
 
-  <!-- Script -->
   <script>
-    // -- Data & References -------------------------------
+    // Data & refs
     const cardsData = [
       { title: 'Email Templates', slug: 'email-templates', description: 'Browse pre-built email templates.' },
       { title: 'Processes',      slug: 'processes',      description: 'Step-by-step how-to guides and workflows.' },
@@ -201,39 +148,39 @@
       { title: 'Tutorials',      slug: 'tutorials',      description: 'Video lessons to guide you through every step.' },
       { title: 'Directory',      slug: 'directory',      description: 'Key people to contact.' }
     ];
-    const container              = document.getElementById('card-container');
-    const detailContainer        = document.getElementById('detail-container');
-    const detailTitle            = document.getElementById('detail-title');
-    const detailList             = document.getElementById('detail-list');
-    const backBtn                = document.getElementById('back-btn');
-    const overlay                = document.getElementById('overlay');
-    const overlayClose           = document.getElementById('overlay-close');
-    const copyBtn                = document.getElementById('copy-btn');
-    const overlayHeader          = document.getElementById('overlay-header');
-    const overlayBody            = document.getElementById('overlay-body');
-    const searchInput            = document.getElementById('search-input');
-    const searchSuggestions      = document.getElementById('search-suggestions');
-    const updatesContainer       = document.getElementById('updates-container');
+    const container = document.getElementById('card-container');
+    const detailContainer = document.getElementById('detail-container');
+    const detailTitle = document.getElementById('detail-title');
+    const detailList = document.getElementById('detail-list');
+    const backBtn = document.getElementById('back-btn');
+    const overlay = document.getElementById('overlay');
+    const overlayClose = document.getElementById('overlay-close');
+    const copyBtn = document.getElementById('copy-btn');
+    const overlayHeader = document.getElementById('overlay-header');
+    const overlayBody = document.getElementById('overlay-body');
+    const searchInput = document.getElementById('search-input');
+    const searchSuggestions = document.getElementById('search-suggestions');
+    const notifBtn = document.getElementById('notification-btn');
+    const notifCountEl = document.getElementById('notification-count');
+    const notifDropdown = document.getElementById('notification-dropdown');
+    const notifListEl = document.getElementById('notification-list');
+    const clearNotifsBtn = document.getElementById('clear-notifications');
+    const updatesContainer = document.getElementById('updates-container');
     const mobileUpdatesContainer = document.getElementById('mobile-updates-container');
-    const updatesFilter          = document.getElementById('updates-filter');
-    const mobileUpdatesFilter    = document.getElementById('mobile-updates-filter');
-    const updatesBadge           = document.getElementById('updates-badge');
-    const mobileUpdatesBadge     = document.getElementById('mobile-updates-badge');
-    const loadMoreBtn            = document.getElementById('load-more-btn');
-    const mobileLoadMoreBtn      = document.getElementById('mobile-load-more-btn');
-    const toTopBtn               = document.getElementById('to-top');
-    const contentCache           = {};
+    const updatesFilter = document.getElementById('updates-filter');
+    const mobileUpdatesFilter = document.getElementById('mobile-updates-filter');
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    const mobileLoadMoreBtn = document.getElementById('mobile-load-more-btn');
+    const toTopBtn = document.getElementById('to-top');
+    const contentCache = {};
 
-    // -- Utility: Debounce --------------------------------
     function debounce(fn, ms) {
-      let t;
-      return (...args) => {
+      let t; return (...args) => {
         clearTimeout(t);
         t = setTimeout(() => fn(...args), ms);
       };
     }
 
-    // -- Fetch JSON with cache ----------------------------
     async function fetchItems(slug) {
       if (contentCache[slug]) return contentCache[slug];
       const res = await fetch(`data/${slug}.json`);
@@ -243,37 +190,27 @@
       return data;
     }
 
-    // -- Render dashboard cards ---------------------------
     function renderCards() {
       container.innerHTML = '';
       cardsData.forEach(card => {
         const article = document.createElement('article');
-        article.className =
-          'bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6 flex flex-col';
+        article.className = 'bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6 flex flex-col';
         article.innerHTML = `
           <h3 tabindex="0" class="text-xl font-semibold mb-2 hover:text-indigo-600 cursor-pointer">${card.title}</h3>
           <p class="text-gray-600 flex-1">${card.description}</p>
-          <button class="mt-4 text-indigo-600 font-medium hover:underline focus:outline-none">
-            View ${card.title} →
-          </button>
+          <button class="mt-4 text-indigo-600 font-medium hover:underline focus:outline-none">View ${card.title} →</button>
         `;
-        article.querySelector('h3').addEventListener('click', () => showContent(card.slug, card.title));
-        article.querySelector('h3').addEventListener('keydown', e => {
-          if (e.key === 'Enter') showContent(card.slug, card.title);
-        });
-        article.querySelector('button').addEventListener('click', () => showContent(card.slug, card.title));
+        article.querySelector('h3').onclick = () => showContent(card.slug, card.title);
+        article.querySelector('button').onclick = () => showContent(card.slug, card.title);
         container.appendChild(article);
       });
     }
 
-    // -- Show content view --------------------------------
-    async function showContent(slug, title, push = true) {
-      if (push) history.pushState({ slug, title }, '', `?view=${slug}`);
+    async function showContent(slug, title) {
       container.classList.add('hidden');
       detailContainer.classList.remove('hidden');
       detailTitle.textContent = title;
       detailList.innerHTML = '<li class="animate-pulse"><span class="block h-4 bg-gray-200 rounded w-3/4 mb-2"></span></li>';
-
       if (slug === 'reports') {
         const imagePaths = [
           'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
@@ -281,75 +218,52 @@
         ];
         detailList.innerHTML = `
 <div class="prose max-w-none space-y-4">
-  <p>
-    <a
-      href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
-      target="_blank"
-      class="text-blue-600 hover:underline"
-    >
-      WooParts eBay and Amazon Performance - 2025
-    </a>
-  </p>
+  <p><a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl" target="_blank" class="text-blue-600 hover:underline">WooParts eBay and Amazon Performance - 2025</a></p>
   <div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
     <div id="slider" class="flex transition-transform duration-300" style="transform: translateX(0%)">
-      ${imagePaths
-        .map(
-          path =>
-            `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report Image">`
-        )
-        .join('')}
+      ${imagePaths.map(path => `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report Image">`).join('')}
     </div>
     <button id="prevSlide" class="absolute top-1/2 left-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">&lsaquo;</button>
     <button id="nextSlide" class="absolute top-1/2 right-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">&rsaquo;</button>
   </div>
-</div>
-        `;
-        let currentSlide = 0;
-        const slider = document.getElementById('slider');
-        const totalSlides = imagePaths.length;
+</div>`;
+        let currentSlide = 0, sliderEl = document.getElementById('slider'), totalSlides = imagePaths.length;
         document.getElementById('prevSlide').onclick = () => {
           currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-          slider.style.transform = `translateX(-${currentSlide * 100}%)`;
+          sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
         };
         document.getElementById('nextSlide').onclick = () => {
           currentSlide = (currentSlide + 1) % totalSlides;
-          slider.style.transform = `translateX(-${currentSlide * 100}%)`;
+          sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
         };
         return;
       }
-
       try {
         const data = await fetchItems(slug);
         detailList.innerHTML = '';
         const groups = Array.isArray(data) ? { '': data } : data;
         Object.entries(groups).forEach(([group, items]) => {
           if (group) {
-            const header = document.createElement('h3');
-            header.className = 'text-lg font-semibold mt-4';
-            header.textContent = group;
-            detailList.appendChild(header);
+            const h3 = document.createElement('h3');
+            h3.className = 'text-lg font-semibold mt-4';
+            h3.textContent = group;
+            detailList.appendChild(h3);
           }
           items.forEach(item => {
             const li = document.createElement('li');
             const btn = document.createElement('button');
             btn.className = 'text-indigo-600 hover:underline focus:outline-none';
             btn.textContent = item.name;
-            btn.addEventListener('click', () => openEmailOverlay(item.name, item.content));
+            btn.onclick = () => openEmailOverlay(item.name, item.content);
             li.appendChild(btn);
             detailList.appendChild(li);
           });
         });
-      } catch (e) {
-        detailList.innerHTML = `
-
-<li class="text-red-500">
-  Failed to load. <button id="retry-btn" class="underline focus:outline-none">Retry</button>
-</li>`;
-        document.getElementById('retry-btn').addEventListener('click', () => showContent(slug, title, false));
+      } catch {
+        detailList.innerHTML = `<li class="text-red-500">This page is under construction – check back soon!</li>`;
       }
     }
 
-    // -- Overlay modal ------------------------------------
     let lastFocused;
     function openEmailOverlay(name, htmlContent) {
       lastFocused = document.activeElement;
@@ -359,181 +273,134 @@
       copyBtn.classList.remove('hidden');
       overlayClose.focus();
     }
-    overlayClose.addEventListener('click', () => {
-      overlay.classList.add('hidden');
-      lastFocused?.focus();
-    });
-    overlay.addEventListener('click', e => {
-      if (e.target === overlay) {
-        overlay.classList.add('hidden');
-        lastFocused?.focus();
-      }
-    });
+    overlayClose.onclick = () => { overlay.classList.add('hidden'); lastFocused?.focus(); };
+    overlay.onclick = e => { if (e.target === overlay) { overlay.classList.add('hidden'); lastFocused?.focus(); } };
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && !overlay.classList.contains('hidden')) {
-        overlay.classList.add('hidden');
-        lastFocused?.focus();
+        overlay.classList.add('hidden'); lastFocused?.focus();
       }
     });
-    copyBtn.addEventListener('click', () => {
-      navigator.clipboard
-        .writeText(overlayBody.innerText)
-        .then(() => {
-          copyBtn.textContent = 'Copied!';
-          setTimeout(() => (copyBtn.textContent = 'Copy'), 2000);
-        });
-    });
+    copyBtn.onclick = () => {
+      navigator.clipboard.writeText(overlayBody.innerText).then(() => {
+        copyBtn.textContent = 'Copied!'; setTimeout(() => (copyBtn.textContent = 'Copy'), 2000);
+      });
+    };
 
-    // -- Back & Jump to top -------------------------------
-    backBtn.addEventListener('click', () => {
+    backBtn.onclick = () => {
       detailContainer.classList.add('hidden');
       container.classList.remove('hidden');
-    });
+    };
     window.addEventListener('scroll', () => {
       toTopBtn.classList.toggle('hidden', window.scrollY < 300);
     });
-    toTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    toTopBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // -- Enhanced Recent Updates --------------------------
+    // Recent Updates logic
     let allUpdates = [], displayCount = 5;
-    const readSet = new Set(JSON.parse(localStorage.getItem('readUpdates') || '[]'));
+    let prevNotifIds = new Set();
 
-    function relativeTime(ts) {
-      const diff = Date.now() - new Date(ts).getTime();
-      const sec = Math.floor(diff / 1000);
-      if (sec < 60) return sec + 's ago';
-      const min = Math.floor(sec / 60);
-      if (min < 60) return min + 'm ago';
-      const hr = Math.floor(min / 60);
-      if (hr < 24) return hr + 'h ago';
-      return Math.floor(hr / 24) + 'd ago';
+    function formatDate(iso) {
+      const [y, m, d] = iso.split('-');
+      return `${m}/${d}/${y}`;
     }
 
-    function typeIcon(type) {
-      switch(type) {
-        case 'report':   return '📊';
-        case 'process':  return '🛠️';
-        case 'tutorial': return '🎥';
-        case 'email':    return '✉️';
-        default:         return 'ℹ️';
-      }
-    }
+    function renderUpdates() {
+      const filter = (updatesFilter?.value || mobileUpdatesFilter?.value || '').toLowerCase();
+      const filtered = allUpdates
+        .filter(u => u.text.toLowerCase().includes(filter))
+        .sort((a,b)=> new Date(b.timestamp)-new Date(a.timestamp));
+      const toShow = filtered.slice(0, displayCount);
 
-    function groupByDate(arr) {
-      const today = [], week = [], older = [];
-      const now = new Date();
-      arr.forEach(u => {
-        const dt = new Date(u.timestamp);
-        const diff = now - dt;
-        if (dt.toDateString() === now.toDateString()) today.push(u);
-        else if (diff < 7*24*60*60*1000) week.push(u);
-        else older.push(u);
-      });
-      return { Today: today, 'This Week': week, Earlier: older };
-    }
-
-    function renderUpdates(container) {
-      container.innerHTML = '';
-      const filter = (updatesFilter.value || mobileUpdatesFilter.value || '').toLowerCase();
-      const filtered = allUpdates.filter(u =>
-        u.text.toLowerCase().includes(filter) ||
-        (u.type && u.type.includes(filter))
-      );
-      const grouped = groupByDate(filtered);
-      Object.entries(grouped).forEach(([group, items]) => {
-        if (!items.length) return;
-        const h3 = document.createElement('h3');
-        h3.textContent = group;
-        h3.className = 'font-semibold mt-4 mb-2';
-        container.appendChild(h3);
-        items.slice(0, displayCount).forEach(u => {
-          const id = u.id || (u.timestamp + u.text);
-          const isUnread = !readSet.has(id);
-          const icon = typeIcon(u.type);
-          const rel = relativeTime(u.timestamp);
-          const detailWrap = document.createElement('details');
-          detailWrap.className = 'border-b pb-2';
-          const summary = document.createElement('summary');
-          summary.className = (isUnread ? 'font-semibold ' : '') + 'flex justify-between items-center cursor-pointer';
-          summary.innerHTML = `
-            <span><span class="mr-1">${icon}</span>${u.text}</span>
-            <time class="text-xs text-gray-500 ml-2">${rel}</time>
-          `;
-          summary.addEventListener('click', () => {
-            readSet.add(id);
-            localStorage.setItem('readUpdates', JSON.stringify([...readSet]));
-            updateBadge();
-          });
-          detailWrap.appendChild(summary);
+      [updatesContainer, mobileUpdatesContainer].forEach(container => {
+        container.innerHTML = '';
+        toShow.forEach(u => {
+          const li = document.createElement('li');
+          const date = formatDate(u.timestamp.slice(0,10));
           if (u.link) {
-            const div = document.createElement('div');
-            div.className = 'mt-1 pl-6';
-            div.innerHTML = `<a href="${u.link}" target="_blank" class="text-blue-600 hover:underline">${u.link}</a>`;
-            detailWrap.appendChild(div);
+            li.innerHTML = `<a href="${u.link}" class="block py-2 hover:underline">${date}: ${u.text}</a>`;
+          } else {
+            li.textContent = `${date}: ${u.text}`;
+            li.className = 'py-2';
           }
-          container.appendChild(detailWrap);
+          container.appendChild(li);
         });
       });
     }
 
-    function updateBadge() {
-      const unread = allUpdates.filter(u => !readSet.has(u.id || (u.timestamp+u.text))).length;
-      updatesBadge.textContent = unread;
-      mobileUpdatesBadge.textContent = unread;
-      updatesBadge.style.visibility = unread ? 'visible' : 'hidden';
-      mobileUpdatesBadge.style.visibility = unread ? 'visible' : 'hidden';
+    function pollUpdates() {
+      fetch('data/updates.json')
+        .then(r=>r.json())
+        .then(arr=>{
+          allUpdates = arr.map(u=>({ ...u }));
+          renderUpdates();
+
+          // notifications
+          arr.forEach(u=>{
+            if (!prevNotifIds.has(u.id|| (u.timestamp+u.text))) {
+              const li = document.createElement('li');
+              li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between';
+              const timeAgo = (() => {
+                const diff = Date.now() - new Date(u.timestamp).getTime();
+                const sec = Math.floor(diff/1000);
+                if (sec<60) return sec+'s ago';
+                const m = Math.floor(sec/60);
+                if (m<60) return m+'m ago';
+                const h = Math.floor(m/60);
+                if (h<24) return h+'h ago';
+                return Math.floor(h/24)+'d ago';
+              })();
+              li.innerHTML = `<span>${u.text}</span><time class="text-xs text-gray-500">${timeAgo}</time>`;
+              notifListEl.prepend(li);
+              notifCountEl.textContent = parseInt(notifCountEl.textContent||'0')+1;
+            }
+          });
+          prevNotifIds = new Set(arr.map(u=>u.id||(u.timestamp+u.text)));
+        })
+        .catch(console.error);
     }
 
-    const deb = debounce(() => {
-      renderUpdates(updatesContainer);
-      renderUpdates(mobileUpdatesContainer);
-    }, 200);
+    // hookup notification bell
+    notifBtn.onclick = ()=>{
+      notifDropdown.classList.toggle('hidden');
+      notifCountEl.textContent = '0';
+    };
+    clearNotifsBtn.onclick = ()=>{ notifListEl.innerHTML=''; };
 
-    updatesFilter.addEventListener('input', deb);
-    mobileUpdatesFilter.addEventListener('input', deb);
-    loadMoreBtn.addEventListener('click', () => { displayCount+=5; deb(); });
-    mobileLoadMoreBtn.addEventListener('click', () => { displayCount+=5; deb(); });
-
-    async function pollUpdates() {
-      try {
-        const res = await fetch('data/updates.json');
-        const arr = await res.json();
-        allUpdates = arr.map(u => ({ id: u.id || (u.timestamp+u.text), type: u.type||'', ...u }));
-        renderUpdates(updatesContainer);
-        renderUpdates(mobileUpdatesContainer);
-      } catch (e) {
-        console.error('Updates failed', e);
-      }
-    }
-    pollUpdates();
     setInterval(pollUpdates, 60000);
+    pollUpdates();
 
-    // -- Client-side search with Fuse.js ------------------
+    // wire filter and load more
+    (updatesFilter && updatesFilter.addEventListener('input', debounce(renderUpdates,200)));
+    (mobileUpdatesFilter && mobileUpdatesFilter.addEventListener('input', debounce(renderUpdates,200)));
+    loadMoreBtn.onclick = ()=>{ displayCount+=5; renderUpdates(); };
+    mobileLoadMoreBtn.onclick = ()=>{ displayCount+=5; renderUpdates(); };
+
+    // search
     let fuse;
-    async function buildSearchIndex() {
-      const items = cardsData.map(c => ({ name: c.title, content: c.description, slug: c.slug }));
-      await Promise.all(cardsData.map(async c => {
-        if (c.slug==='reports') return;
-        try {
+    async function buildSearchIndex(){
+      const items = cardsData.map(c=>({ name:c.title, content:c.description, slug:c.slug }));
+      await Promise.all(cardsData.map(async c=>{
+        if(c.slug==='reports') return;
+        try{
           const data = await fetchItems(c.slug);
           const groups = Array.isArray(data)?{ '':data }:data;
-          Object.values(groups).flat().forEach(i => items.push({ name: i.name, content: i.content, slug: c.slug }));
-        } catch {}
+          Object.values(groups).flat().forEach(i=>items.push({ name:i.name, content:i.content, slug:c.slug }));
+        }catch{}
       }));
       fuse = new Fuse(items, { keys:['name','content'], includeMatches:true, threshold:0.4 });
     }
-    function renderSuggestions(results) {
+    function renderSuggestions(res){
       searchSuggestions.innerHTML='';
-      if (!results.length) {
-        searchSuggestions.innerHTML='<li class="px-4 py-2 text-gray-500">No results found</li>';
+      if(!res.length){
+        searchSuggestions.innerHTML='<li class="px-4 py-2 text-gray-500">No results</li>';
         return;
       }
-      results.forEach(res=>{
-        let label=res.item.name;
-        const nameMatch=res.matches.find(m=>m.key==='name');
-        if (nameMatch) {
+      res.forEach(r=>{
+        let label=r.item.name;
+        const m=r.matches.find(m=>m.key==='name');
+        if(m){
           let h='',last=0;
-          nameMatch.indices.forEach(([s,e])=>{
+          m.indices.forEach(([s,e])=>{
             h+=label.slice(last,s)+'<mark>'+label.slice(s,e+1)+'</mark>';
             last=e+1;
           });
@@ -544,38 +411,28 @@
         li.role='option';
         li.className='px-4 py-2 hover:bg-gray-100 cursor-pointer';
         li.innerHTML=label;
-        li.addEventListener('click',()=>{
-          showContent(res.item.slug,res.item.name);
+        li.onclick=()=>{
+          showContent(r.item.slug,r.item.name);
           searchSuggestions.classList.add('hidden');
           searchInput.setAttribute('aria-expanded','false');
-        });
+        };
         searchSuggestions.appendChild(li);
       });
     }
-    const handleSearch = debounce(async e=>{
+    const handleSearch=debounce(async e=>{
       const q=e.target.value.trim();
-      if (!q) return searchSuggestions.classList.add('hidden');
-      if (!fuse) await buildSearchIndex();
-      const results=fuse.search(q);
-      renderSuggestions(results);
+      if(!q) return searchSuggestions.classList.add('hidden');
+      if(!fuse) await buildSearchIndex();
+      const res=fuse.search(q);
+      renderSuggestions(res);
       searchSuggestions.classList.remove('hidden');
       searchInput.setAttribute('aria-expanded','true');
     },250);
-    searchInput.addEventListener('input',handleSearch);
+    searchInput.addEventListener('input', handleSearch);
 
-    // -- History API deep-linking --------------------------
-    window.addEventListener('popstate',e=>{
-      if (e.state?.slug) showContent(e.state.slug,e.state.title,false);
-      else { detailContainer.classList.add('hidden'); container.classList.remove('hidden'); }
-    });
-    document.addEventListener('DOMContentLoaded',()=>{
+    document.addEventListener('DOMContentLoaded', ()=>{
       renderCards();
-      const p=new URLSearchParams(window.location.search);
-      if (p.has('view')) {
-        const slug=p.get('view');
-        const card=cardsData.find(c=>c.slug===slug);
-        if(card) showContent(slug,card.title,false);
-      }
+      buildSearchIndex();
     });
   </script>
 </body>
