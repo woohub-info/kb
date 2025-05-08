@@ -239,11 +239,9 @@
     localStorage.setItem('lastSeenUpdate', ts);
   }
 
-  // toast control
+  // === toast & badge control ===
   let initialUpdatesLoad = true;
-  // track whether the user has manually closed the toast
   let toastClosed = false;
-  // sync each card badge to unread items
   function updateCardBadges() {
     cardsData.forEach(c => {
       const badge = document.querySelector(`[data-slug="${c.slug}"] .badge`);
@@ -254,18 +252,15 @@
 
   function showUpdateToast(message) {
     if (toastClosed) return;
-    document.getElementById('update-toast-content').textContent = message;
     const toast = document.getElementById('update-toast');
-    toast.classList.remove('opacity-0', 'pointer-events-none');
+    if (!toast) return;
+    const toastContent = document.getElementById('update-toast-content');
+    toastContent.textContent = message;
+    toast.classList.remove('hidden');
     toast.classList.add('opacity-100');
   }
-  document.getElementById('update-toast-close').onclick = () => {
-    toastClosed = true;
-    const toast = document.getElementById('update-toast');
-    toast.classList.add('opacity-0', 'pointer-events-none');
-  };
 
-  // Element refs
+  // === Element refs ===
   const container               = document.getElementById('card-container');
   const detailContainer         = document.getElementById('detail-container');
   const detailTitle             = document.getElementById('detail-title');
@@ -296,7 +291,7 @@
   const mobileLoadMoreBtn       = document.getElementById('mobile-load-more-btn');
   const toTopBtn                = document.getElementById('to-top');
 
-  // Card data
+  // === Card data ===
   const cardsData = [
     { title: 'Email Templates', slug: 'email-templates', description: 'Browse pre-built email templates.' },
     { title: 'Processes',      slug: 'processes',      description: 'Step-by-step how-to guides and workflows.' },
@@ -306,7 +301,7 @@
     { title: 'Directory',      slug: 'directory',      description: 'Key people to contact.' }
   ];
 
-  // Caching & debounce
+  // === Caching & debounce ===
   const contentCache = {};
   function debounce(fn, ms) {
     let t;
@@ -325,7 +320,7 @@
     return data;
   }
 
-  // Render dashboard cards with unread badges
+  // === Render cards ===
   function renderCards() {
     container.innerHTML = '';
     cardsData.forEach(card => {
@@ -342,49 +337,61 @@
       article.querySelector('button').onclick = () => showContent(card.slug, card.title);
       container.appendChild(article);
     });
-    // sync badges on initial render
     updateCardBadges();
   }
 
-  // Show content for a card…
+  // === Show content for a card ===
   async function showContent(slug, title) {
     container.classList.add('hidden');
     detailContainer.classList.remove('hidden');
     detailTitle.textContent = title;
     detailList.innerHTML = '';
 
-    if (slug === 'reports') {
-      const imagePaths = [
-        'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
-        'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_amz.png'
-      ];
-      detailList.innerHTML = `
-<div class="prose max-w-none space-y-4">
-  <p><a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
-        target="_blank"
-        class="text-blue-600 hover:underline">WooParts eBay and Amazon Performance - 2025</a></p>
-  <div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
-    <div id="slider" class="flex transition-transform duration-300" style="transform: translateX(0%)">
-      ${imagePaths.map(path => `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report Image">`).join('')}
+if (slug === 'reports') {
+  const imagePaths = [
+    'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
+    'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_amz.png'
+  ];
+  detailList.innerHTML = `
+    <div class="prose max-w-none space-y-4">
+      <p>
+        <a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
+           target="_blank"
+           class="text-blue-600 hover:underline">
+          WooParts eBay and Amazon Performance - 2025
+        </a>
+      </p>
+      <div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
+        <div id="slider" class="flex transition-transform duration-300" style="transform: translateX(0%)">
+          ${imagePaths.map(path => `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report Image">`).join('')}
+        </div>
+        <button id="prevSlide"
+                class="absolute top-1/2 left-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">
+          &lsaquo;
+        </button>
+        <button id="nextSlide"
+                class="absolute top-1/2 right-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">
+          &rsaquo;
+        </button>
+      </div>
     </div>
-    <button id="prevSlide" class="absolute top-1/2 left-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">&lsaquo;</button>
-    <button id="nextSlide" class="absolute top-1/2 right-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">&rsaquo;</button>
-  </div>
-</div>`;
-      let currentSlide = 0,
-          sliderEl     = document.getElementById('slider'),
-          totalSlides  = imagePaths.length;
-      document.getElementById('prevSlide').onclick = () => {
-        currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-        sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
-      };
-      document.getElementById('nextSlide').onclick = () => {
-        currentSlide = (currentSlide + 1) % totalSlides;
-        sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
-      };
-    } else {
+  `;
+
+  let currentSlide = 0,
+      sliderEl     = document.getElementById('slider'),
+      totalSlides  = imagePaths.length;
+
+  document.getElementById('prevSlide').onclick = () => {
+    currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+    sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
+  };
+  document.getElementById('nextSlide').onclick = () => {
+    currentSlide = (currentSlide + 1) % totalSlides;
+    sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
+  };
+} else {
       try {
-        const data   = await fetchItems(slug);
+        const data = await fetchItems(slug);
         const groups = Array.isArray(data) ? { '': data } : data;
         Object.entries(groups).forEach(([category, items]) => {
           if (category) {
@@ -422,7 +429,7 @@
     }
   }
 
-  // Trap focus in modal for accessibility
+  // === Trap focus in modal ===
   function trapFocus(e) {
     const focusable = Array.from(overlayDialog.querySelectorAll('button, [href], input, textarea, [tabindex]:not([tabindex="-1"])'))
                            .filter(el => !el.disabled);
@@ -439,7 +446,7 @@
   }
   document.addEventListener('keydown', trapFocus);
 
-  // Overlay open/close
+  // === Overlay open/close & copy ===
   let lastFocused;
   function openEmailOverlay(name, htmlContent, slug) {
     lastFocused = document.activeElement;
@@ -458,9 +465,7 @@
     lastFocused?.focus();
   };
   overlay.onclick = e => {
-    if (e.target === overlay) {
-      overlayClose.click();
-    }
+    if (e.target === overlay) overlayClose.click();
   };
   copyBtn.onclick = () => {
     navigator.clipboard.writeText(overlayBody.innerText).then(() => {
@@ -469,271 +474,159 @@
     });
   };
 
-  // Back to grid
+  // === Back to grid & jump to top ===
   backBtn.onclick = () => {
     detailContainer.classList.add('hidden');
     container.classList.remove('hidden');
   };
-
-  // Jump to top button
   window.addEventListener('scroll', () => {
     toTopBtn.classList.toggle('hidden', window.scrollY < 300);
   });
   toTopBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  // Helper for notification icons
+  // === Notification icon helper ===
   function iconFor(type) {
-    return {
-      updates: '🔔',
-      'email-templates': '✉️',
-      processes: '🛠️',
-      reports: '📊',
-      links: '🔗',
-      tutorials: '🎥',
-      directory: '📇'
-    }[type] || '🆕';
+    return { updates: '🔔', 'email-templates': '✉️', processes: '🛠️', reports: '📊', links: '🔗', tutorials: '🎥', directory: '📇' }[type] || '🆕';
   }
 
-  // Poll notifications and flag card badges
+  // === Poll notifications & flag card badges ===
   async function pollNotifications() {
-    const sources = [
-      { url: 'data/updates.json', type: 'updates', parser: data => data.map(u => ({ id: u.id || u.timestamp + u.text, text: u.text, time: u.timestamp })) }
-    ];
+    const sources = [{ url: 'data/updates.json', type: 'updates', parser: data => data.map(u => ({ id: u.id || u.timestamp + u.text, text: u.text, time: u.timestamp })) }];
     cardsData.forEach(c => {
       if (c.slug === 'reports') return;
-      sources.push({
-        url: `data/${c.slug}.json`,
-        type: c.slug,
-        parser: data => {
-          const arr = Array.isArray(data) ? data : Object.values(data).flat();
-          return arr.map(i => ({
-            id: `${c.slug}|${i.name}`,
-            text: `New ${c.title}: ${i.name}`,
-            time: new Date().toISOString()
-          }));
-        }
-      });
+      sources.push({ url: `data/${c.slug}.json`, type: c.slug, parser: data => {
+        const arr = Array.isArray(data) ? data : Object.values(data).flat();
+        return arr.map(i => ({ id: `${c.slug}|${i.name}`, text: `New ${c.title}: ${i.name}`, time: new Date().toISOString() }));
+      }});
     });
 
     for (const src of sources) {
       try {
         const res = await fetch(src.url);
         if (!res.ok) continue;
-        const json = await res.json();
-        const items = src.parser(json);
+        const items = src.parser(await res.json());
         items.forEach(item => {
           if (!seenNotifIds.has(item.id)) {
             badgeDataMap[src.type] = badgeDataMap[src.type] || [];
             badgeDataMap[src.type].push(item.id);
-
             const li = document.createElement('li');
             li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between cursor-pointer';
-            li.innerHTML = `<span>${iconFor(src.type)} ${item.text}</span>
-                            <time class="text-xs text-gray-500">${new Date(item.time).toLocaleTimeString()}</time>`;
+            li.innerHTML = `<span>${iconFor(src.type)} ${item.text}</span><time class="text-xs text-gray-500">${new Date(item.time).toLocaleTimeString()}</time>`;
             notifListEl.prepend(li);
-            notifCountEl.textContent = String((+notifCountEl.textContent || 0) + 1);
-
-            // persist this ID so it won’t reappear after reload
+            notifCountEl.textContent = String((+notifCountEl.textContent||0)+1);
             seenNotifIds.add(item.id);
             localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
-
-            if (src.type !== 'updates' && !isItemRead(src.type, item.id)) {
-              const badgeEl = document.querySelector(`[data-slug="${src.type}"] .badge`);
-              if (badgeEl) badgeEl.classList.remove('hidden');
+            if (src.type!=='updates' && !isItemRead(src.type,item.id)) {
+              const badgeEl=document.querySelector(`[data-slug="${src.type}"] .badge`);
+              if(badgeEl)badgeEl.classList.remove('hidden');
             }
           }
         });
-      } catch (e) {
-        console.error('Notification poll error for', src.url, e);
-      }
+      } catch(e) { console.error('Notification poll error for',src.url,e); }
     }
-
-    // re-sync badges when new notifications arrive
     updateCardBadges();
   }
-  setInterval(pollNotifications, 60000);
+  setInterval(pollNotifications,60000);
   pollNotifications();
 
+  // === Notification bell handlers ===
   notifBtn.onclick = () => {
-    const open = notifDropdown.classList.toggle('hidden');
-    notifBtn.setAttribute('aria-expanded', String(!open));
-    if (!open) notifCountEl.textContent = '0';
+    const isOpen = !notifDropdown.classList.toggle('hidden');
+    notifBtn.setAttribute('aria-expanded',String(isOpen));
+    if(!isOpen) notifCountEl.textContent='0';
   };
   clearNotifsBtn.onclick = () => {
-    notifListEl.innerHTML = '';
-    seenNotifIds.clear();
-    localStorage.removeItem('seenNotifIds');
-    notifCountEl.textContent = '0';
+    notifListEl.innerHTML=''; seenNotifIds.clear(); localStorage.removeItem('seenNotifIds'); notifCountEl.textContent='0';
   };
 
-  // Recent updates panel
-  let allUpdates = [], displayCount = 5;
-  async function pollUpdatesPanel() {
-    try {
-      const res = await fetch('data/updates.json');
-      if (!res.ok) return;
-      const json = await res.json();
-      allUpdates = json.map(u => ({ text: u.text, time: u.timestamp, link: u.link }));
+  // === Recent updates panel ===
+  let allUpdates=[],displayCount=5;
+  async function pollUpdatesPanel(){
+    try{
+      const res=await fetch('data/updates.json');
+      if(!res.ok)return;
+      allUpdates=(await res.json()).map(u=>({text:u.text,time:u.timestamp,link:u.link}));
       renderUpdatesPanel();
-    } catch {
-      console.error('Updates panel error');
-    }
+    }catch{console.error('Updates panel error');}
   }
-  function renderUpdatesPanel() {
-    const filterVal = (updatesFilter?.value || mobileUpdatesFilter?.value || '').toLowerCase();
-    const filtered = allUpdates
-      .filter(u => u.text.toLowerCase().includes(filterVal))
-      .sort((a, b) => new Date(b.time) - new Date(a.time));
-    const toShow = filtered.slice(0, displayCount);
-
-    const lastSeen = getLastSeenUpdate();
-    const latestTime = toShow[0]?.time;
-    const isNew = latestTime && latestTime !== lastSeen;
-
-    [updatesContainer, mobileUpdatesContainer].forEach(cn => {
-      cn.innerHTML = '';
-      if (!toShow.length) {
-        const li = document.createElement('li');
-        li.textContent = 'No updates available.';
-        li.className = 'py-2 text-gray-500';
-        cn.appendChild(li);
+  function renderUpdatesPanel(){
+    const filterVal=(updatesFilter?.value||mobileUpdatesFilter?.value||'').toLowerCase();
+    const filtered=allUpdates.filter(u=>u.text.toLowerCase().includes(filterVal)).sort((a,b)=>new Date(b.time)-new Date(a.time));
+    const toShow=filtered.slice(0,displayCount);
+    const lastSeen=getLastSeenUpdate(),latestTime=toShow[0]?.time,isNew=latestTime&&latestTime!==lastSeen;
+    [updatesContainer,mobileUpdatesContainer].forEach(cn=>{
+      cn.innerHTML='';
+      if(!toShow.length){
+        const li=document.createElement('li');
+        li.textContent='No updates available.';li.className='py-2 text-gray-500';cn.appendChild(li);
       } else {
-        toShow.forEach((u, i) => {
-          const li = document.createElement('li');
-          if (u.link) {
-            const a = document.createElement('a');
-            a.href = u.link;
-            a.className = 'block py-2 hover:underline';
-            if (i === 0 && initialUpdatesLoad) {
-              const badge = document.createElement('span');
-              badge.textContent = 'New ';
-              badge.className = 'text-red-600 text-xs font-semibold';
-              a.appendChild(badge);
-              showUpdateToast(u.text);
-            }
-            a.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
-            li.appendChild(a);
+        toShow.forEach((u,i)=>{
+          const li=document.createElement('li');
+          if(u.link){
+            const a=document.createElement('a');
+            a.href=u.link;a.className='block py-2 hover:underline';
+            if(i===0&&initialUpdatesLoad){const badge=document.createElement('span');badge.textContent='New ';badge.className='text-red-600 text-xs font-semibold';a.appendChild(badge);showUpdateToast(u.text);}
+            a.appendChild(document.createTextNode(`${u.time}: ${u.text}`));li.appendChild(a);
           } else {
-            if (i === 0 && initialUpdatesLoad) {
-              const badge = document.createElement('span');
-              badge.textContent = 'New ';
-              badge.className = 'text-red-600 text-xs font-semibold';
-              li.appendChild(badge);
-              showUpdateToast(u.text);
-            }
-            li.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
-            li.className = 'py-2';
+            if(i===0&&initialUpdatesLoad){const badge=document.createElement('span');badge.textContent='New ';badge.className='text-red-600 text-xs font-semibold';li.appendChild(badge);showUpdateToast(u.text);}
+            li.appendChild(document.createTextNode(`${u.time}: ${u.text}`));li.className='py-2';
           }
           cn.appendChild(li);
         });
       }
     });
-
-    if (isNew) setLastSeenUpdate(latestTime);
-    initialUpdatesLoad = false;
+    if(isNew) setLastSeenUpdate(latestTime);
+    initialUpdatesLoad=false;
   }
-  setInterval(pollUpdatesPanel, 60000);
+  setInterval(pollUpdatesPanel,60000);
   pollUpdatesPanel();
+  updatesToggleBtn.onclick=() => updatesFilterContainer.classList.toggle('hidden');
+  mobileUpdatesToggleBtn.onclick=() => mobileUpdatesFilterContainer.classList.toggle('hidden');
+  updatesFilter?.addEventListener('input',debounce(renderUpdatesPanel,200));
+  mobileUpdatesFilter?.addEventListener('input',debounce(renderUpdatesPanel,200));
+  loadMoreBtn.onclick=()=>{displayCount+=5;renderUpdatesPanel();};
+  mobileLoadMoreBtn.onclick=()=>{displayCount+=5;renderUpdatesPanel();};
 
-  updatesToggleBtn.onclick = () => updatesFilterContainer.classList.toggle('hidden');
-  mobileUpdatesToggleBtn.onclick = () => mobileUpdatesFilterContainer.classList.toggle('hidden');
-  if (updatesFilter) updatesFilter.addEventListener('input', debounce(renderUpdatesPanel, 200));
-  if (mobileUpdatesFilter) mobileUpdatesFilter.addEventListener('input', debounce(renderUpdatesPanel, 200));
-  loadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
-  mobileLoadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
-
-  // Fuzzy search
+  // === Fuzzy search ===
   let fuse;
-  async function buildSearchIndex() {
-    const items = cardsData.map(c => ({ name: c.title, content: c.description, slug: c.slug, isRoot: true }));
-    for (const c of cardsData) {
-      if (c.slug === 'reports') continue;
-      try {
-        const data = await fetchItems(c.slug);
-        const arr = Array.isArray(data) ? data : Object.values(data).flat();
-        arr.forEach(i => items.push({ name: i.name, content: i.content, slug: c.slug, isRoot: false }));
-      } catch {}
+  async function buildSearchIndex(){
+    const items=cardsData.map(c=>({name:c.title,content:c.description,slug:c.slug,isRoot:true}));
+    for(const c of cardsData){
+      if(c.slug==='reports')continue;
+      try{
+        const data=await fetchItems(c.slug),arr=Array.isArray(data)?data:Object.values(data).flat();
+        arr.forEach(i=>items.push({name:i.name,content:i.content,slug:c.slug,isRoot:false}));
+      }catch{}
     }
-    fuse = new Fuse(items, { keys: ['name','content'], includeMatches: true, threshold: 0.4 });
+    fuse=new Fuse(items,{keys:['name','content'],includeMatches:true,threshold:0.4});
   }
-  function renderSuggestions(results) {
-    searchSuggestions.innerHTML = '';
-    if (!results.length) {
-      searchSuggestions.innerHTML = '<li class="px-4 py-2 text-gray-500">No results</li>';
+  function renderSuggestions(results){
+    searchSuggestions.innerHTML='';
+    if(!results.length){
+      searchSuggestions.innerHTML='<li class="px-4 py-2 text-gray-500">No results</li>';
     } else {
-      results.forEach(r => {
-        let label = r.item.name;
-        const match = r.matches.find(m=>m.key==='name');
-        if (match) {
-          let h='', last=0;
-          match.indices.forEach(([s,e])=>{
-            h+=label.slice(last,s)+`<mark>${label.slice(s,e+1)}</mark>`;
-            last=e+1;
-          });
-          h+=label.slice(last);
-          label=h;
+      results.forEach(r=>{
+        let label=r.item.name,match=r.matches.find(m=>m.key==='name');
+        if(match){
+          let h='',last=0;
+          match.indices.forEach(([s,e])=>{h+=label.slice(last,s)+`<mark>${label.slice(s,e+1)}</mark>`;last=e+1;});
+          h+=label.slice(last);label=h;
         }
-        const li = document.createElement('li');
-        li.role='option';
-        li.className='px-4 py-2 hover:bg-gray-100.cursor-pointer';
-        li.innerHTML=label;
-        li.onclick=() => {
-          if(r.item.isRoot) showContent(r.item.slug, r.item.name);
-          else openEmailOverlay(r.item.name, r.item.content, r.item.slug);
-          searchSuggestions.classList.add('hidden');
-          searchInput.setAttribute('aria-expanded','false');
-        };
+        const li=document.createElement('li');
+        li.role='option';li.className='px-4 py-2 hover:bg-gray-100 cursor-pointer';li.innerHTML=label;
+        li.onclick=()=>{(r.item.isRoot?showContent:openEmailOverlay)(r.item.slug||r.item.name,r.item.content,r.item.slug);searchSuggestions.classList.add('hidden');searchInput.setAttribute('aria-expanded','false');};
         searchSuggestions.appendChild(li);
       });
     }
   }
-  const handleSearch = debounce(async e => {
-    const q=e.target.value.trim();
-    if(!q) return searchSuggestions.classList.add('hidden');
-    if(!fuse) await buildSearchIndex();
-    renderSuggestions(fuse.search(q));
-    searchSuggestions.classList.remove('hidden');
-    searchInput.setAttribute('aria-expanded','true');
-  }, 250);
-  searchInput.addEventListener('input', handleSearch);
-  document.addEventListener('keydown', e => {
-    if (e.key==='/' && document.activeElement!==searchInput) {
-      e.preventDefault();
-      searchInput.focus();
-    }
+  searchInput.addEventListener('input',debounce(async e=>{const q=e.target.value.trim();if(!q)return searchSuggestions.classList.add('hidden');if(!fuse)await buildSearchIndex();renderSuggestions(fuse.search(q));searchSuggestions.classList.remove('hidden');searchInput.setAttribute('aria-expanded','true');},250));
+  document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==searchInput){e.preventDefault();searchInput.focus();}});
+
+  // === Final init ===
+  document.addEventListener('DOMContentLoaded',()=>{
+    renderCards();
+    buildSearchIndex();
   });
-
-document.addEventListener('DOMContentLoaded', () => {
-  renderCards();
-  buildSearchIndex();
-
-  // === Toast & badge setup ===
-  const toast        = document.getElementById('update-toast');
-  const closeBtn     = document.getElementById('update-toast-close');
-  const toastContent = document.getElementById('update-toast-content');
-
-  // Start hidden
-  toast.classList.add('hidden');
-
-  // Override showUpdateToast to bail if closed/removed
-  const _origShow = showUpdateToast;
-  showUpdateToast = message => {
-    if (toastClosed || !document.getElementById('update-toast')) return;
-    toastContent.textContent = message;
-    toast.classList.remove('hidden');
-    toast.classList.add('opacity-100');
-  };
-
-  // Close handler completely removes the toast
-  closeBtn.addEventListener('click', () => {
-    toastClosed = true;   // mark it closed for this session
-    toast.remove();       // remove from DOM
-  });
-
-  // Sync badges on initial load
-  updateCardBadges();
-});
-
 </script>
 </body>
 </html>
