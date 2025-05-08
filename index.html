@@ -266,8 +266,15 @@ async function updateCardBadges() {
     if (!toast) return;
     const toastContent = document.getElementById('update-toast-content');
     toastContent.textContent = message;
-    toast.classList.remove('hidden');
+    toast.classList.remove('hidden', 'pointer-events-none');
     toast.classList.add('opacity-100');
+  }
+
+  function hideUpdateToast() {
+    const toast = document.getElementById('update-toast');
+    if (!toast) return;
+    toast.classList.add('hidden', 'pointer-events-none');
+    toast.classList.remove('opacity-100');
   }
 
   // === Element refs ===
@@ -633,9 +640,15 @@ if (slug === 'reports') {
   document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==searchInput){e.preventDefault();searchInput.focus();}});
 
   // === Final init ===
-  document.addEventListener('DOMContentLoaded',()=>{
+  document.addEventListener('DOMContentLoaded', () => {
     renderCards();
     buildSearchIndex();
+
+    const closeBtn = document.getElementById('update-toast-close');
+    closeBtn.addEventListener('click', () => {
+      toastClosed = true;
+      hideUpdateToast();
+    });
   });
 </script>
 </body>
