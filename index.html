@@ -61,8 +61,8 @@
                      1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
           <span id="notification-count"
-                class="absolute -top-1 -right-1 inline-flex items-center justify-center
-                       px-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">0</span>
+                class="hidden absolute -top-1 -right-1 inline-flex items-center justify-center
+                       px-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full"></span>
         </button>
         <div id="notification-dropdown"
              class="hidden absolute right-0 mt-2 w-80 bg-white border border-gray-200
@@ -228,8 +228,8 @@
     return ids.some(id => !isItemRead(slug, id));
   }
 
-  // === persist “seen” state for notification bell ===
-  let seenNotifIds = new Set(JSON.parse(localStorage.getItem('seenNotifIds') || '[]'));
+  // track which notif IDs we've already injected this session
+  let seenNotifIds = new Set();
 
   // === persist “seen” state for Recent Updates ===
   function getLastSeenUpdate() {
@@ -307,6 +307,16 @@ async function updateCardBadges() {
   const loadMoreBtn             = document.getElementById('load-more-btn');
   const mobileLoadMoreBtn       = document.getElementById('mobile-load-more-btn');
   const toTopBtn                = document.getElementById('to-top');
+
+    // helper to show/hide the red count bubble
+  function setNotifCount(count) {
+    if (count > 0) {
+      notifCountEl.textContent = count;
+      notifCountEl.classList.remove('hidden');
+    } else {
+      notifCountEl.classList.add('hidden');
+    }
+  }
 
   // === Card data ===
   const cardsData = [
@@ -573,7 +583,7 @@ if (slug === 'reports') {
           notifListEl.prepend(li);
 
           // update the red count bubble
-          notifCountEl.textContent = String((+notifCountEl.textContent || 0) + 1);
+          setNotifCount((+notifCountEl.textContent || 0) + 1);
         }
       });
     } catch (e) {
@@ -593,10 +603,10 @@ pollNotifications();
   notifBtn.onclick = () => {
     const isOpen = !notifDropdown.classList.toggle('hidden');
     notifBtn.setAttribute('aria-expanded',String(isOpen));
-    if(!isOpen) notifCountEl.textContent='0';
+    if (!isOpen) setNotifCount(0);
   };
   clearNotifsBtn.onclick = () => {
-    notifListEl.innerHTML=''; seenNotifIds.clear(); localStorage.removeItem('seenNotifIds'); notifCountEl.textContent='0';
+    notifListEl.innerHTML=''; seenNotifIds.clear(); localStorage.removeItem('seenNotifIds'); setNotifCount(0);
   };
 
   // === Recent updates panel ===
