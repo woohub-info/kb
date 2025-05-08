@@ -18,6 +18,36 @@
   <style>
     #overlay ol, #modal ol { list-style-type: decimal; }
   </style>
+  <style>
+    /* 3. Bell-bounce */
+    @keyframes bell-bounce {
+      0%,100% { transform: rotate(0deg); }
+      25%     { transform: rotate(10deg); }
+      75%     { transform: rotate(-10deg); }
+    }
+
+    /* 6. Animated gradient for buttons */
+    .btn-animated-gradient {
+      background: linear-gradient(270deg, #6366f1, #8b5cf6, #ec4899);
+      background-size: 600% 600%;
+      animation: gradient-slide 8s ease infinite;
+    }
+    @keyframes gradient-slide {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* 5. Search suggestion slide-in */
+    .suggestion-enter { transform: translateX(-20px); opacity: 0; }
+    .suggestion-enter-active { animation: slide-in 0.3s forwards; }
+    @keyframes slide-in {
+      to { transform: translateX(0); opacity: 1; }
+    }
+  </style>
+
+  <!-- Vanilla-Tilt script (for 2. card tilt) -->
+  <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.2/dist/vanilla-tilt.min.js"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 antialiased flex flex-col min-h-screen">
 
@@ -53,13 +83,11 @@
       <div class="relative">
         <button id="notification-btn" class="p-2 focus:outline-none"
                 aria-label="Notifications" aria-haspopup="true" aria-expanded="false">
-          <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor"
-               viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11
-                     a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595
-                     1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-          </svg>
+          <svg id="bellIcon" class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor"
+     viewBox="0 0 24 24" aria-hidden="true">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M15 17h5l-1.405-1.405A2.032 … H9" />
+		 </svg>
           <span id="notification-count"
                 class="hidden absolute -top-1 -right-1 inline-flex items-center justify-center
                        px-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full"></span>
@@ -352,13 +380,16 @@ async function updateCardBadges() {
     container.innerHTML = '';
     cardsData.forEach(card => {
       const article = document.createElement('article');
+      article.setAttribute('data-tilt', '');
       article.dataset.slug = card.slug;
       article.className = 'relative bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6 flex flex-col';
       article.innerHTML = `
         <span class="badge absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full hidden">new</span>
         <h3 tabindex="0" class="text-xl font-semibold mb-2 hover:text-indigo-600 cursor-pointer">${card.title}</h3>
         <p class="text-gray-600 flex-1">${card.description}</p>
-        <button class="mt-4 text-indigo-600 font-medium hover:underline focus:outline-none">View ${card.title} →</button>
+        <button class="btn-animated-gradient text-white mt-4 font-medium px-4 py-2 rounded-lg transition">
+        	View ${card.title} →
+        </button>
       `;
       article.querySelector('h3').onclick    = () => showContent(card.slug, card.title);
       article.querySelector('button').onclick = () => showContent(card.slug, card.title);
@@ -591,6 +622,13 @@ async function pollNotifications() {
 
   // 5) show/hide count bubble
   setNotifCount(newCount);
+  
+    // ← Insert the bell-bounce here:
+  const bellIcon = document.getElementById('bellIcon');
+  bellIcon.style.animation = 'bell-bounce 0.6s';
+  bellIcon.addEventListener('animationend', () => {
+    bellIcon.style.animation = '';
+  }, { once: true });
 }
 
 // restart polling
@@ -703,10 +741,18 @@ clearNotifsBtn.onclick = () => {
   searchInput.addEventListener('input',debounce(async e=>{const q=e.target.value.trim();if(!q)return searchSuggestions.classList.add('hidden');if(!fuse)await buildSearchIndex();renderSuggestions(fuse.search(q));searchSuggestions.classList.remove('hidden');searchInput.setAttribute('aria-expanded','true');},250));
   document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==searchInput){e.preventDefault();searchInput.focus();}});
 
-  // === Final init ===
+// === Final init ===
 document.addEventListener('DOMContentLoaded', () => {
   renderCards();
   buildSearchIndex();
+
+  // initialize tilt on all cards
+  VanillaTilt.init(document.querySelectorAll('article[data-tilt]'), {
+    max: 15,
+    speed: 400,
+    glare: true,
+    "max-glare": 0.2
+  });
 
   const closeBtn = document.getElementById('update-toast-close');
   closeBtn.addEventListener('click', () => {
@@ -716,7 +762,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ensure the bell badge is hidden until there's a real new notification
   setNotifCount(0);
-  });
+});
 </script>
 </body>
 </html>
