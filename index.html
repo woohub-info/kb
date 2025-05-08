@@ -656,9 +656,16 @@ async function pollNotifications() {
 
   // persist seen IDs so reloads retain the “read” state
   localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
+  
+  // Compute how many items are still "new" (i.e. in badgeDataMap but not read)
+	let unreadCount = 0;
+  for (const type in badgeDataMap) {
+    // badgeDataMap[type] is an array of all IDs ever seen for that type
+		unreadCount += badgeDataMap[type].filter(id => !seenNotifIds.has(id)).length;
+  }
 
   // 5) show/hide count bubble
-  setNotifCount(newCount);
+  setNotifCount(unreadCount);
   
     // ← Insert the bell-bounce here:
   const bellIcon = document.getElementById('bellIcon');
@@ -810,8 +817,6 @@ document.addEventListener('DOMContentLoaded', () => {
   closeBtn.addEventListener('click', () => {
     toastClosed = true;
     hideUpdateToast();
-  });
-  setNotifCount(0);
 });
 </script>
 </body>
