@@ -310,22 +310,28 @@ async function updateCardBadges() {
     }
   }
 }
-  function showUpdateToast(message) {
-    if (toastClosed) return;
-    const toast = document.getElementById('update-toast');
-    if (!toast) return;
-    const toastContent = document.getElementById('update-toast-content');
-    toastContent.textContent = message;
-    toast.classList.remove('hidden', 'pointer-events-none');
-    toast.classList.add('opacity-100');
-    
-  // 🎉 trigger a quick confetti burst
+function showUpdateToast(message) {
+  if (toastClosed) return;
+  const toast = document.getElementById('update-toast');
+  if (!toast) return;
+  const toastContent = document.getElementById('update-toast-content');
+  toastContent.textContent = message;
+  toast.classList.remove('hidden', 'pointer-events-none');
+  toast.classList.add('opacity-100');
+
+  // 🎉 dynamic confetti origin at toast center
+  const rect = toast.getBoundingClientRect();
+  const origin = {
+    x: (rect.left + rect.width/2) / window.innerWidth,
+    y: (rect.top  + rect.height/2) / window.innerHeight
+  };
+
   confetti({
     particleCount: 50,
     spread: 60,
-    origin: { y: 0.2 }
-   });
-  }
+    origin
+  });
+}
 
   function hideUpdateToast() {
     const toast = document.getElementById('update-toast');
