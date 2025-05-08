@@ -517,106 +517,105 @@ if (slug === 'reports') {
   }
 
   // === Poll notifications & flag card badges ===
-  async function pollNotifications() {
-  const sources = [
-    {
-      url: 'data/updates.json',
-      type: 'updates',
-      parser: data => data.map(u => ({
+async function pollNotifications() {
+  // 1) gather all notifications into one array
+  let allItems = [];
+  try {
+    const res = await fetch('data/updates.json');
+    if (res.ok) {
+      const data = await res.json();
+      allItems = data.map(u => ({
         id: u.id || u.timestamp + u.text,
         text: u.text,
-        time: u.timestamp
-      }))
+        time: u.timestamp,
+        type: 'updates'
+      }));
     }
-  ];
+  } catch {}
 
-  cardsData.forEach(c => {
-    if (c.slug === 'reports') return;
-    sources.push({
-      url: `data/${c.slug}.json`,
-      type: c.slug,
-      parser: data => {
-        const arr = Array.isArray(data) ? data : Object.values(data).flat();
-        return arr.map(i => ({
-          id: `${c.slug}|${i.name}`,
-          text: `New ${c.title}: ${i.name}`,
-          time: new Date().toISOString()
-        }));
-      }
-    });
-  });
-
-  for (const src of sources) {
+  for (const c of cardsData) {
+    if (c.slug === 'reports') continue;
     try {
-      const res = await fetch(src.url);
+      const res = await fetch(`data/${c.slug}.json`);
       if (!res.ok) continue;
-      const items = src.parser(await res.json());
-      items.forEach(item => {
-        if (!seenNotifIds.has(item.id)) {
-          // record it so we don't duplicate
-          seenNotifIds.add(item.id);
-          badgeDataMap[src.type] = badgeDataMap[src.type] || [];
-          badgeDataMap[src.type].push(item.id);
-
-          // build list item
-          const li = document.createElement('li');
-          li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between cursor-pointer';
-
-          // prepend a "New" badge
-          const newBadge = document.createElement('span');
-          newBadge.textContent = 'New ';
-          newBadge.className = 'new-badge text-red-600 text-xs font-semibold mr-1';
-          li.appendChild(newBadge);
-
-          // then the notification text
-          const textSpan = document.createElement('span');
-          textSpan.innerHTML = `${iconFor(src.type)} ${item.text}`;
-          li.appendChild(textSpan);
-
-          // timestamp
-          const timeEl = document.createElement('time');
-          timeEl.className = 'text-xs text-gray-500';
-          timeEl.textContent = new Date(item.time).toLocaleTimeString();
-          li.appendChild(timeEl);
-
-          // add to top of the list
-          notifListEl.prepend(li);
-
-          // update the red count bubble
-          setNotifCount((+notifCountEl.textContent || 0) + 1);
-        }
-      });
-    } catch (e) {
-      console.error('Notification poll error for', src.url, e);
-    }
+      const data = await res.json();
+      const arr  = Array.isArray(data) ? data : Object.values(data).flat();
+      allItems.push(...arr.map(i => ({
+        id: `${c.slug}|${i.name}`,
+        text: `New ${c.title}: ${i.name}`,
+        time: new Date().toISOString(),
+        type: c.slug
+      })));
+    } catch {}
   }
 
-  // badges on the dashboard cards
-  updateCardBadges();
+  // 2) sort newest first
+  allItems.sort((a,b) => new Date(b.time) - new Date(a.time));
+
+  // 3) clear list and reset session count
+  notifListEl.innerHTML = '';
+  let newCount = 0;
+
+  // 4) render every item, flag unseen ones
+  allItems.forEach(item => {
+    const li = document.createElement('li');
+    li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between items-center';
+
+    const wrapper = document.createElement('div');
+    if (!seenNotifIds.has(item.id)) {
+      const nb = document.createElement('span');
+      nb.textContent = 'New ';
+      nb.className = 'new-badge text-red-600 text-xs font-semibold mr-1';
+      wrapper.appendChild(nb);
+      newCount++;
+    }
+    const txt = document.createElement('span');
+    txt.textContent = `${iconFor(item.type)} ${item.text}`;
+    wrapper.appendChild(txt);
+
+    li.appendChild(wrapper);
+
+    const tm = document.createElement('time');
+    tm.className = 'text-xs text-gray-500';
+    tm.textContent = new Date(item.time).toLocaleTimeString();
+    li.appendChild(tm);
+
+    notifListEl.appendChild(li);
+
+    // mark as seen for this and future sessions
+    seenNotifIds.add(item.id);
+  });
+
+  // 5) show/hide count bubble
+  setNotifCount(newCount);
 }
 
-// re-start polling as before
+// restart polling
 setInterval(pollNotifications, 60000);
 pollNotifications();
 
-  // === Notification bell handlers ===
+// === Notification bell handlers ===
 notifBtn.onclick = () => {
   const isOpen = !notifDropdown.classList.toggle('hidden');
   notifBtn.setAttribute('aria-expanded', String(isOpen));
 
   if (!isOpen) {
+    // reset count and remove all “New” flags
     setNotifCount(0);
+    document.querySelectorAll('#notification-list li .new-badge')
+            .forEach(el => el.remove());
 
-    // remove all "New" badges to mark as read
-    document
-      .querySelectorAll('#notification-list li .new-badge')
-      .forEach(el => el.remove());
+    // persist read state for future reloads
+    localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
   }
 };
 
-  clearNotifsBtn.onclick = () => {
-    notifListEl.innerHTML=''; seenNotifIds.clear(); localStorage.removeItem('seenNotifIds'); setNotifCount(0);
-  };
+clearNotifsBtn.onclick = () => {
+  notifListEl.innerHTML = '';
+  seenNotifIds.clear();
+  localStorage.removeItem('seenNotifIds');
+  setNotifCount(0);
+};
 
   // === Recent updates panel ===
   let allUpdates=[],displayCount=5;
