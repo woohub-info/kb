@@ -8,6 +8,12 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Fuse.js for fuzzy search -->
   <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js"></script>
+  <!-- Confetti for celebratory toasts -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <!-- Tippy.js for tooltips -->
+  <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light.css"/>
+  <script src="https://unpkg.com/@popperjs/core@2"></script>
+  <script src="https://unpkg.com/tippy.js@6"></script>
   <!-- Preload JSON data -->
   <link rel="preload" href="data/email-templates.json" as="fetch" crossorigin />
   <link rel="preload" href="data/processes.json" as="fetch" crossorigin />
@@ -50,6 +56,11 @@
   <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.2/dist/vanilla-tilt.min.js"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 antialiased flex flex-col min-h-screen">
+
+  <!-- Parallax background layer -->
+  <div id="parallax-bg"
+       class="fixed inset-0 bg-[url('/assets/pattern.svg')] bg-center bg-cover pointer-events-none"
+       style="transform: translateY(0);"></div>
 
   <!-- Toast for new updates -->
   <div id="update-toast"
@@ -104,7 +115,9 @@
           <ul id="notification-list" class="max-h-64 overflow-y-auto divide-y divide-gray-200"
               aria-live="polite"></ul>
           <div class="text-center p-2">
-            <button id="clear-notifications" class="text-indigo-600 hover:underline
+            <button id="clear-notifications"
+            data-tippy-content="Clear all notifications"
+            class="text-indigo-600 hover:underline
                                                    focus:outline-none">Clear All</button>
           </div>
         </div>
@@ -194,7 +207,9 @@
       <!-- Detail View -->
       <section id="detail-container" class="hidden bg-white rounded-lg shadow p-6 mb-6"
                role="region" aria-labelledby="detail-title">
-        <button id="back-btn" class="text-indigo-600 hover:underline mb-4 focus:outline-none">
+        <button id="back-btn"
+        data-tippy-content="Return to the main dashboard"
+        class="text-indigo-600 hover:underline mb-4 focus:outline-none">
           ← Back to Dashboard
         </button>
         <h2 id="detail-title" class="text-2xl font-semibold mb-4"></h2>
@@ -213,8 +228,10 @@
     <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 max-h-[90vh] overflow-y-auto p-6
                 relative mt-20 mx-auto" tabindex="-1">
       <button id="overlay-close" aria-label="Close dialog"
+      data-tippy-content="Close this dialog"
               class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none">&times;</button>
       <button id="copy-btn"
+      		  data-tippy-content="Copy content to clipboard"
               class="absolute top-4 right-12 text-sm text-gray-500 hover:text-gray-700 hidden focus:outline-none">Copy</button>
       <h2 id="overlay-header" class="text-2xl font-semibold mb-4"></h2>
       <div id="overlay-body" class="space-y-4" tabindex="0"></div>
@@ -301,6 +318,13 @@ async function updateCardBadges() {
     toastContent.textContent = message;
     toast.classList.remove('hidden', 'pointer-events-none');
     toast.classList.add('opacity-100');
+    
+  // 🎉 trigger a quick confetti burst
+  confetti({
+    particleCount: 50,
+    spread: 60,
+    origin: { y: 0.2 }
+   });
   }
 
   function hideUpdateToast() {
@@ -751,21 +775,34 @@ document.addEventListener('DOMContentLoaded', () => {
   renderCards();
   buildSearchIndex();
 
-  // initialize tilt on all cards
+  // 1) Tilt effect on cards
   VanillaTilt.init(document.querySelectorAll('article[data-tilt]'), {
     max: 15,
     speed: 400,
     glare: true,
-    "max-glare": 0.2
+    'max-glare': 0.2
   });
 
+  // 2) Tooltips on any element with data-tippy-content
+  tippy('[data-tippy-content]', {
+    theme: 'light',
+    animation: 'shift-away',
+    delay: [100, 50]
+  });
+
+  // 3) Parallax scroll effect
+  const bg = document.getElementById('parallax-bg');
+  window.addEventListener('scroll', () => {
+    const offset = window.scrollY * 0.3; // tweak speed here
+    bg.style.transform = `translateY(${offset}px)`;
+  });
+
+  // 4) Toast close button and initial badge hide (your existing code)
   const closeBtn = document.getElementById('update-toast-close');
   closeBtn.addEventListener('click', () => {
     toastClosed = true;
     hideUpdateToast();
   });
-
-  // ensure the bell badge is hidden until there's a real new notification
   setNotifCount(0);
 });
 </script>
