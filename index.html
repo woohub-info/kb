@@ -565,7 +565,7 @@ if (slug === 'reports') {
           // prepend a "New" badge
           const newBadge = document.createElement('span');
           newBadge.textContent = 'New ';
-          newBadge.className = 'text-red-600 text-xs font-semibold mr-1';
+          newBadge.className = 'new-badge text-red-600 text-xs font-semibold mr-1';
           li.appendChild(newBadge);
 
           // then the notification text
@@ -600,11 +600,20 @@ setInterval(pollNotifications, 60000);
 pollNotifications();
 
   // === Notification bell handlers ===
-  notifBtn.onclick = () => {
-    const isOpen = !notifDropdown.classList.toggle('hidden');
-    notifBtn.setAttribute('aria-expanded',String(isOpen));
-    if (!isOpen) setNotifCount(0);
-  };
+notifBtn.onclick = () => {
+  const isOpen = !notifDropdown.classList.toggle('hidden');
+  notifBtn.setAttribute('aria-expanded', String(isOpen));
+
+  if (!isOpen) {
+    setNotifCount(0);
+
+    // remove all "New" badges to mark as read
+    document
+      .querySelectorAll('#notification-list li .new-badge')
+      .forEach(el => el.remove());
+  }
+};
+
   clearNotifsBtn.onclick = () => {
     notifListEl.innerHTML=''; seenNotifIds.clear(); localStorage.removeItem('seenNotifIds'); setNotifCount(0);
   };
