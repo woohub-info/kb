@@ -78,7 +78,7 @@
 
   <!-- Header -->
   <header role="banner" class="relative bg-white shadow sticky top-0 z-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+    <div class="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
       <a href="#" onclick="event.preventDefault();" class="flex items-center h-16">
         <img src="/assets/woohub_logo.png" alt="WooHub Logo" class="h-10 w-auto" />
      </a>
@@ -111,9 +111,9 @@
                        px-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full"></span>
         </button>
         <div id="notification-dropdown"
-             class="hidden absolute right-0 mt-2 w-80 bg-white border border-gray-200
-                    rounded-lg shadow-lg z-40"
-             role="menu" aria-label="Recent notifications">
+     class="hidden absolute right-0 mt-2 w-96 p-4 bg-white border border-gray-200
+            rounded-lg shadow-lg z-40"
+     role="menu" aria-label="Recent notifications">
           <ul id="notification-list" class="max-h-64 overflow-y-auto divide-y divide-gray-200"
               aria-live="polite"></ul>
           <div class="text-center p-2">
@@ -161,9 +161,9 @@
   </details>
 
   <!-- Content Wrapper -->
-  <div class="flex flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full">
+  <div class="flex flex-1 w-full px-4 sm:px-6 lg:px-8 mt-6">
     <!-- Desktop Recent Updates Panel -->
-    <aside role="complementary" class="w-64 mr-6 hidden lg:block">
+    <aside class="w-80 lg:w-96 mr-6 hidden lg:block">
       <div class="bg-white border border-gray-200 rounded-lg p-4 sticky top-24">
         <div class="flex items-center justify-between mb-2">
           <h2 class="text-lg font-semibold">Recent Updates</h2>
@@ -219,7 +219,7 @@
       </section>
 
       <!-- Card Grid -->
-      <section id="card-container" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></section>
+      <section id="card-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"></section>
     </main>
   </div>
 
