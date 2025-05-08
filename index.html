@@ -240,16 +240,26 @@
   }
 
   // === toast & badge control ===
-  let initialUpdatesLoad = true;
-  let toastClosed = false;
-  function updateCardBadges() {
-    cardsData.forEach(c => {
-      const badge = document.querySelector(`[data-slug="${c.slug}"] .badge`);
-      if (!badge) return;
-      badge.classList.toggle('hidden', !hasUnreadForSlug(c.slug));
-    });
-  }
+let initialUpdatesLoad = true;
+let toastClosed = false;
 
+async function updateCardBadges() {
+  for (const c of cardsData) {
+    const badge = document.querySelector(`[data-slug="${c.slug}"] .badge`);
+    if (!badge) continue;
+    try {
+      const data = await fetchItems(c.slug);
+      const items = Array.isArray(data) ? data : Object.values(data).flat();
+      const hasUnread = items.some(item => {
+        const id = item.id || item.name;
+        return !isItemRead(c.slug, id);
+      });
+      badge.classList.toggle('hidden', !hasUnread);
+    } catch (err) {
+      // If fetching fails, leave badge as-is
+    }
+  }
+}
   function showUpdateToast(message) {
     if (toastClosed) return;
     const toast = document.getElementById('update-toast');
