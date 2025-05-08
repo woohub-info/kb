@@ -228,8 +228,8 @@
     return ids.some(id => !isItemRead(slug, id));
   }
 
-  // track which notif IDs we've already injected this session
-  let seenNotifIds = new Set();
+  // persist “seen” state for notification bell
+  let seenNotifIds = new Set(JSON.parse(localStorage.getItem('seenNotifIds') || '[]'));
 
   // === persist “seen” state for Recent Updates ===
   function getLastSeenUpdate() {
@@ -704,15 +704,18 @@ clearNotifsBtn.onclick = () => {
   document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==searchInput){e.preventDefault();searchInput.focus();}});
 
   // === Final init ===
-  document.addEventListener('DOMContentLoaded', () => {
-    renderCards();
-    buildSearchIndex();
+document.addEventListener('DOMContentLoaded', () => {
+  renderCards();
+  buildSearchIndex();
 
-    const closeBtn = document.getElementById('update-toast-close');
-    closeBtn.addEventListener('click', () => {
-      toastClosed = true;
-      hideUpdateToast();
-    });
+  const closeBtn = document.getElementById('update-toast-close');
+  closeBtn.addEventListener('click', () => {
+    toastClosed = true;
+    hideUpdateToast();
+  });
+
+  // ensure the bell badge is hidden until there's a real new notification
+  setNotifCount(0);
   });
 </script>
 </body>
