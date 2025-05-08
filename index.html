@@ -689,9 +689,14 @@ notifBtn.onclick = () => {
 };
 
 clearNotifsBtn.onclick = () => {
+  // 1) Gather every notification ID we’ve ever fetched
+  const allKnownIds = Object.values(badgeDataMap).flat();
+  // 2) Mark them all as seen
+  allKnownIds.forEach(id => seenNotifIds.add(id));
+  // 3) Persist for future reloads
+  localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
+  // 4) Clear out the list and reset badge
   notifListEl.innerHTML = '';
-  seenNotifIds.clear();
-  localStorage.removeItem('seenNotifIds');
   setNotifCount(0);
 };
 
