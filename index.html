@@ -32,11 +32,12 @@
       75%     { transform: rotate(-10deg); }
     }
 
-    /* 6. Animated gradient for buttons */
-    .btn-animated-gradient {
-      background: linear-gradient(270deg, #6366f1, #8b5cf6, #ec4899);
-      background-size: 600% 600%;
-      animation: gradient-slide 8s ease infinite;
+<button
+  class="bg-indigo-600 hover:bg-indigo-700 text-white mt-4 font-medium px-4 py-2 rounded-lg transition"
+>
+  View ${card.title} →
+</button>
+    
     }
     @keyframes gradient-slide {
       0%   { background-position: 0% 50%; }
@@ -420,14 +421,16 @@ function showUpdateToast(message) {
       article.setAttribute('data-tilt', '');
       article.dataset.slug = card.slug;
       article.className = 'relative bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6 flex flex-col';
-      article.innerHTML = `
-        <span class="badge absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full hidden">new</span>
-        <h3 tabindex="0" class="text-xl font-semibold mb-2 hover:text-indigo-600 cursor-pointer">${card.title}</h3>
-        <p class="text-gray-600 flex-1">${card.description}</p>
-        <button class="btn-animated-gradient text-white mt-4 font-medium px-4 py-2 rounded-lg transition">
-        	View ${card.title} →
-        </button>
-      `;
+article.innerHTML = `
+  <span class="badge absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full hidden">new</span>
+  <h3 tabindex="0" class="text-xl font-semibold mb-2 hover:text-indigo-600 cursor-pointer">${card.title}</h3>
+  <p class="text-gray-600 flex-1">${card.description}</p>
+  <button
+    class="bg-indigo-600 hover:bg-indigo-700 text-white mt-4 font-medium px-4 py-2 rounded-lg transition"
+  >
+    View ${card.title} →
+  </button>
+`;
       article.querySelector('h3').onclick    = () => showContent(card.slug, card.title);
       article.querySelector('button').onclick = () => showContent(card.slug, card.title);
       container.appendChild(article);
