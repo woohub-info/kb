@@ -43,6 +43,10 @@
       "name": "Returned Item Different From What Was Ordered (Safe-T Claims)",
       "content": "<p>Hi,</p><p>Our warehouse team confirmed that the item you returned to us is materially different than what we sold to you for this order. We have attached images of the items you sent.</p><p>Please send us the correct part(s) using your own label and provide the tracking number so we can properly initiate the refund after we receive the item.</p><p>Regards,<br>WooParts</p>"
     }
+    {
+  "name": "Return Request - Bulky Item",
+  "content": "<p>Hi,</p><p>We received your return request. We would like to inform you that the item is too large and will be uneconomical to ship. It exceeds the dimensions allowed for automated return shipping.</p><p>Instead of returning the part, would you be amenable to a returnless refund? We will issue a 70% refund, and you may keep the item or dispose of it.</p><p>If you agree, please close the return request as soon as possible so we can process the refund accordingly.</p><p>Regards,<br>WooParts</p>"
+    }
   ],
 
   "SHIPMENT CONCERNS": [
