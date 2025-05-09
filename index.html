@@ -66,10 +66,10 @@
 
   <!-- Header -->
 <header role="banner" class="relative bg-white shadow sticky top-0 z-20">
-    <div class="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+  <div class="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
     
     <!-- Left: Logo + Search -->
-    <div class="relative w-full max-w-lg absolute left-1/2 transform -translate-x-1/2">
+    <div class="flex items-center space-x-4 flex-1">
       <!-- Logo -->
       <a href="#" onclick="event.preventDefault();" class="flex items-center h-16">
         <img src="/assets/woohub_logo.png" alt="WooHub Logo" class="h-10 w-auto" />
@@ -380,7 +380,7 @@ let bannerClosed = false;
 
 async function updateCardBadges() {
   for (const c of cardsData) {
-    const badge = document.querySelector(`[data-slug="${c.slug}"] .badge`);
+    const badge = document.querySelector([data-slug="${c.slug}"] .badge);
     if (!badge) continue;
     try {
       const data = await fetchItems(c.slug);
@@ -473,7 +473,7 @@ function hideUpdateBanner() {
 
   async function fetchItems(slug) {
     if (contentCache[slug]) return contentCache[slug];
-    const res = await fetch(`data/${slug}.json`);
+    const res = await fetch(data/${slug}.json);
     if (!res.ok) throw new Error('Failed to load data');
     const data = await res.json();
     contentCache[slug] = data;
@@ -488,7 +488,7 @@ function hideUpdateBanner() {
       article.setAttribute('data-tilt', '');
       article.dataset.slug = card.slug;
       article.className = 'relative bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6 flex flex-col';
-article.innerHTML = `
+article.innerHTML = 
   <span class="badge absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full hidden">new</span>
   <h3 tabindex="0" class="text-xl font-semibold mb-2 hover:text-indigo-600 cursor-pointer">${card.title}</h3>
   <p class="text-gray-600 flex-1">${card.description}</p>
@@ -497,7 +497,7 @@ article.innerHTML = `
   >
     View ${card.title} →
   </button>
-`;
+;
       article.querySelector('h3').onclick    = () => showContent(card.slug, card.title);
       article.querySelector('button').onclick = () => showContent(card.slug, card.title);
       container.appendChild(article);
@@ -517,7 +517,7 @@ if (slug === 'reports') {
     'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
     'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_amz.png'
   ];
-  detailList.innerHTML = `
+  detailList.innerHTML = 
     <div class="prose max-w-none space-y-4">
       <p>
         <a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
@@ -528,7 +528,7 @@ if (slug === 'reports') {
       </p>
       <div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
         <div id="slider" class="flex transition-transform duration-300" style="transform: translateX(0%)">
-          ${imagePaths.map(path => `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report Image">`).join('')}
+          ${imagePaths.map(path => <img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report Image">).join('')}
         </div>
         <button id="prevSlide"
                 class="absolute top-1/2 left-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">
@@ -540,7 +540,7 @@ if (slug === 'reports') {
         </button>
       </div>
     </div>
-  `;
+  ;
 
   let currentSlide = 0,
       sliderEl     = document.getElementById('slider'),
@@ -548,11 +548,11 @@ if (slug === 'reports') {
 
   document.getElementById('prevSlide').onclick = () => {
     currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-    sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
+    sliderEl.style.transform = translateX(-${currentSlide * 100}%);
   };
   document.getElementById('nextSlide').onclick = () => {
     currentSlide = (currentSlide + 1) % totalSlides;
-    sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
+    sliderEl.style.transform = translateX(-${currentSlide * 100}%);
   };
 } else {
       try {
@@ -580,7 +580,7 @@ if (slug === 'reports') {
               markItemRead(slug, id);
               dot.classList.add('hidden');
               if (!hasUnreadForSlug(slug)) {
-                const badge = document.querySelector(`[data-slug="${slug}"] .badge`);
+                const badge = document.querySelector([data-slug="${slug}"] .badge);
                 if (badge) badge.classList.add('hidden');
               }
             };
@@ -589,7 +589,7 @@ if (slug === 'reports') {
           });
         });
       } catch {
-        detailList.innerHTML = `<li class="text-red-500">This page is under construction – check back soon!</li>`;
+        detailList.innerHTML = <li class="text-red-500">This page is under construction – check back soon!</li>;
       }
     }
   }
@@ -617,8 +617,8 @@ if (slug === 'reports') {
     lastFocused = document.activeElement;
     overlayHeader.textContent = name;
     const card     = cardsData.find(c => c.slug === slug);
-    const titleHtml = card ? `<h3 class="text-lg font-semibold mb-2">${card.title}</h3>` : '';
-    overlayBody.innerHTML = titleHtml + `<div class="prose max-w-none space-y-4">${htmlContent}</div>`;
+    const titleHtml = card ? <h3 class="text-lg font-semibold mb-2">${card.title}</h3> : '';
+    overlayBody.innerHTML = titleHtml + <div class="prose max-w-none space-y-4">${htmlContent}</div>;
     overlay.classList.remove('hidden');
     overlayDialog.classList.add('opacity-100','scale-100');
     copyBtn.classList.remove('hidden');
@@ -674,13 +674,13 @@ async function pollNotifications() {
   for (const c of cardsData) {
     if (c.slug === 'reports') continue;
     try {
-      const res = await fetch(`data/${c.slug}.json`);
+      const res = await fetch(data/${c.slug}.json);
       if (!res.ok) continue;
       const data = await res.json();
       const arr  = Array.isArray(data) ? data : Object.values(data).flat();
       allItems.push(...arr.map(i => ({
-        id: `${c.slug}|${i.name}`,
-        text: `New ${c.title}: ${i.name}`,
+        id: ${c.slug}|${i.name},
+        text: New ${c.title}: ${i.name},
         time: new Date().toISOString(),
         type: c.slug
       })));
@@ -708,7 +708,7 @@ async function pollNotifications() {
       newCount++;
     }
     const txt = document.createElement('span');
-    txt.textContent = `${iconFor(item.type)} ${item.text}`;
+    txt.textContent = ${iconFor(item.type)} ${item.text};
     wrapper.appendChild(txt);
 
     li.appendChild(wrapper);
@@ -797,10 +797,10 @@ clearNotifsBtn.onclick = () => {
             const a=document.createElement('a');
             a.href=u.link;a.className='block py-2 hover:underline';
             if(i===0&&initialUpdatesLoad){const badge=document.createElement('span');badge.textContent='New ';badge.className='text-red-600 text-xs font-semibold';a.appendChild(badge);showUpdateBanner(u.text);}
-            a.appendChild(document.createTextNode(`${u.time}: ${u.text}`));li.appendChild(a);
+            a.appendChild(document.createTextNode(${u.time}: ${u.text}));li.appendChild(a);
           } else {
             if(i===0&&initialUpdatesLoad){const badge=document.createElement('span');badge.textContent='New ';badge.className='text-red-600 text-xs font-semibold';li.appendChild(badge);showUpdateBanner(u.text);}
-            li.appendChild(document.createTextNode(`${u.time}: ${u.text}`));li.className='py-2';
+            li.appendChild(document.createTextNode(${u.time}: ${u.text}));li.className='py-2';
           }
           cn.appendChild(li);
         });
@@ -840,7 +840,7 @@ clearNotifsBtn.onclick = () => {
         let label=r.item.name,match=r.matches.find(m=>m.key==='name');
         if(match){
           let h='',last=0;
-          match.indices.forEach(([s,e])=>{h+=label.slice(last,s)+`<mark>${label.slice(s,e+1)}</mark>`;last=e+1;});
+          match.indices.forEach(([s,e])=>{h+=label.slice(last,s)+<mark>${label.slice(s,e+1)}</mark>;last=e+1;});
           h+=label.slice(last);label=h;
         }
         const li=document.createElement('li');
@@ -871,7 +871,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const bg = document.getElementById('parallax-bg');
   window.addEventListener('scroll', () => {
     const offset = window.scrollY * 0.3;
-    bg.style.transform = `translateY(${offset}px)`;
+    bg.style.transform = translateY(${offset}px);
   });
 
   // 3) Banner close button + clear initial count
