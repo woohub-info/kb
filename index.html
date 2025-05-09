@@ -64,69 +64,136 @@
     </div>
   </noscript>
 
-<!-- Header -->
-<header role="banner"
-        class="relative bg-white shadow sticky top-0 z-20 overflow-visible">
-  <div class="w-full max-w-[2000px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+  <!-- Header -->
+<header role="banner" class="relative bg-white shadow sticky top-0 z-20">
+  <div class="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+    
+    <!-- Left: Logo + Search -->
+    <div class="flex items-center space-x-4 flex-1">
+      <!-- Logo -->
+      <a href="#" onclick="event.preventDefault();" class="flex items-center h-16">
+        <img src="/assets/woohub_logo.png" alt="WooHub Logo" class="h-10 w-auto" />
+      </a>
 
-    <!-- Logo -->
-    <a href="#" onclick="event.preventDefault();" class="flex items-center h-16">
-      <img src="/assets/woohub_logo.png" alt="WooHub Logo" class="h-10 w-auto" />
-    </a>
-
-    <!-- Search -->
-    <div class="relative flex-1 max-w-lg mx-4">
-      <input
-        id="search-input"
-        type="search"
-        placeholder="Search keywords..."
-        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      />
-      <ul id="search-suggestions" class="hidden absolute inset-x-0 mt-1 bg-white border rounded-lg shadow max-h-60 overflow-auto z-30"></ul>
+      <!-- Search Input -->
+      <div class="relative w-full max-w-lg">
+        <input
+          id="search-input"
+          type="search"
+          placeholder="Search keywords..."
+          aria-label="Search keywords"
+          aria-controls="search-suggestions"
+          aria-expanded="false"
+          aria-autocomplete="list"
+          class="w-full px-4 py-2 border border-gray-300 bg-white rounded-lg
+                 focus:outline-none focus:ring-2 focus:ring-indigo-500
+                 text-gray-800 placeholder-gray-500"
+        />
+        <ul
+          id="search-suggestions"
+          role="listbox"
+          class="absolute left-0 right-0 mt-1 bg-white border border-gray-200
+                 rounded-lg shadow-lg hidden z-30 max-h-60 overflow-auto"
+        ></ul>
+      </div>
     </div>
 
-    <!-- Actions -->
-    <div class="relative flex items-center space-x-4">
-      <!-- Notifications -->
-      <button id="notification-btn" class="p-2 rounded-full hover:bg-gray-100 focus:outline-none" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">
-        <!-- Bell icon -->
-        <svg id="bellIcon" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-        </svg>
-        <span id="notification-count"
-              class="hidden absolute -top-1 -right-1 inline-flex items-center justify-center px-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
-        </span>
-      </button>
-
-      <!-- Recent Viewed -->
-      <button id="recent-btn" class="p-2 rounded-full hover:bg-gray-100 focus:outline-none" aria-label="Recently viewed" aria-haspopup="true" aria-expanded="false">
-        <!-- ClipboardList icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5v2m6-2v2M9 13h6m-6 4h6" />
-        </svg>
-      </button>
-
-      <!-- Notification dropdown -->
-      <div id="notification-dropdown"
-           class="hidden absolute right-0 top-full mt-1 w-96 p-4 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
-           role="menu" aria-label="Recent notifications">
-        <ul id="notification-list" class="max-h-64 overflow-y-auto divide-y divide-gray-200"></ul>
-        <div class="text-center p-2">
-          <button id="clear-notifications" class="text-indigo-600 hover:underline focus:outline-none">
-            Clear All
-          </button>
+    <!-- Right: Notification & Recently Viewed -->
+    <div class="flex items-center">
+      <!-- Notification -->
+      <div class="relative">
+        <button
+          id="notification-btn"
+          class="p-2 focus:outline-none"
+          aria-label="Notifications"
+          aria-haspopup="true"
+          aria-expanded="false"
+        >
+          <svg
+            id="bellIcon"
+            class="w-6 h-6 text-gray-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11
+                 a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595
+                 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+            />
+          </svg>
+          <span
+            id="notification-count"
+            class="hidden absolute -top-1 -right-1 inline-flex items-center justify-center
+                   px-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full"
+          ></span>
+        </button>
+        <div
+          id="notification-dropdown"
+          class="hidden absolute right-0 mt-2 w-96 p-4 bg-white border border-gray-200
+                 rounded-lg shadow-lg z-40"
+          role="menu"
+          aria-label="Recent notifications"
+        >
+          <ul
+            id="notification-list"
+            class="max-h-64 overflow-y-auto divide-y divide-gray-200"
+            aria-live="polite"
+          ></ul>
+          <div class="text-center p-2">
+            <button
+              id="clear-notifications"
+              class="text-indigo-600 hover:underline focus:outline-none"
+            >
+              Clear All
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Recent Viewed dropdown -->
-      <ul id="recent-list"
-          class="hidden absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 text-sm"
+      <!-- Recently Viewed -->
+      <div class="relative ml-4">
+        <button
+          id="recent-btn"
+          class="p-2 focus:outline-none"
+          aria-label="Recently Viewed"
+          aria-haspopup="true"
+          aria-expanded="false"
+        >
+          <svg
+            class="w-6 h-6 text-gray-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </button>
+        <div
+          id="recent-dropdown"
+          class="hidden absolute right-0 mt-2 w-72 p-4 bg-white border border-gray-200
+                 rounded-lg shadow-lg z-40"
           role="menu"
-          aria-label="Recently viewed">
-        <!-- JS will inject items here -->
-      </ul>
+          aria-label="Recently viewed items"
+        >
+          <ul
+            id="recent-list"
+            class="max-h-60 overflow-y-auto divide-y divide-gray-200"
+          >
+            <li class="py-2 text-gray-500">No recently viewed items</li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 </header>
@@ -296,47 +363,17 @@
     return ids.some(id => !isItemRead(slug, id));
   }
 
-function getLastSeenUpdate() {
-  return localStorage.getItem('lastSeenUpdate');
-}
-function setLastSeenUpdate(ts) {
-  localStorage.setItem('lastSeenUpdate', ts);
-}
+  // persist “seen” state for notification bell
+  let seenNotifIds = new Set(JSON.parse(localStorage.getItem('seenNotifIds') || '[]'));
 
-// recently viewed storage
-const RECENT_KEY = 'recentViews';
-function getRecent() {
-  return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
-}
-function addRecent(item) {
-  const list = getRecent().filter(i => i.slug !== item.slug);
-  list.unshift(item);
-  if (list.length > 10) list.pop();    // cap at 10
-  localStorage.setItem(RECENT_KEY, JSON.stringify(list));
-  renderRecent();
-}
-
-// render the dropdown
-function renderRecent() {
-  const recentList = document.getElementById('recent-list');
-  const items = getRecent();
-  if (items.length === 0) {
-    recentList.innerHTML = `
-      <li class="px-4 py-2 text-gray-500">No recent views.</li>
-    `;
-    return;
+  // === persist “seen” state for Recent Updates ===
+  function getLastSeenUpdate() {
+    return localStorage.getItem('lastSeenUpdate');
   }
-  recentList.innerHTML = items.map(i => `
-    <li>
-      <button
-        class="w-full text-left px-4 py-2 hover:bg-gray-100 focus:outline-none"
-        onclick="showContent('${i.slug}', '${i.title}')"
-      >
-        ${i.title}
-      </button>
-    </li>
-  `).join('');
-}
+  function setLastSeenUpdate(ts) {
+    localStorage.setItem('lastSeenUpdate', ts);
+  }
+
   // === banner & badge control ===
 let initialUpdatesLoad = true;
 let bannerClosed = false;
@@ -469,15 +506,11 @@ article.innerHTML = `
   }
 
   // === Show content for a card ===
-async function showContent(slug, title) {
-  // 1) record this view
-  addRecent({ slug, title });
-  
-  // 2) your existing code
-  container.classList.add('hidden');
-  detailContainer.classList.remove('hidden');
-  detailTitle.textContent = title;
-  detailList.innerHTML = '';
+  async function showContent(slug, title) {
+    container.classList.add('hidden');
+    detailContainer.classList.remove('hidden');
+    detailTitle.textContent = title;
+    detailList.innerHTML = '';
 
 if (slug === 'reports') {
   const imagePaths = [
@@ -697,13 +730,12 @@ async function pollNotifications() {
   // 5) show/hide count bubble
   setNotifCount(newCount);
   
+    // ← Insert the bell-bounce here:
   const bellIcon = document.getElementById('bellIcon');
-  if (bellIcon) {
-    bellIcon.style.animation = 'bell-bounce 0.6s';
-    bellIcon.addEventListener('animationend', () => {
-      bellIcon.style.animation = '';
-    }, { once: true });
-  }
+  bellIcon.style.animation = 'bell-bounce 0.6s';
+  bellIcon.addEventListener('animationend', () => {
+    bellIcon.style.animation = '';
+  }, { once: true });
 }
 
 // restart polling
@@ -821,51 +853,70 @@ clearNotifsBtn.onclick = () => {
   searchInput.addEventListener('input',debounce(async e=>{const q=e.target.value.trim();if(!q)return searchSuggestions.classList.add('hidden');if(!fuse)await buildSearchIndex();renderSuggestions(fuse.search(q));searchSuggestions.classList.remove('hidden');searchInput.setAttribute('aria-expanded','true');},250));
   document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==searchInput){e.preventDefault();searchInput.focus();}});
 
-  // === Final init ===
- document.addEventListener('DOMContentLoaded', () => {
-    renderCards();
-    buildSearchIndex();
-    renderRecent();
-   
-    VanillaTilt.init(/* … */);
-    window.addEventListener('scroll', /* parallax */);
-    document.getElementById('update-banner-close')
-            .addEventListener('click', hideUpdateBanner);
+// === Final init ===
+document.addEventListener('DOMContentLoaded', () => {
+  // 0) Initial rendering & index build
+  renderCards();
+  buildSearchIndex();
 
-    // ── dropdown toggles for Notifications & Recently Viewed ──
-    const notificationBtn      = document.getElementById('notification-btn');
-    const notificationDropdown = document.getElementById('notification-dropdown');
-    const recentBtn            = document.getElementById('recent-btn');
-    const recentDropdown       = document.getElementById('recent-list');
-
-notificationBtn.addEventListener('click', e => {
-  e.stopPropagation();
-  pollNotifications();                        // grab & render everything fresh
-  const open = !notificationDropdown.classList.toggle('hidden');
-  notificationBtn.setAttribute('aria-expanded', open);
-    });
-
-    recentBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      const open = !recentDropdown.classList.toggle('hidden');
-      recentBtn.setAttribute('aria-expanded', open);
-      notificationDropdown.classList.add('hidden');
-      notificationBtn.setAttribute('aria-expanded', 'false');
-    });
-
-    function closeAllDropdowns() {
-      notificationDropdown.classList.add('hidden');
-      recentDropdown.classList.add('hidden');
-      notificationBtn.setAttribute('aria-expanded', 'false');
-      recentBtn.setAttribute('aria-expanded',    'false');
-    }
-    document.addEventListener('click',   closeAllDropdowns);
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') closeAllDropdowns();
-    });
-
-    setNotifCount(0);
+  // 1) Tilt effect on cards
+  VanillaTilt.init(document.querySelectorAll('article[data-tilt]'), {
+    max: 15,
+    speed: 400,
+    glare: true,
+    'max-glare': 0.2
   });
+
+  // 2) Parallax scroll effect
+  const bg = document.getElementById('parallax-bg');
+  window.addEventListener('scroll', () => {
+    const offset = window.scrollY * 0.3;
+    bg.style.transform = `translateY(${offset}px)`;
+  });
+
+  // 3) Banner close button + clear initial count
+  const bannerCloseBtn = document.getElementById('update-banner-close');
+  bannerCloseBtn.addEventListener('click', () => {
+    bannerClosed = true;
+    hideUpdateBanner();
+  });
+
+  // 4) Notification refs (needed by your recently‐viewed toggle)
+  const notificationBtn      = document.getElementById('notification-btn');
+  const notificationDropdown = document.getElementById('notification-dropdown');
+
+  // 5) Recently Viewed handlers
+  const recentBtn      = document.getElementById('recent-btn');
+  const recentDropdown = document.getElementById('recent-dropdown');
+
+  recentBtn.addEventListener('click', (e) => {
+    // close notifications if open
+    notificationDropdown.classList.add('hidden');
+    notificationBtn.setAttribute('aria-expanded', 'false');
+
+    // toggle recent
+    const isOpen = !recentDropdown.classList.toggle('hidden');
+    recentBtn.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  document.addEventListener('click', (e) => {
+    if (
+      !recentDropdown.contains(e.target) &&
+      e.target !== recentBtn
+    ) {
+      recentDropdown.classList.add('hidden');
+      recentBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // 6) Render recents once on load
+  const recents = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+  renderRecentlyViewed(recents);
+
+  // 7) Zero‐out the notif count
+  setNotifCount(0);
+});
+
 </script>
 </body>
 </html>
