@@ -821,9 +821,9 @@ clearNotifsBtn.onclick = () => {
       notificationDropdown.classList.add('hidden');
       recentDropdown.classList.add('hidden');
       notificationBtn.setAttribute('aria-expanded', 'false');
-      recentBtn.setAttribute('aria-expanded', 'false');
+      recentBtn.setAttribute('aria-expanded',    'false');
     }
-    document.addEventListener('click', closeAllDropdowns);
+    document.addEventListener('click',   closeAllDropdowns);
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') closeAllDropdowns();
     });
