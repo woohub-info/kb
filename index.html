@@ -4,58 +4,43 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title id="page-title">WooHub</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Fuse.js for fuzzy search -->
-  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js"></script>
-  <!-- Confetti for celebratory toasts -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-  <!-- Tippy.js for tooltips -->
-  <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light.css"/>
-  <script src="https://unpkg.com/@popperjs/core@2"></script>
-  <script src="https://unpkg.com/tippy.js@6"></script>
-  <!-- Preload JSON data -->
-  <link rel="preload" href="data/email-templates.json" as="fetch" crossorigin />
-  <link rel="preload" href="data/processes.json" as="fetch" crossorigin />
-  <link rel="preload" href="data/reports.json" as="fetch" crossorigin />
-  <link rel="preload" href="data/links.json" as="fetch" crossorigin />
-  <link rel="preload" href="data/tutorials.json" as="fetch" crossorigin />
-  <link rel="preload" href="data/directory.json" as="fetch" crossorigin />
-  <style>
-    #overlay ol, #modal ol { list-style-type: decimal; }
-  </style>
-  <style>
-    /* 3. Bell-bounce */
-    @keyframes bell-bounce {
-      0%,100% { transform: rotate(0deg); }
-      25%     { transform: rotate(10deg); }
-      75%     { transform: rotate(-10deg); }
-    }
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com" defer></script>
 
-<button
-  class="bg-indigo-600 hover:bg-indigo-700 text-white mt-4 font-medium px-4 py-2 rounded-lg transition"
->
-  View ${card.title} →
-</button>
-    
-    }
-    @keyframes gradient-slide {
-      0%   { background-position: 0% 50%; }
-      50%  { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
+<!-- Fuse.js for fuzzy search -->
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js" defer></script>
 
-    /* 5. Search suggestion slide-in */
-    .suggestion-enter { transform: translateX(-20px); opacity: 0; }
-    .suggestion-enter-active { animation: slide-in 0.3s forwards; }
-    @keyframes slide-in {
-      to { transform: translateX(0); opacity: 1; }
-    }
-  </style>
+<!-- Vanilla-Tilt for card tilt -->
+<script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.2/dist/vanilla-tilt.min.js" defer></script>
+  
+<style>
+  /* 3. Bell-bounce */
+  @keyframes bell-bounce {
+    0%, 100% { transform: rotate(0deg); }
+    25%      { transform: rotate(10deg); }
+    75%      { transform: rotate(-10deg); }
+  }
 
-  <!-- Vanilla-Tilt script (for 2. card tilt) -->
-  <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.2/dist/vanilla-tilt.min.js"></script>
-</head>
+  /* 4. Gradient background slide */
+  @keyframes gradient-slide {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* 5. Search suggestion slide-in */
+  .suggestion-enter          { transform: translateX(-20px); opacity: 0; }
+  .suggestion-enter-active   { animation: slide-in 0.3s forwards; }
+  @keyframes slide-in {
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  /* List styling for overlays and modals */
+  #overlay ol,
+    list-style-type: decimal;
+  }
+</style>
+
 <body class="bg-gray-100 text-gray-800 antialiased flex flex-col min-h-screen">
 
   <!-- Parallax background layer -->
@@ -65,7 +50,7 @@
 
   <!-- Toast for new updates -->
   <div id="update-toast"
-       class="fixed top-4 right-4 z-50 bg-indigo-600 text-white rounded shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none p-4 max-w-xs">
+       role="status" aria-live="polite" aria-atomic="true" class="fixed top-4 right-4 z-50 bg-indigo-600 text-white rounded shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none p-4 max-w-xs">
     <strong>New Update!</strong>
     <button id="update-toast-close" class="absolute top-1 right-2 text-white text-lg focus:outline-none">&times;</button>
     <div id="update-toast-content" class="mt-1 text-sm"></div>
@@ -107,10 +92,7 @@
   <span id="notification-count" class="hidden absolute -top-1 -right-1 inline-flex items-center justify-center
         px-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full"></span>
 </button>
-          <span id="notification-count"
-                class="hidden absolute -top-1 -right-1 inline-flex items-center justify-center
-                       px-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full"></span>
-        </button>
+        
         <div id="notification-dropdown"
      class="hidden absolute right-0 mt-2 w-96 p-4 bg-white border border-gray-200
             rounded-lg shadow-lg z-40"
@@ -119,9 +101,7 @@
               aria-live="polite"></ul>
           <div class="text-center p-2">
             <button id="clear-notifications"
-            data-tippy-content="Clear all notifications"
-            class="text-indigo-600 hover:underline
-                                                   focus:outline-none">Clear All</button>
+            class="text-indigo-600 hover:underline focus:outline-none">Clear All</button>
           </div>
         </div>
       </div>
@@ -224,15 +204,17 @@
     </main>
   </div>
 
-  <!-- Overlay Modal -->
-  <div id="overlay"
-       class="fixed inset-0 bg-black bg-opacity-50 hidden items-start justify-center overflow-y-auto z-40"
-       role="dialog" aria-modal="true" aria-labelledby="overlay-header" aria-describedby="overlay-body">
-    <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 max-h-[90vh] overflow-y-auto p-6
-                relative mt-20 mx-auto" tabindex="-1">
-      <button id="overlay-close" aria-label="Close dialog"
-      data-tippy-content="Close this dialog"
-              class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none">&times;</button>
+<!-- Overlay Modal -->
+<div id="overlay"
+     class="fixed inset-0 bg-black bg-opacity-50 hidden items-start justify-center overflow-y-auto z-40"
+     role="dialog" aria-modal="true" aria-labelledby="overlay-header" aria-describedby="overlay-body">
+  <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 max-h-[90vh] overflow-y-auto p-6
+              relative mt-20 mx-auto" tabindex="-1">
+    <button id="overlay-close"
+            aria-label="Close dialog"
+            class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none">
+      &times;
+    </button>
       <button id="copy-btn"
       		  data-tippy-content="Copy content to clipboard"
               class="absolute top-4 right-12 text-sm text-gray-500 hover:text-gray-700 hidden focus:outline-none">Copy</button>
@@ -321,27 +303,14 @@ function showUpdateToast(message) {
   toastContent.textContent = message;
   toast.classList.remove('hidden', 'pointer-events-none');
   toast.classList.add('opacity-100');
-
-  // 🎉 dynamic confetti origin at toast center
-  const rect = toast.getBoundingClientRect();
-  const origin = {
-    x: (rect.left + rect.width/2) / window.innerWidth,
-    y: (rect.top  + rect.height/2) / window.innerHeight
-  };
-
-  confetti({
-    particleCount: 50,
-    spread: 60,
-    origin
-  });
 }
 
-  function hideUpdateToast() {
-    const toast = document.getElementById('update-toast');
-    if (!toast) return;
-    toast.classList.add('hidden', 'pointer-events-none');
-    toast.classList.remove('opacity-100');
-  }
+function hideUpdateToast() {
+  const toast = document.getElementById('update-toast');
+  if (!toast) return;
+  toast.classList.add('hidden', 'pointer-events-none');
+  toast.classList.remove('opacity-100');
+}
 
   // === Element refs ===
   const container               = document.getElementById('card-container');
@@ -788,6 +757,7 @@ clearNotifsBtn.onclick = () => {
 
 // === Final init ===
 document.addEventListener('DOMContentLoaded', () => {
+  // 0) Initial rendering & index build
   renderCards();
   buildSearchIndex();
 
@@ -799,26 +769,20 @@ document.addEventListener('DOMContentLoaded', () => {
     'max-glare': 0.2
   });
 
-  // 2) Tooltips on any element with data-tippy-content
-  tippy('[data-tippy-content]', {
-    theme: 'light',
-    animation: 'shift-away',
-    delay: [100, 50]
-  });
-
-  // 3) Parallax scroll effect
+  // 2) Parallax scroll effect
   const bg = document.getElementById('parallax-bg');
   window.addEventListener('scroll', () => {
     const offset = window.scrollY * 0.3; // tweak speed here
     bg.style.transform = `translateY(${offset}px)`;
   });
 
-  // 4) Toast close button and initial badge hide (your existing code)
+  // 3) Toast close button + clear initial count
   const closeBtn = document.getElementById('update-toast-close');
   closeBtn.addEventListener('click', () => {
     toastClosed = true;
     hideUpdateToast();
   });
+
   setNotifCount(0);
 });
 </script>
