@@ -786,103 +786,74 @@ clearNotifsBtn.onclick = () => {
   searchInput.addEventListener('input',debounce(async e=>{const q=e.target.value.trim();if(!q)return searchSuggestions.classList.add('hidden');if(!fuse)await buildSearchIndex();renderSuggestions(fuse.search(q));searchSuggestions.classList.remove('hidden');searchInput.setAttribute('aria-expanded','true');},250));
   document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==searchInput){e.preventDefault();searchInput.focus();}});
 
-// === Final init ===
-document.addEventListener('DOMContentLoaded', () => {
-  // 0) Initial rendering & index build
-  renderCards();
-  buildSearchIndex();
+  // === Final init ===
+  document.addEventListener('DOMContentLoaded', () => {
+    // 0) Initial rendering & index build
+    renderCards();
+    buildSearchIndex();
 
-  // 1) Tilt effect on cards
-  VanillaTilt.init(document.querySelectorAll('article[data-tilt]'), {
-    max: 15,
-    speed: 400,
-    glare: true,
-    'max-glare': 0.2
+    // 1) Tilt effect on cards
+    VanillaTilt.init(document.querySelectorAll('article[data-tilt]'), {
+      max: 15,
+      speed: 400,
+      glare: true,
+      'max-glare': 0.2
+    });
+
+    // 2) Parallax scroll effect
+    const bg = document.getElementById('parallax-bg');
+    window.addEventListener('scroll', () => {
+      bg.style.transform = `translateY(${window.scrollY * 0.3}px)`;
+    });
+
+    // 3) Banner close button
+    document
+      .getElementById('update-banner-close')
+      .addEventListener('click', () => {
+        bannerClosed = true;
+        hideUpdateBanner();
+      });
+
+    // 4) Notification & Recent Viewed toggles
+    const notifBtn   = document.getElementById('notification-btn');
+    const recentBtn  = document.getElementById('recent-btn');
+    const notifDrop  = document.getElementById('notification-dropdown');
+    const recentDrop = document.getElementById('recent-list');
+
+    notifBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const open = !notifDrop.classList.toggle('hidden');
+      notifBtn.setAttribute('aria-expanded', open);
+      // close the other
+      recentDrop.classList.add('hidden');
+      recentBtn.setAttribute('aria-expanded', 'false');
+    });
+
+    recentBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const open = !recentDrop.classList.toggle('hidden');
+      recentBtn.setAttribute('aria-expanded', open);
+      // close the other
+      notifDrop.classList.add('hidden');
+      notifBtn.setAttribute('aria-expanded', 'false');
+    });
+
+    // 5) Close on outside click or Esc
+    function closeAllDropdowns() {
+      notifDrop.classList.add('hidden');
+      recentDrop.classList.add('hidden');
+      notifBtn.setAttribute('aria-expanded', 'false');
+      recentBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    document.addEventListener('click', () => closeAllDropdowns());
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeAllDropdowns();
+    });
+
+    // 6) Initialize notification count
+    setNotifCount(0);
   });
-
-  // 2) Parallax scroll effect
-  const bg = document.getElementById('parallax-bg');
-  window.addEventListener('scroll', () => {
-    const offset = window.scrollY * 0.3; // tweak speed here
-    bg.style.transform = `translateY(${offset}px)`;
-  });
-
-  // 3) Banner close button + clear initial count
-  const bannerCloseBtn = document.getElementById('update-banner-close');
-  bannerCloseBtn.addEventListener('click', () => {
-    bannerClosed = true; // reuse the same flag
-    hideUpdateBanner();
-  });
-
-  // 4) Recent Viewed dropdown toggle
-  document.getElementById('recent-btn').addEventListener('click', () => {
-    const list = document.getElementById('recent-list');
-    const isOpen = !list.classList.toggle('hidden');
-    document.getElementById('recent-btn').setAttribute('aria-expanded', isOpen);
-  });
-
-  // Close any open dropdown when clicking outside or pressing Esc
-function closeAll() {
-  document.getElementById('notification-dropdown').classList.add('hidden');
-  document.getElementById('recent-list').classList.add('hidden');
-  document.getElementById('notification-btn')
-    .setAttribute('aria-expanded', 'false');
-  document.getElementById('recent-btn')
-    .setAttribute('aria-expanded', 'false');
-}
-
-document.addEventListener('click', e => {
-  const notifBtn = document.getElementById('notification-btn');
-  const recentBtn = document.getElementById('recent-btn');
-  const notifDrop = document.getElementById('notification-dropdown');
-  const recentDrop = document.getElementById('recent-list');
-  // if the click is not inside either button or its dropdowns
-  if (!notifBtn.contains(e.target) 
-      && !notifDrop.contains(e.target)
-      && !recentBtn.contains(e.target)
-      && !recentDrop.contains(e.target)) {
-    closeAll();
-  }
-});
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    closeAll();
-  }
-});
-// Close any open dropdown when clicking outside or pressing Esc
-function closeAll() {
-  document.getElementById('notification-dropdown').classList.add('hidden');
-  document.getElementById('recent-list').classList.add('hidden');
-  document.getElementById('notification-btn')
-    .setAttribute('aria-expanded', 'false');
-  document.getElementById('recent-btn')
-    .setAttribute('aria-expanded', 'false');
-}
-
-document.addEventListener('click', e => {
-  const notifBtn = document.getElementById('notification-btn');
-  const recentBtn = document.getElementById('recent-btn');
-  const notifDrop = document.getElementById('notification-dropdown');
-  const recentDrop = document.getElementById('recent-list');
-  // if the click is not inside either button or its dropdowns
-  if (!notifBtn.contains(e.target) 
-      && !notifDrop.contains(e.target)
-      && !recentBtn.contains(e.target)
-      && !recentDrop.contains(e.target)) {
-    closeAll();
-  }
-});
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    closeAll();
-  }
-});
-
-  // 5) Initialize notification count
-  setNotifCount(0);
-});
   
 </script>
 </body>
