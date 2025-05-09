@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title id="page-title">WooHub</title>
 <!-- Tailwind CSS CDN -->
-<script src="https://cdn.tailwindcss.com" defer></script>
+<script src="https://cdn.tailwindcss.com"></script>
 
 <!-- Fuse.js for fuzzy search -->
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js" defer></script>
@@ -770,50 +770,48 @@ document.addEventListener('DOMContentLoaded', () => {
   buildSearchIndex();
   setNotifCount(0);
 
-  // 1) Back to Dashboard button
-  const backBtn = document.getElementById('back-btn');
-  backBtn.onclick = () => {
+  // 1) “Back to Dashboard” button
+  document.getElementById('back-btn').addEventListener('click', () => {
     detailContainer.classList.add('hidden');
     container.classList.remove('hidden');
-  };
+    // scroll back up
+    document.getElementById('dashboard').scrollIntoView({ behavior: 'smooth' });
+  });
 
   // 2) Mobile sidebar toggle
-  const sidebarToggle = document.getElementById('sidebar-toggle');
-  sidebarToggle.addEventListener('click', () => {
+  document.getElementById('sidebar-toggle').addEventListener('click', () => {
     document.getElementById('sidebar').classList.toggle('hidden');
   });
 
-  // 3) Sidebar links (one handler)
+  // 3) Sidebar link routing
   document.querySelectorAll('#sidebar a[href^="#"]').forEach(link => {
     link.addEventListener('click', e => {
       e.preventDefault();
       const slug = link.getAttribute('href').slice(1);
       const sidebar = document.getElementById('sidebar');
 
-      // Home case: show grid, hide detail, scroll up
+      // Home case
       if (slug === 'dashboard') {
         detailContainer.classList.add('hidden');
         container.classList.remove('hidden');
-        document.getElementById('dashboard')
-                .scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('dashboard').scrollIntoView({ behavior: 'smooth' });
         sidebar.classList.add('hidden');
         return;
       }
 
-      // Card case: hide grid, show detail, scroll into view
+      // Card case
       sidebar.classList.add('hidden');
       const card = cardsData.find(c => c.slug === slug);
       if (card) {
         showContent(card.slug, card.title);
-        document.getElementById(slug)
-                .scrollIntoView({ behavior: 'smooth' });
+        // after rendering the grid or detail, scroll that card into view
+        document.getElementById(slug).scrollIntoView({ behavior: 'smooth' });
       }
     });
   });
 
-  // 4) Banner close
-  const bannerCloseBtn = document.getElementById('update-banner-close');
-  bannerCloseBtn.addEventListener('click', () => {
+  // 4) Close update banner
+  document.getElementById('update-banner-close').addEventListener('click', () => {
     bannerClosed = true;
     hideUpdateBanner();
   });
