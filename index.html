@@ -765,89 +765,71 @@
     setNotifCount(0);
   };
 
-// === Recent updates panel ===
-let allUpdates = [], displayCount = 5;
-
-async function pollUpdatesPanel() {
-  try {
-    const res = await fetch('data/updates.json');
-    if (!res.ok) return;
-    allUpdates = (await res.json()).map(u => ({ text: u.text, time: u.timestamp, link: u.link }));
-    renderUpdatesPanel();
-  } catch {
-    console.error('Updates panel error');
+  // === Recent updates panel ===
+  let allUpdates = [], displayCount = 5;
+  async function pollUpdatesPanel() {
+    try {
+      const res = await fetch('data/updates.json');
+      if (!res.ok) return;
+      allUpdates = (await res.json()).map(u => ({ text: u.text, time: u.timestamp, link: u.link }));
+      renderUpdatesPanel();
+    } catch { console.error('Updates panel error'); }
   }
-}
-
-function renderUpdatesPanel() {
-  const filterVal = (updatesFilter?.value || mobileUpdatesFilter?.value || '').toLowerCase();
-  const filtered = allUpdates
-    .filter(u => u.text.toLowerCase().includes(filterVal))
-    .sort((a, b) => new Date(b.time) - new Date(a.time));
-  const toShow = filtered.slice(0, displayCount);
-
-  const lastSeen   = getLastSeenUpdate();
-  const latestTime = toShow[0]?.time;
-  const isNew      = latestTime && latestTime !== lastSeen;
-
-  console.log({ latestTime, lastSeen, isNew, initialUpdatesLoad });
-
-  [updatesContainer, mobileUpdatesContainer].forEach(cn => {
-    cn.innerHTML = '';
-    if (!toShow.length) {
-      const li = document.createElement('li');
-      li.textContent = 'No updates available.';
-      li.className = 'py-2 text-gray-500';
-      cn.appendChild(li);
-    } else {
-      toShow.forEach((u, i) => {
+  function renderUpdatesPanel() {
+    const filterVal = (updatesFilter?.value || mobileUpdatesFilter?.value || '').toLowerCase();
+    const filtered = allUpdates
+      .filter(u => u.text.toLowerCase().includes(filterVal))
+      .sort((a,b) => new Date(b.time) - new Date(a.time));
+    const toShow = filtered.slice(0, displayCount);
+    const lastSeen = getLastSeenUpdate(), latestTime = toShow[0]?.time, isNew = latestTime && latestTime !== lastSeen;
+    [updatesContainer, mobileUpdatesContainer].forEach(cn => {
+      cn.innerHTML = '';
+      if (!toShow.length) {
         const li = document.createElement('li');
-        if (u.link) {
-          const a = document.createElement('a');
-          a.href = u.link;
-          a.className = 'block py-2 hover:underline';
-          // Only show badge and banner on initial load if it's new
-          if (i === 0 && isNew && initialUpdatesLoad) {
-            const badge = document.createElement('span');
-            badge.textContent = 'New ';
-            badge.className = 'text-red-600 text-xs font-semibold';
-            a.appendChild(badge);
-            showUpdateBanner(u.text);
-            // mark as seen
-            setLastSeenUpdate(latestTime);
-          }
-          a.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
-          li.appendChild(a);
-        } else {
-          if (i === 0 && isNew && initialUpdatesLoad) {
-            const badge = document.createElement('span');
-            badge.textContent = 'New ';
-            badge.className = 'text-red-600 text-xs font-semibold';
-            li.appendChild(badge);
-            showUpdateBanner(u.text);
-            setLastSeenUpdate(latestTime);
-          }
-          li.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
-          li.className = 'py-2';
-        }
+        li.textContent = 'No updates available.';
+        li.className = 'py-2 text-gray-500';
         cn.appendChild(li);
-      });
-    }
-  });
-
-  // Turn off initial load flag so badge/banner only fires once
-  initialUpdatesLoad = false;
-}
-
-setInterval(pollUpdatesPanel, 60000);
-pollUpdatesPanel();
-
-updatesToggleBtn.onclick = () => updatesFilterContainer.classList.toggle('hidden');
-mobileUpdatesToggleBtn.onclick = () => mobileUpdatesFilterContainer.classList.toggle('hidden');
-updatesFilter?.addEventListener('input', debounce(renderUpdatesPanel, 200));
-mobileUpdatesFilter?.addEventListener('input', debounce(renderUpdatesPanel, 200));
-loadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
-mobileLoadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
+      } else {
+        toShow.forEach((u,i) => {
+          const li = document.createElement('li');
+          if (u.link) {
+            const a = document.createElement('a');
+            a.href = u.link; a.className = 'block py-2 hover:underline';
+            if (i === 0 && initialUpdatesLoad) {
+              const badge = document.createElement('span');
+              badge.textContent = 'New ';
+              badge.className = 'text-red-600 text-xs font-semibold';
+              a.appendChild(badge);
+              showUpdateBanner(u.text);
+            }
+            a.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
+            li.appendChild(a);
+          } else {
+            if (i === 0 && initialUpdatesLoad) {
+              const badge = document.createElement('span');
+              badge.textContent = 'New ';
+              badge.className = 'text-red-600 text-xs font-semibold';
+              li.appendChild(badge);
+              showUpdateBanner(u.text);
+            }
+            li.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
+            li.className = 'py-2';
+          }
+          cn.appendChild(li);
+        });
+      }
+    });
+    if (isNew) setLastSeenUpdate(latestTime);
+    initialUpdatesLoad = false;
+  }
+  setInterval(pollUpdatesPanel, 60000);
+  pollUpdatesPanel();
+  updatesToggleBtn.onclick = () => updatesFilterContainer.classList.toggle('hidden');
+  mobileUpdatesToggleBtn.onclick = () => mobileUpdatesFilterContainer.classList.toggle('hidden');
+  updatesFilter?.addEventListener('input', debounce(renderUpdatesPanel, 200));
+  mobileUpdatesFilter?.addEventListener('input', debounce(renderUpdatesPanel, 200));
+  loadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
+  mobileLoadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
 
   // === Fuzzy search ===
   let fuse;
@@ -960,7 +942,10 @@ mobileLoadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
     // 6) Render recents once on load
     renderRecentlyViewed(JSON.parse(localStorage.getItem('recentlyViewed') || '[]'));
 
+    // 7) Zero‐out the notif count
+    setNotifCount(0);
   });
 </script>
+
 </body>
 </html>
