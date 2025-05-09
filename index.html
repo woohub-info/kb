@@ -787,70 +787,49 @@ clearNotifsBtn.onclick = () => {
   document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==searchInput){e.preventDefault();searchInput.focus();}});
 
   // === Final init ===
-  document.addEventListener('DOMContentLoaded', () => {
-    // 0) Initial rendering & index build
+ document.addEventListener('DOMContentLoaded', () => {
     renderCards();
     buildSearchIndex();
+    VanillaTilt.init(/* … */);
+    window.addEventListener('scroll', /* parallax */);
+    document.getElementById('update-banner-close')
+            .addEventListener('click', hideUpdateBanner);
 
-    // 1) Tilt effect on cards
-    VanillaTilt.init(document.querySelectorAll('article[data-tilt]'), {
-      max: 15,
-      speed: 400,
-      glare: true,
-      'max-glare': 0.2
+    // ── dropdown toggles for Notifications & Recently Viewed ──
+    const notificationBtn      = document.getElementById('notification-btn');
+    const notificationDropdown = document.getElementById('notification-dropdown');
+    const recentBtn            = document.getElementById('recent-btn');
+    const recentDropdown       = document.getElementById('recent-list');
+
+    notificationBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const open = !notificationDropdown.classList.toggle('hidden');
+      notificationBtn.setAttribute('aria-expanded', open);
+      recentDropdown.classList.add('hidden');
+      recentBtn.setAttribute('aria-expanded', 'false');
     });
 
-    // 2) Parallax scroll effect
-    const bg = document.getElementById('parallax-bg');
-    window.addEventListener('scroll', () => {
-      bg.style.transform = `translateY(${window.scrollY * 0.3}px)`;
+    recentBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const open = !recentDropdown.classList.toggle('hidden');
+      recentBtn.setAttribute('aria-expanded', open);
+      notificationDropdown.classList.add('hidden');
+      notificationBtn.setAttribute('aria-expanded', 'false');
     });
 
-    // 3) Banner close button
-    document
-      .getElementById('update-banner-close')
-      .addEventListener('click', () => {
-        bannerClosed = true;
-        hideUpdateBanner();
-      });
+    function closeAllDropdowns() {
+      notificationDropdown.classList.add('hidden');
+      recentDropdown.classList.add('hidden');
+      notificationBtn.setAttribute('aria-expanded', 'false');
+      recentBtn.setAttribute('aria-expanded', 'false');
+    }
+    document.addEventListener('click', closeAllDropdowns);
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeAllDropdowns();
+    });
 
-// ── dropdown toggles for Notifications & Recently Viewed ──
-const notificationBtn      = document.getElementById('notification-btn');
-const notificationDropdown = document.getElementById('notification-dropdown');
-const recentBtn            = document.getElementById('recent-btn');
-const recentDropdown       = document.getElementById('recent-list');
-
-notificationBtn.addEventListener('click', e => {
-  e.stopPropagation();
-  const open = !notificationDropdown.classList.toggle('hidden');
-  notificationBtn.setAttribute('aria-expanded', open);
-  // close Recent if open
-  recentDropdown.classList.add('hidden');
-  recentBtn.setAttribute('aria-expanded', 'false');
-});
-
-recentBtn.addEventListener('click', e => {
-  e.stopPropagation();
-  const open = !recentDropdown.classList.toggle('hidden');
-  recentBtn.setAttribute('aria-expanded', open);
-  // close Notifications if open
-  notificationDropdown.classList.add('hidden');
-  notificationBtn.setAttribute('aria-expanded', 'false');
-});
-
-function closeAllDropdowns() {
-  notificationDropdown.classList.add('hidden');
-  recentDropdown.classList.add('hidden');
-  notificationBtn.setAttribute('aria-expanded', 'false');
-  recentBtn.setAttribute('aria-expanded', 'false');
-}
-document.addEventListener('click', closeAllDropdowns);
-document.addEventListener('keydown', e => e.key === 'Escape' && closeAllDropdowns());
-  
-    // 6) Initialize notification count
     setNotifCount(0);
   });
-  
 </script>
 </body>
 </html>
