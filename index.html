@@ -296,17 +296,47 @@
     return ids.some(id => !isItemRead(slug, id));
   }
 
-  // persist “seen” state for notification bell
-  let seenNotifIds = new Set(JSON.parse(localStorage.getItem('seenNotifIds') || '[]'));
+function getLastSeenUpdate() {
+  return localStorage.getItem('lastSeenUpdate');
+}
+function setLastSeenUpdate(ts) {
+  localStorage.setItem('lastSeenUpdate', ts);
+}
 
-  // === persist “seen” state for Recent Updates ===
-  function getLastSeenUpdate() {
-    return localStorage.getItem('lastSeenUpdate');
-  }
-  function setLastSeenUpdate(ts) {
-    localStorage.setItem('lastSeenUpdate', ts);
-  }
+// recently viewed storage
+const RECENT_KEY = 'recentViews';
+function getRecent() {
+  return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+}
+function addRecent(item) {
+  const list = getRecent().filter(i => i.slug !== item.slug);
+  list.unshift(item);
+  if (list.length > 10) list.pop();    // cap at 10
+  localStorage.setItem(RECENT_KEY, JSON.stringify(list));
+  renderRecent();
+}
 
+// render the dropdown
+function renderRecent() {
+  const recentList = document.getElementById('recent-list');
+  const items = getRecent();
+  if (items.length === 0) {
+    recentList.innerHTML = `
+      <li class="px-4 py-2 text-gray-500">No recent views.</li>
+    `;
+    return;
+  }
+  recentList.innerHTML = items.map(i => `
+    <li>
+      <button
+        class="w-full text-left px-4 py-2 hover:bg-gray-100 focus:outline-none"
+        onclick="showContent('${i.slug}', '${i.title}')"
+      >
+        ${i.title}
+      </button>
+    </li>
+  `).join('');
+}
   // === banner & badge control ===
 let initialUpdatesLoad = true;
 let bannerClosed = false;
@@ -439,11 +469,15 @@ article.innerHTML = `
   }
 
   // === Show content for a card ===
-  async function showContent(slug, title) {
-    container.classList.add('hidden');
-    detailContainer.classList.remove('hidden');
-    detailTitle.textContent = title;
-    detailList.innerHTML = '';
+async function showContent(slug, title) {
+  // 1) record this view
+  addRecent({ slug, title });
+  
+  // 2) your existing code
+  container.classList.add('hidden');
+  detailContainer.classList.remove('hidden');
+  detailTitle.textContent = title;
+  detailList.innerHTML = '';
 
 if (slug === 'reports') {
   const imagePaths = [
@@ -790,6 +824,8 @@ clearNotifsBtn.onclick = () => {
  document.addEventListener('DOMContentLoaded', () => {
     renderCards();
     buildSearchIndex();
+    renderRecent();
+   
     VanillaTilt.init(/* … */);
     window.addEventListener('scroll', /* parallax */);
     document.getElementById('update-banner-close')
