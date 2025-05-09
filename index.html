@@ -790,6 +790,8 @@ function renderUpdatesPanel() {
   const latestTime = toShow[0]?.time;
   const isNew      = latestTime && latestTime !== lastSeen;
 
+  console.log({ latestTime, lastSeen, isNew, initialUpdatesLoad });
+
   [updatesContainer, mobileUpdatesContainer].forEach(cn => {
     cn.innerHTML = '';
     if (!toShow.length) {
