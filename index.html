@@ -14,9 +14,6 @@
 <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.2/dist/vanilla-tilt.min.js" defer></script>
   
 <style>
-    html {
-      scroll-behavior: smooth;
-    }
   /* 3. Bell-bounce */
   @keyframes bell-bounce {
     0%, 100% { transform: rotate(0deg); }
@@ -70,13 +67,6 @@
   <!-- Header -->
   <header role="banner" class="relative bg-white shadow sticky top-0 z-20">
     <div class="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-
-          <!-- Sidebar toggle (mobile only) -->
-    <button id="sidebar-toggle"
-            class="lg:hidden mr-4 p-2 focus:outline-none"
-            aria-label="Toggle sidebar">
-      ☰
-    </button>
       <a href="#" onclick="event.preventDefault();" class="flex items-center h-16">
         <img src="/assets/woohub_logo.png" alt="WooHub Logo" class="h-10 w-auto" />
      </a>
@@ -165,26 +155,43 @@
     </div>
   </details>
 
-<!-- Content Wrapper with Sidebar -->
-<div class="flex flex-1 w-full px-4 sm:px-6 lg:px-8 mt-6">
-  <!-- Sidebar -->
-  <aside id="sidebar"
-         class="hidden lg:block w-64 bg-white border-r border-gray-200 p-4 space-y-4">
-    <nav>
-      <ul class="space-y-2">
-        <li><a href="#dashboard" class="block px-2 py-1 hover:bg-gray-100 rounded">Dashboard</a></li>
-        <li><a href="#email-templates" class="block px-2 py-1 hover:bg-gray-100 rounded">Email Templates</a></li>
-        <li><a href="#processes" class="block px-2 py-1 hover:bg-gray-100 rounded">Processes</a></li>
-        <li><a href="#reports" class="block px-2 py-1 hover:bg-gray-100 rounded">Reports</a></li>
-        <li><a href="#links" class="block px-2 py-1 hover:bg-gray-100 rounded">Links</a></li>
-        <li><a href="#tutorials" class="block px-2 py-1 hover:bg-gray-100 rounded">Tutorials</a></li>
-        <li><a href="#directory" class="block px-2 py-1 hover:bg-gray-100 rounded">Directory</a></li>
-      </ul>
-    </nav>
-  </aside>
+  <!-- Content Wrapper -->
+  <div class="flex flex-1 w-full px-4 sm:px-6 lg:px-8 mt-6">
+    <!-- Desktop Recent Updates Panel -->
+    <aside class="w-80 lg:w-96 mr-6 hidden lg:block">
+      <div class="bg-white border border-gray-200 rounded-lg p-4 sticky top-24">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-lg font-semibold">Recent Updates</h2>
+          <button id="updates-filter-toggle" class="p-1 focus:outline-none" aria-label="Toggle filter">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2
+                       a1 1 0 01-.293.707l-7.414 7.414
+                       a1 1 0 00-.293.707V19l-4-4v-4
+                       a1 1 0 00-.293-.707L3.293 6.707
+                       A1 1 0 013 6V4z" />
+            </svg>
+          </button>
+        </div>
+        <div id="updates-filter-container" class="hidden mb-2">
+          <input id="updates-filter" type="text" placeholder="Filter updates..."
+                 aria-label="Filter updates"
+                 class="w-full px-3 py-1 border border-gray-300 rounded-lg
+                        focus:outline-none focus:ring-1 focus:ring-indigo-500
+                        text-gray-800 placeholder-gray-500" />
+        </div>
+        <ul id="updates-container" class="max-h-96 overflow-y-auto pr-2 space-y-2"
+            aria-live="polite"></ul>
+        <button id="load-more-btn" class="mt-2 w-full text-center text-indigo-600
+                                         hover:underline focus:outline-none">
+          Load More
+        </button>
+      </div>
+    </aside>
 
     <!-- Main content -->
-    <main id="dashboard" role="main" class="flex-1 flex flex-col">
+    <main role="main" class="flex-1 flex flex-col">
       <!-- Breadcrumbs -->
       <nav role="navigation" class="text-sm mb-4" aria-label="Breadcrumb">
         <ol class="list-reset flex text-gray-600">
@@ -385,30 +392,30 @@ function hideUpdateBanner() {
     return data;
   }
 
-// === Render cards with IDs for sidebar links ===
-function renderCards() {
-  container.innerHTML = '';
-  cardsData.forEach(card => {
-    const article = document.createElement('article');
-    // give each card an id matching its slug so sidebar links scroll here
-    article.id = card.slug;
-    article.setAttribute('data-tilt', '');
-    article.dataset.slug = card.slug;
-    article.className = 'relative bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6 flex flex-col';
-    article.innerHTML = `
-      <span class="badge absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full hidden">new</span>
-      <h3 tabindex="0" class="text-xl font-semibold mb-2 hover:text-indigo-600 cursor-pointer">${card.title}</h3>
-      <p class="text-gray-600 flex-1">${card.description}</p>
-      <button class="bg-indigo-600 hover:bg-indigo-700 text-white mt-4 font-medium px-4 py-2 rounded-lg transition">
-        View ${card.title} →
-      </button>
-    `;
-    article.querySelector('h3').onclick    = () => showContent(card.slug, card.title);
-    article.querySelector('button').onclick = () => showContent(card.slug, card.title);
-    container.appendChild(article);
-  });
-  updateCardBadges();
-}
+  // === Render cards ===
+  function renderCards() {
+    container.innerHTML = '';
+    cardsData.forEach(card => {
+      const article = document.createElement('article');
+      article.setAttribute('data-tilt', '');
+      article.dataset.slug = card.slug;
+      article.className = 'relative bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6 flex flex-col';
+article.innerHTML = `
+  <span class="badge absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full hidden">new</span>
+  <h3 tabindex="0" class="text-xl font-semibold mb-2 hover:text-indigo-600 cursor-pointer">${card.title}</h3>
+  <p class="text-gray-600 flex-1">${card.description}</p>
+  <button
+    class="bg-indigo-600 hover:bg-indigo-700 text-white mt-4 font-medium px-4 py-2 rounded-lg transition"
+  >
+    View ${card.title} →
+  </button>
+`;
+      article.querySelector('h3').onclick    = () => showContent(card.slug, card.title);
+      article.querySelector('button').onclick = () => showContent(card.slug, card.title);
+      container.appendChild(article);
+    });
+    updateCardBadges();
+  }
 
   // === Show content for a card ===
   async function showContent(slug, title) {
@@ -786,16 +793,8 @@ bannerCloseBtn.addEventListener('click', () => {
   hideUpdateBanner();
 });
 
-  // **NEW**: hide sidebar when any sidebar link is clicked (mobile)
-  document.querySelectorAll('#sidebar a[href^="#"]').forEach(link => {
-    link.addEventListener('click', () => {
-      document.getElementById('sidebar').classList.add('hidden');
-    });
-  });
-
   setNotifCount(0);
 });
-  
 </script>
 </body>
 </html>
