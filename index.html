@@ -29,17 +29,27 @@
   }
 
   /* 5. Search suggestion slide-in */
-  .suggestion-enter          { transform: translateX(-20px); opacity: 0; }
-  .suggestion-enter-active   { animation: slide-in 0.3s forwards; }
+  .suggestion-enter        { transform: translateX(-20px); opacity: 0; }
+  .suggestion-enter-active { animation: slide-in 0.3s forwards; }
   @keyframes slide-in {
     to { transform: translateX(0); opacity: 1; }
   }
 
-  /* List styling for overlays and modals */
-  #overlay ol,
+  /* Banner slide-down */
+  @keyframes slide-down {
+    from { transform: translateY(-100%); }
+    to   { transform: translateY(0); }
+  }
+  #update-banner.show {
+    animation: slide-down 0.3s ease-out forwards;
+  }
+
+  /* List styling for overlay */
+  #overlay ol {
     list-style-type: decimal;
   }
 </style>
+</head>
 
 <body class="bg-gray-100 text-gray-800 antialiased flex flex-col min-h-screen">
 
@@ -47,14 +57,6 @@
   <div id="parallax-bg"
        class="fixed inset-0 bg-[url('/assets/pattern.svg')] bg-center bg-cover pointer-events-none"
        style="transform: translateY(0);"></div>
-
-  <!-- Toast for new updates -->
-  <div id="update-toast"
-       role="status" aria-live="polite" aria-atomic="true" class="fixed top-4 right-4 z-50 bg-indigo-600 text-white rounded shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none p-4 max-w-xs">
-    <strong>New Update!</strong>
-    <button id="update-toast-close" class="absolute top-1 right-2 text-white text-lg focus:outline-none">&times;</button>
-    <div id="update-toast-content" class="mt-1 text-sm"></div>
-  </div>
 
   <noscript>
     <div class="p-4 bg-yellow-100 text-yellow-800">
@@ -107,6 +109,15 @@
       </div>
     </div>
   </header>
+
+  <!-- update banner -->
+<div id="update-banner"
+     role="status" aria-live="polite" aria-atomic="true"
+     class="hidden bg-indigo-600 text-white flex items-center justify-between px-6 py-3">
+  <div id="update-banner-content" class="flex-1 text-sm font-medium"></div>
+  <button id="update-banner-close" aria-label="Close banner"
+          class="ml-4 text-xl font-bold leading-none focus:outline-none">&times;</button>
+</div>
 
   <!-- Mobile Recent Updates Accordion -->
   <details class="lg:hidden px-4 mt-2">
@@ -191,7 +202,6 @@
       <section id="detail-container" class="hidden bg-white rounded-lg shadow p-6 mb-6"
                role="region" aria-labelledby="detail-title">
         <button id="back-btn"
-        data-tippy-content="Return to the main dashboard"
         class="text-indigo-600 hover:underline mb-4 focus:outline-none">
           ← Back to Dashboard
         </button>
@@ -216,7 +226,6 @@
       &times;
     </button>
       <button id="copy-btn"
-      		  data-tippy-content="Copy content to clipboard"
               class="absolute top-4 right-12 text-sm text-gray-500 hover:text-gray-700 hidden focus:outline-none">Copy</button>
       <h2 id="overlay-header" class="text-2xl font-semibold mb-4"></h2>
       <div id="overlay-body" class="space-y-4" tabindex="0"></div>
@@ -274,9 +283,9 @@
     localStorage.setItem('lastSeenUpdate', ts);
   }
 
-  // === toast & badge control ===
+  // === banner & badge control ===
 let initialUpdatesLoad = true;
-let toastClosed = false;
+let bannerClosed = false;
 
 async function updateCardBadges() {
   for (const c of cardsData) {
@@ -295,21 +304,19 @@ async function updateCardBadges() {
     }
   }
 }
-function showUpdateToast(message) {
-  if (toastClosed) return;
-  const toast = document.getElementById('update-toast');
-  if (!toast) return;
-  const toastContent = document.getElementById('update-toast-content');
-  toastContent.textContent = message;
-  toast.classList.remove('hidden', 'pointer-events-none');
-  toast.classList.add('opacity-100');
+function showUpdateBanner(message) {
+  if (bannerClosed) return;      // you can keep using the same “bannerClosed” flag
+  const banner = document.getElementById('update-banner');
+  const content = document.getElementById('update-banner-content');
+  content.textContent = message;
+  banner.classList.remove('hidden');
+  banner.classList.add('show');
 }
 
-function hideUpdateToast() {
-  const toast = document.getElementById('update-toast');
-  if (!toast) return;
-  toast.classList.add('hidden', 'pointer-events-none');
-  toast.classList.remove('opacity-100');
+function hideUpdateBanner() {
+  const banner = document.getElementById('update-banner');
+  banner.classList.add('hidden');
+  banner.classList.remove('show');
 }
 
   // === Element refs ===
@@ -698,10 +705,10 @@ clearNotifsBtn.onclick = () => {
           if(u.link){
             const a=document.createElement('a');
             a.href=u.link;a.className='block py-2 hover:underline';
-            if(i===0&&initialUpdatesLoad){const badge=document.createElement('span');badge.textContent='New ';badge.className='text-red-600 text-xs font-semibold';a.appendChild(badge);showUpdateToast(u.text);}
+            if(i===0&&initialUpdatesLoad){const badge=document.createElement('span');badge.textContent='New ';badge.className='text-red-600 text-xs font-semibold';a.appendChild(badge);showUpdateBanner(u.text);}
             a.appendChild(document.createTextNode(`${u.time}: ${u.text}`));li.appendChild(a);
           } else {
-            if(i===0&&initialUpdatesLoad){const badge=document.createElement('span');badge.textContent='New ';badge.className='text-red-600 text-xs font-semibold';li.appendChild(badge);showUpdateToast(u.text);}
+            if(i===0&&initialUpdatesLoad){const badge=document.createElement('span');badge.textContent='New ';badge.className='text-red-600 text-xs font-semibold';li.appendChild(badge);showUpdateBanner(u.text);}
             li.appendChild(document.createTextNode(`${u.time}: ${u.text}`));li.className='py-2';
           }
           cn.appendChild(li);
@@ -776,12 +783,12 @@ document.addEventListener('DOMContentLoaded', () => {
     bg.style.transform = `translateY(${offset}px)`;
   });
 
-  // 3) Toast close button + clear initial count
-  const closeBtn = document.getElementById('update-toast-close');
-  closeBtn.addEventListener('click', () => {
-    toastClosed = true;
-    hideUpdateToast();
-  });
+// 3) Banner close button + clear initial count
+const bannerCloseBtn = document.getElementById('update-banner-close');
+bannerCloseBtn.addEventListener('click', () => {
+  bannerClosed = true;      // reuse the same flag
+  hideUpdateBanner();
+});
 
   setNotifCount(0);
 });
