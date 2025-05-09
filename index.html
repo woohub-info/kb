@@ -764,57 +764,44 @@ clearNotifsBtn.onclick = () => {
   searchInput.addEventListener('input',debounce(async e=>{const q=e.target.value.trim();if(!q)return searchSuggestions.classList.add('hidden');if(!fuse)await buildSearchIndex();renderSuggestions(fuse.search(q));searchSuggestions.classList.remove('hidden');searchInput.setAttribute('aria-expanded','true');},250));
   document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==searchInput){e.preventDefault();searchInput.focus();}});
 
-// === Final init ===
 document.addEventListener('DOMContentLoaded', () => {
-  // 0) Initial rendering & index build
+  // 0) Initial render & setup
   renderCards();
   buildSearchIndex();
+  setNotifCount(0);
 
-  // 1) Tilt effect on cards
-  VanillaTilt.init(document.querySelectorAll('article[data-tilt]'), {
-    max: 15,
-    speed: 400,
-    glare: true,
-    'max-glare': 0.2
-  });
+  // 1) Back to Dashboard button
+  const backBtn = document.getElementById('back-btn');
+  backBtn.onclick = () => {
+    detailContainer.classList.add('hidden');
+    container.classList.remove('hidden');
+  };
 
-  // 2) Parallax scroll effect
-  const bg = document.getElementById('parallax-bg');
-  window.addEventListener('scroll', () => {
-    const offset = window.scrollY * 0.3; // tweak speed here
-    bg.style.transform = `translateY(${offset}px)`;
-  });
-
-// 3) Banner close button + clear initial count
-const bannerCloseBtn = document.getElementById('update-banner-close');
-bannerCloseBtn.addEventListener('click', () => {
-  bannerClosed = true;      // reuse the same flag
-  hideUpdateBanner();
-});
-
-  // sidebar toggle for mobile
-  document.getElementById('sidebar-toggle').addEventListener('click', () => {
+  // 2) Mobile sidebar toggle
+  const sidebarToggle = document.getElementById('sidebar-toggle');
+  sidebarToggle.addEventListener('click', () => {
     document.getElementById('sidebar').classList.toggle('hidden');
   });
 
-  // wire up sidebar links (one handler, not two)
+  // 3) Sidebar links (one handler)
   document.querySelectorAll('#sidebar a[href^="#"]').forEach(link => {
     link.addEventListener('click', e => {
       e.preventDefault();
       const slug = link.getAttribute('href').slice(1);
+      const sidebar = document.getElementById('sidebar');
 
-      // “Home” case: show grid, hide detail, scroll dashboard into view
+      // Home case: show grid, hide detail, scroll up
       if (slug === 'dashboard') {
         detailContainer.classList.add('hidden');
         container.classList.remove('hidden');
         document.getElementById('dashboard')
                 .scrollIntoView({ behavior: 'smooth' });
-        document.getElementById('sidebar').classList.add('hidden');
+        sidebar.classList.add('hidden');
         return;
       }
 
-      // Card case: hide sidebar, render detail, then scroll to that card
-      document.getElementById('sidebar').classList.add('hidden');
+      // Card case: hide grid, show detail, scroll into view
+      sidebar.classList.add('hidden');
       const card = cardsData.find(c => c.slug === slug);
       if (card) {
         showContent(card.slug, card.title);
@@ -824,9 +811,24 @@ bannerCloseBtn.addEventListener('click', () => {
     });
   });
 
-  setNotifCount(0);
+  // 4) Banner close
+  const bannerCloseBtn = document.getElementById('update-banner-close');
+  bannerCloseBtn.addEventListener('click', () => {
+    bannerClosed = true;
+    hideUpdateBanner();
+  });
+
+  // 5) Tilt & parallax
+  VanillaTilt.init(
+    document.querySelectorAll('article[data-tilt]'),
+    { max: 15, speed: 400, glare: true, 'max-glare': 0.2 }
+  );
+  const bg = document.getElementById('parallax-bg');
+  window.addEventListener('scroll', () => {
+    bg.style.transform = `translateY(${window.scrollY * 0.3}px)`;
+  });
 });
-  
+
 </script>
 </body>
 </html>
