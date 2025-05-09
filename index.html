@@ -371,40 +371,39 @@
   }
 
   // === banner & badge control ===
-let initialUpdatesLoad = true;
-let bannerClosed = false;
+  let initialUpdatesLoad = true;
+  let bannerClosed = false;
 
-async function updateCardBadges() {
-  for (const c of cardsData) {
-    const badge = document.querySelector(`[data-slug="${c.slug}"] .badge`);
-    if (!badge) continue;
-    try {
-      const data = await fetchItems(c.slug);
-      const items = Array.isArray(data) ? data : Object.values(data).flat();
-      const hasUnread = items.some(item => {
-        const id = item.id || item.name;
-        return !isItemRead(c.slug, id);
-      });
-      badge.classList.toggle('hidden', !hasUnread);
-    } catch (err) {
-      // If fetching fails, leave badge as-is
+  async function updateCardBadges() {
+    for (const c of cardsData) {
+      const badge = document.querySelector(`[data-slug="${c.slug}"] .badge`);
+      if (!badge) continue;
+      try {
+        const data = await fetchItems(c.slug);
+        const items = Array.isArray(data) ? data : Object.values(data).flat();
+        const hasUnread = items.some(item => {
+          const id = item.id || item.name;
+          return !isItemRead(c.slug, id);
+        });
+        badge.classList.toggle('hidden', !hasUnread);
+      } catch (err) {
+        // If fetching fails, leave badge as-is
+      }
     }
   }
-}
-function showUpdateBanner(message) {
-  if (bannerClosed) return;      // you can keep using the same “bannerClosed” flag
-  const banner = document.getElementById('update-banner');
-  const content = document.getElementById('update-banner-content');
-  content.textContent = message;
-  banner.classList.remove('hidden');
-  banner.classList.add('show');
-}
-
-function hideUpdateBanner() {
-  const banner = document.getElementById('update-banner');
-  banner.classList.add('hidden');
-  banner.classList.remove('show');
-}
+  function showUpdateBanner(message) {
+    if (bannerClosed) return;
+    const banner = document.getElementById('update-banner');
+    const content = document.getElementById('update-banner-content');
+    content.textContent = message;
+    banner.classList.remove('hidden');
+    banner.classList.add('show');
+  }
+  function hideUpdateBanner() {
+    const banner = document.getElementById('update-banner');
+    banner.classList.add('hidden');
+    banner.classList.remove('show');
+  }
 
   // === Element refs ===
   const container               = document.getElementById('card-container');
@@ -437,7 +436,7 @@ function hideUpdateBanner() {
   const mobileLoadMoreBtn       = document.getElementById('mobile-load-more-btn');
   const toTopBtn                = document.getElementById('to-top');
 
-    // helper to show/hide the red count bubble
+  // helper to show/hide the red count bubble
   function setNotifCount(count) {
     if (count > 0) {
       notifCountEl.textContent = count;
@@ -476,6 +475,39 @@ function hideUpdateBanner() {
     return data;
   }
 
+  // === Recently Viewed Logic (global scope) ===
+  function renderRecentlyViewed(recents) {
+    const recentList = document.getElementById('recent-list');
+    recentList.innerHTML = '';
+    if (!recents.length) {
+      recentList.innerHTML = '<li class="py-2 text-gray-500">No recently viewed items</li>';
+      return;
+    }
+    recents.forEach(item => {
+      const li = document.createElement('li');
+      li.className = 'py-2 text-indigo-600 hover:underline cursor-pointer';
+      li.textContent = item.title;
+      li.onclick = () => {
+        if (item.type === 'card') {
+          showContent(item.slug, item.title);
+        } else {
+          openEmailOverlay(item.title, item.content, item.slug);
+        }
+      };
+      recentList.appendChild(li);
+    });
+  }
+
+  function addToRecents(item) {
+    const key = 'recentlyViewed';
+    let recents = JSON.parse(localStorage.getItem(key) || '[]');
+    recents = recents.filter(r => !(r.slug === item.slug && r.id === item.id));
+    recents.unshift(item);
+    recents = recents.slice(0, 10);
+    localStorage.setItem(key, JSON.stringify(recents));
+    renderRecentlyViewed(recents);
+  }
+
   // === Render cards ===
   function renderCards() {
     container.innerHTML = '';
@@ -484,16 +516,14 @@ function hideUpdateBanner() {
       article.setAttribute('data-tilt', '');
       article.dataset.slug = card.slug;
       article.className = 'relative bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6 flex flex-col';
-article.innerHTML = `
-  <span class="badge absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full hidden">new</span>
-  <h3 tabindex="0" class="text-xl font-semibold mb-2 hover:text-indigo-600 cursor-pointer">${card.title}</h3>
-  <p class="text-gray-600 flex-1">${card.description}</p>
-  <button
-    class="bg-indigo-600 hover:bg-indigo-700 text-white mt-4 font-medium px-4 py-2 rounded-lg transition"
-  >
-    View ${card.title} →
-  </button>
-`;
+      article.innerHTML = `
+        <span class="badge absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full hidden">new</span>
+        <h3 tabindex="0" class="text-xl font-semibold mb-2 hover:text-indigo-600 cursor-pointer">${card.title}</h3>
+        <p class="text-gray-600 flex-1">${card.description}</p>
+        <button class="bg-indigo-600 hover:bg-indigo-700 text-white mt-4 font-medium px-4 py-2 rounded-lg transition">
+          View ${card.title} →
+        </button>
+      `;
       article.querySelector('h3').onclick    = () => showContent(card.slug, card.title);
       article.querySelector('button').onclick = () => showContent(card.slug, card.title);
       container.appendChild(article);
@@ -503,54 +533,53 @@ article.innerHTML = `
 
   // === Show content for a card ===
   async function showContent(slug, title) {
+    addToRecents({ id: slug, slug, title, type: 'card' });
     container.classList.add('hidden');
     detailContainer.classList.remove('hidden');
     detailTitle.textContent = title;
     detailList.innerHTML = '';
 
-if (slug === 'reports') {
-  const imagePaths = [
-    'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
-    'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_amz.png'
-  ];
-  detailList.innerHTML = `
-    <div class="prose max-w-none space-y-4">
-      <p>
-        <a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
-           target="_blank"
-           class="text-blue-600 hover:underline">
-          WooParts eBay and Amazon Performance - 2025
-        </a>
-      </p>
-      <div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
-        <div id="slider" class="flex transition-transform duration-300" style="transform: translateX(0%)">
-          ${imagePaths.map(path => `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report Image">`).join('')}
+    if (slug === 'reports') {
+      const imagePaths = [
+        'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
+        'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_amz.png'
+      ];
+      detailList.innerHTML = `
+        <div class="prose max-w-none space-y-4">
+          <p>
+            <a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
+               target="_blank"
+               class="text-blue-600 hover:underline">
+              WooParts eBay and Amazon Performance - 2025
+            </a>
+          </p>
+          <div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
+            <div id="slider" class="flex transition-transform duration-300" style="transform: translateX(0%)">
+              ${imagePaths.map(path => `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report Image">`).join('')}
+            </div>
+            <button id="prevSlide"
+                    class="absolute top-1/2 left-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">
+              &lsaquo;
+            </button>
+            <button id="nextSlide"
+                    class="absolute top-1/2 right-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">
+              &rsaquo__;
+            </button>
+          </div>
         </div>
-        <button id="prevSlide"
-                class="absolute top-1/2 left-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">
-          &lsaquo;
-        </button>
-        <button id="nextSlide"
-                class="absolute top-1/2 right-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">
-          &rsaquo;
-        </button>
-      </div>
-    </div>
-  `;
-
-  let currentSlide = 0,
-      sliderEl     = document.getElementById('slider'),
-      totalSlides  = imagePaths.length;
-
-  document.getElementById('prevSlide').onclick = () => {
-    currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-    sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
-  };
-  document.getElementById('nextSlide').onclick = () => {
-    currentSlide = (currentSlide + 1) % totalSlides;
-    sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
-  };
-} else {
+      `;
+      let currentSlide = 0,
+          sliderEl     = document.getElementById('slider'),
+          totalSlides  = imagePaths.length;
+      document.getElementById('prevSlide').onclick = () => {
+        currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+        sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
+      };
+      document.getElementById('nextSlide').onclick = () => {
+        currentSlide = (currentSlide + 1) % totalSlides;
+        sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
+      };
+    } else {
       try {
         const data = await fetchItems(slug);
         const groups = Array.isArray(data) ? { '': data } : data;
@@ -615,6 +644,7 @@ if (slug === 'reports') {
     const card     = cardsData.find(c => c.slug === slug);
     const titleHtml = card ? `<h3 class="text-lg font-semibold mb-2">${card.title}</h3>` : '';
     overlayBody.innerHTML = titleHtml + `<div class="prose max-w-none space-y-4">${htmlContent}</div>`;
+    addToRecents({ id: name, slug, title: name, content: htmlContent, type: 'item' });
     overlay.classList.remove('hidden');
     overlayDialog.classList.add('opacity-100','scale-100');
     copyBtn.classList.remove('hidden');
@@ -651,268 +681,270 @@ if (slug === 'reports') {
   }
 
   // === Poll notifications & flag card badges ===
-async function pollNotifications() {
-  // 1) gather all notifications into one array
-  let allItems = [];
-  try {
-    const res = await fetch('data/updates.json');
-    if (res.ok) {
-      const data = await res.json();
-      allItems = data.map(u => ({
-        id: u.id || u.timestamp + u.text,
-        text: u.text,
-        time: u.timestamp,
-        type: 'updates'
-      }));
-    }
-  } catch {}
-
-  for (const c of cardsData) {
-    if (c.slug === 'reports') continue;
+  async function pollNotifications() {
+    let allItems = [];
     try {
-      const res = await fetch(`data/${c.slug}.json`);
-      if (!res.ok) continue;
-      const data = await res.json();
-      const arr  = Array.isArray(data) ? data : Object.values(data).flat();
-      allItems.push(...arr.map(i => ({
-        id: `${c.slug}|${i.name}`,
-        text: `New ${c.title}: ${i.name}`,
-        time: new Date().toISOString(),
-        type: c.slug
-      })));
+      const res = await fetch('data/updates.json');
+      if (res.ok) {
+        const data = await res.json();
+        allItems = data.map(u => ({
+          id: u.id || u.timestamp + u.text,
+          text: u.text,
+          time: u.timestamp,
+          type: 'updates'
+        }));
+      }
     } catch {}
-  }
-
-  // 2) sort newest first
-  allItems.sort((a,b) => new Date(b.time) - new Date(a.time));
-
-  // 3) clear list and reset session count
-  notifListEl.innerHTML = '';
-  let newCount = 0;
-
-  // 4) render every item, flag unseen ones
-  allItems.forEach(item => {
-    const li = document.createElement('li');
-    li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between items-center';
-
-    const wrapper = document.createElement('div');
-    if (!seenNotifIds.has(item.id)) {
-      const nb = document.createElement('span');
-      nb.textContent = 'New ';
-      nb.className = 'new-badge text-red-600 text-xs font-semibold mr-1';
-      wrapper.appendChild(nb);
-      newCount++;
+    for (const c of cardsData) {
+      if (c.slug === 'reports') continue;
+      try {
+        const res = await fetch(`data/${c.slug}.json`);
+        if (!res.ok) continue;
+        const data = await res.json();
+        const arr = Array.isArray(data) ? data : Object.values(data).flat();
+        allItems.push(...arr.map(i => ({
+          id: `${c.slug}|${i.name}`,
+          text: `New ${c.title}: ${i.name}`,
+          time: new Date().toISOString(),
+          type: c.slug
+        })));
+      } catch {}
     }
-    const txt = document.createElement('span');
-    txt.textContent = `${iconFor(item.type)} ${item.text}`;
-    wrapper.appendChild(txt);
-
-    li.appendChild(wrapper);
-
-    const tm = document.createElement('time');
-    tm.className = 'text-xs text-gray-500';
-    tm.textContent = new Date(item.time).toLocaleTimeString();
-    li.appendChild(tm);
-
-    notifListEl.appendChild(li);
-
-    // mark as seen for this and future sessions
-    seenNotifIds.add(item.id);
-  });
-
-  // persist seen IDs so reloads retain the “read” state
-  localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
-
-  // 5) show/hide count bubble
-  setNotifCount(newCount);
-  
-    // ← Insert the bell-bounce here:
-  const bellIcon = document.getElementById('bellIcon');
-  bellIcon.style.animation = 'bell-bounce 0.6s';
-  bellIcon.addEventListener('animationend', () => {
-    bellIcon.style.animation = '';
-  }, { once: true });
-}
-
-// restart polling
-setInterval(pollNotifications, 60000);
-pollNotifications();
-
-// === Notification bell handlers ===
-notifBtn.onclick = () => {
-  const isOpen = !notifDropdown.classList.toggle('hidden');
-  notifBtn.setAttribute('aria-expanded', String(isOpen));
-
-  if (!isOpen) {
-    // reset count and remove all “New” flags
-    setNotifCount(0);
-    document.querySelectorAll('#notification-list li .new-badge')
-            .forEach(el => el.remove());
-
-    // persist read state for future reloads
+    allItems.sort((a,b) => new Date(b.time) - new Date(a.time));
+    notifListEl.innerHTML = '';
+    let newCount = 0;
+    allItems.forEach(item => {
+      const li = document.createElement('li');
+      li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between items-center';
+      const wrapper = document.createElement('div');
+      if (!seenNotifIds.has(item.id)) {
+        const nb = document.createElement('span');
+        nb.textContent = 'New ';
+        nb.className = 'new-badge text-red-600 text-xs font-semibold mr-1';
+        wrapper.appendChild(nb);
+        newCount++;
+      }
+      const txt = document.createElement('span');
+      txt.textContent = `${iconFor(item.type)} ${item.text}`;
+      wrapper.appendChild(txt);
+      li.appendChild(wrapper);
+      const tm = document.createElement('time');
+      tm.className = 'text-xs text-gray-500';
+      tm.textContent = new Date(item.time).toLocaleTimeString();
+      li.appendChild(tm);
+      notifListEl.appendChild(li);
+      seenNotifIds.add(item.id);
+    });
     localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
+    setNotifCount(newCount);
+    const bellIcon = document.getElementById('bellIcon');
+    bellIcon.style.animation = 'bell-bounce 0.6s';
+    bellIcon.addEventListener('animationend', () => {
+      bellIcon.style.animation = '';
+    }, { once: true });
   }
-};
+  setInterval(pollNotifications, 60000);
+  pollNotifications();
 
-clearNotifsBtn.onclick = () => {
-  // 1) Gather every notification ID we’ve ever fetched
-  const allKnownIds = Object.values(badgeDataMap).flat();
-  // 2) Mark them all as seen
-  allKnownIds.forEach(id => seenNotifIds.add(id));
-  // 3) Persist for future reloads
-  localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
-  // 4) Clear out the list and reset badge
-  notifListEl.innerHTML = '';
-  setNotifCount(0);
-};
+  // === Notification bell handlers ===
+  notifBtn.onclick = () => {
+    const isOpen = !notifDropdown.classList.toggle('hidden');
+    notifBtn.setAttribute('aria-expanded', String(isOpen));
+    if (!isOpen) {
+      setNotifCount(0);
+      document.querySelectorAll('#notification-list li .new-badge')
+              .forEach(el => el.remove());
+      localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
+    }
+  };
+  clearNotifsBtn.onclick = () => {
+    const allKnownIds = Object.values(badgeDataMap).flat();
+    allKnownIds.forEach(id => seenNotifIds.add(id));
+    localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
+    notifListEl.innerHTML = '';
+    setNotifCount(0);
+  };
 
   // === Recent updates panel ===
-  let allUpdates=[],displayCount=5;
-  async function pollUpdatesPanel(){
-    try{
-      const res=await fetch('data/updates.json');
-      if(!res.ok)return;
-      allUpdates=(await res.json()).map(u=>({text:u.text,time:u.timestamp,link:u.link}));
+  let allUpdates = [], displayCount = 5;
+  async function pollUpdatesPanel() {
+    try {
+      const res = await fetch('data/updates.json');
+      if (!res.ok) return;
+      allUpdates = (await res.json()).map(u => ({ text: u.text, time: u.timestamp, link: u.link }));
       renderUpdatesPanel();
-    }catch{console.error('Updates panel error');}
+    } catch { console.error('Updates panel error'); }
   }
-  function renderUpdatesPanel(){
-    const filterVal=(updatesFilter?.value||mobileUpdatesFilter?.value||'').toLowerCase();
-    const filtered=allUpdates.filter(u=>u.text.toLowerCase().includes(filterVal)).sort((a,b)=>new Date(b.time)-new Date(a.time));
-    const toShow=filtered.slice(0,displayCount);
-    const lastSeen=getLastSeenUpdate(),latestTime=toShow[0]?.time,isNew=latestTime&&latestTime!==lastSeen;
-    [updatesContainer,mobileUpdatesContainer].forEach(cn=>{
-      cn.innerHTML='';
-      if(!toShow.length){
-        const li=document.createElement('li');
-        li.textContent='No updates available.';li.className='py-2 text-gray-500';cn.appendChild(li);
+  function renderUpdatesPanel() {
+    const filterVal = (updatesFilter?.value || mobileUpdatesFilter?.value || '').toLowerCase();
+    const filtered = allUpdates
+      .filter(u => u.text.toLowerCase().includes(filterVal))
+      .sort((a,b) => new Date(b.time) - new Date(a.time));
+    const toShow = filtered.slice(0, displayCount);
+    const lastSeen = getLastSeenUpdate(), latestTime = toShow[0]?.time, isNew = latestTime && latestTime !== lastSeen;
+    [updatesContainer, mobileUpdatesContainer].forEach(cn => {
+      cn.innerHTML = '';
+      if (!toShow.length) {
+        const li = document.createElement('li');
+        li.textContent = 'No updates available.';
+        li.className = 'py-2 text-gray-500';
+        cn.appendChild(li);
       } else {
-        toShow.forEach((u,i)=>{
-          const li=document.createElement('li');
-          if(u.link){
-            const a=document.createElement('a');
-            a.href=u.link;a.className='block py-2 hover:underline';
-            if(i===0&&initialUpdatesLoad){const badge=document.createElement('span');badge.textContent='New ';badge.className='text-red-600 text-xs font-semibold';a.appendChild(badge);showUpdateBanner(u.text);}
-            a.appendChild(document.createTextNode(`${u.time}: ${u.text}`));li.appendChild(a);
+        toShow.forEach((u,i) => {
+          const li = document.createElement('li');
+          if (u.link) {
+            const a = document.createElement('a');
+            a.href = u.link; a.className = 'block py-2 hover:underline';
+            if (i === 0 && initialUpdatesLoad) {
+              const badge = document.createElement('span');
+              badge.textContent = 'New ';
+              badge.className = 'text-red-600 text-xs font-semibold';
+              a.appendChild(badge);
+              showUpdateBanner(u.text);
+            }
+            a.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
+            li.appendChild(a);
           } else {
-            if(i===0&&initialUpdatesLoad){const badge=document.createElement('span');badge.textContent='New ';badge.className='text-red-600 text-xs font-semibold';li.appendChild(badge);showUpdateBanner(u.text);}
-            li.appendChild(document.createTextNode(`${u.time}: ${u.text}`));li.className='py-2';
+            if (i === 0 && initialUpdatesLoad) {
+              const badge = document.createElement('span');
+              badge.textContent = 'New ';
+              badge.className = 'text-red-600 text-xs font-semibold';
+              li.appendChild(badge);
+              showUpdateBanner(u.text);
+            }
+            li.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
+            li.className = 'py-2';
           }
           cn.appendChild(li);
         });
       }
     });
-    if(isNew) setLastSeenUpdate(latestTime);
-    initialUpdatesLoad=false;
+    if (isNew) setLastSeenUpdate(latestTime);
+    initialUpdatesLoad = false;
   }
-  setInterval(pollUpdatesPanel,60000);
+  setInterval(pollUpdatesPanel, 60000);
   pollUpdatesPanel();
-  updatesToggleBtn.onclick=() => updatesFilterContainer.classList.toggle('hidden');
-  mobileUpdatesToggleBtn.onclick=() => mobileUpdatesFilterContainer.classList.toggle('hidden');
-  updatesFilter?.addEventListener('input',debounce(renderUpdatesPanel,200));
-  mobileUpdatesFilter?.addEventListener('input',debounce(renderUpdatesPanel,200));
-  loadMoreBtn.onclick=()=>{displayCount+=5;renderUpdatesPanel();};
-  mobileLoadMoreBtn.onclick=()=>{displayCount+=5;renderUpdatesPanel();};
+  updatesToggleBtn.onclick = () => updatesFilterContainer.classList.toggle('hidden');
+  mobileUpdatesToggleBtn.onclick = () => mobileUpdatesFilterContainer.classList.toggle('hidden');
+  updatesFilter?.addEventListener('input', debounce(renderUpdatesPanel, 200));
+  mobileUpdatesFilter?.addEventListener('input', debounce(renderUpdatesPanel, 200));
+  loadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
+  mobileLoadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
 
   // === Fuzzy search ===
   let fuse;
-  async function buildSearchIndex(){
-    const items=cardsData.map(c=>({name:c.title,content:c.description,slug:c.slug,isRoot:true}));
-    for(const c of cardsData){
-      if(c.slug==='reports')continue;
-      try{
-        const data=await fetchItems(c.slug),arr=Array.isArray(data)?data:Object.values(data).flat();
-        arr.forEach(i=>items.push({name:i.name,content:i.content,slug:c.slug,isRoot:false}));
-      }catch{}
+  async function buildSearchIndex() {
+    const items = cardsData.map(c => ({ name: c.title, content: c.description, slug: c.slug, isRoot: true }));
+    for (const c of cardsData) {
+      if (c.slug === 'reports') continue;
+      try {
+        const data = await fetchItems(c.slug), arr = Array.isArray(data) ? data : Object.values(data).flat();
+        arr.forEach(i => items.push({ name: i.name, content: i.content, slug: c.slug, isRoot: false }));
+      } catch {}
     }
-    fuse=new Fuse(items,{keys:['name','content'],includeMatches:true,threshold:0.4});
+    fuse = new Fuse(items, { keys: ['name', 'content'], includeMatches: true, threshold: 0.4 });
   }
-  function renderSuggestions(results){
-    searchSuggestions.innerHTML='';
-    if(!results.length){
-      searchSuggestions.innerHTML='<li class="px-4 py-2 text-gray-500">No results</li>';
+  function renderSuggestions(results) {
+    searchSuggestions.innerHTML = '';
+    if (!results.length) {
+      searchSuggestions.innerHTML = '<li class="px-4 py-2 text-gray-500">No results</li>';
     } else {
-      results.forEach(r=>{
-        let label=r.item.name,match=r.matches.find(m=>m.key==='name');
-        if(match){
-          let h='',last=0;
-          match.indices.forEach(([s,e])=>{h+=label.slice(last,s)+`<mark>${label.slice(s,e+1)}</mark>`;last=e+1;});
-          h+=label.slice(last);label=h;
+      results.forEach(r => {
+        let label = r.item.name, match = r.matches.find(m => m.key === 'name');
+        if (match) {
+          let h = '', last = 0;
+          match.indices.forEach(([s,e]) => {
+            h += label.slice(last, s) + `<mark>${label.slice(s, e+1)}</mark>`;
+            last = e+1;
+          });
+          h += label.slice(last);
+          label = h;
         }
-        const li=document.createElement('li');
-        li.role='option';li.className='px-4 py-2 hover:bg-gray-100 cursor-pointer';li.innerHTML=label;
-        li.onclick=()=>{(r.item.isRoot?showContent:openEmailOverlay)(r.item.slug||r.item.name,r.item.content,r.item.slug);searchSuggestions.classList.add('hidden');searchInput.setAttribute('aria-expanded','false');};
+        const li = document.createElement('li');
+        li.role = 'option';
+        li.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
+        li.innerHTML = label;
+        li.onclick = () => {
+          (r.item.isRoot ? showContent : openEmailOverlay)(r.item.slug||r.item.name, r.item.content, r.item.slug);
+          searchSuggestions.classList.add('hidden');
+          searchInput.setAttribute('aria-expanded', 'false');
+        };
         searchSuggestions.appendChild(li);
       });
     }
   }
-  searchInput.addEventListener('input',debounce(async e=>{const q=e.target.value.trim();if(!q)return searchSuggestions.classList.add('hidden');if(!fuse)await buildSearchIndex();renderSuggestions(fuse.search(q));searchSuggestions.classList.remove('hidden');searchInput.setAttribute('aria-expanded','true');},250));
-  document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==searchInput){e.preventDefault();searchInput.focus();}});
-
-// === Final init ===
-document.addEventListener('DOMContentLoaded', () => {
-  // 0) Initial rendering & index build
-  renderCards();
-  buildSearchIndex();
-
-  // 1) Tilt effect on cards
-  VanillaTilt.init(document.querySelectorAll('article[data-tilt]'), {
-    max: 15,
-    speed: 400,
-    glare: true,
-    'max-glare': 0.2
-  });
-
-  // 2) Parallax scroll effect
-  const bg = document.getElementById('parallax-bg');
-  window.addEventListener('scroll', () => {
-    const offset = window.scrollY * 0.3;
-    bg.style.transform = `translateY(${offset}px)`;
-  });
-
-  // 3) Banner close button + clear initial count
-  const bannerCloseBtn = document.getElementById('update-banner-close');
-  bannerCloseBtn.addEventListener('click', () => {
-    bannerClosed = true;
-    hideUpdateBanner();
-  });
-
-  // 4) Notification refs (needed by your recently‐viewed toggle)
-  const notificationBtn      = document.getElementById('notification-btn');
-  const notificationDropdown = document.getElementById('notification-dropdown');
-
-  // 5) Recently Viewed handlers
-  const recentBtn      = document.getElementById('recent-btn');
-  const recentDropdown = document.getElementById('recent-dropdown');
-
-  recentBtn.addEventListener('click', (e) => {
-    // close notifications if open
-    notificationDropdown.classList.add('hidden');
-    notificationBtn.setAttribute('aria-expanded', 'false');
-
-    // toggle recent
-    const isOpen = !recentDropdown.classList.toggle('hidden');
-    recentBtn.setAttribute('aria-expanded', String(isOpen));
-  });
-
-  document.addEventListener('click', (e) => {
-    if (
-      !recentDropdown.contains(e.target) &&
-      e.target !== recentBtn
-    ) {
-      recentDropdown.classList.add('hidden');
-      recentBtn.setAttribute('aria-expanded', 'false');
+  searchInput.addEventListener('input', debounce(async e => {
+    const q = e.target.value.trim();
+    if (!q) return searchSuggestions.classList.add('hidden');
+    if (!fuse) await buildSearchIndex();
+    renderSuggestions(fuse.search(q));
+    searchSuggestions.classList.remove('hidden');
+    searchInput.setAttribute('aria-expanded', 'true');
+  }, 250));
+  document.addEventListener('keydown', e => {
+    if (e.key === '/' && document.activeElement !== searchInput) {
+      e.preventDefault();
+      searchInput.focus();
     }
   });
 
-  // 6) Render recents once on load
-  const recents = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
-  renderRecentlyViewed(recents);
+  // === Final init ===
+  document.addEventListener('DOMContentLoaded', () => {
+    // 0) Initial rendering & index build
+    renderCards();
+    buildSearchIndex();
 
-  // 7) Zero‐out the notif count
-  setNotifCount(0);
-});
+    // 1) Tilt effect on cards
+    VanillaTilt.init(document.querySelectorAll('article[data-tilt]'), {
+      max: 15,
+      speed: 400,
+      glare: true,
+      'max-glare': 0.2
+    });
 
+    // 2) Parallax scroll effect
+    const bg = document.getElementById('parallax-bg');
+    window.addEventListener('scroll', () => {
+      const offset = window.scrollY * 0.3;
+      bg.style.transform = `translateY(${offset}px)`;
+    });
+
+    // 3) Banner close button + clear initial count
+    const bannerCloseBtn = document.getElementById('update-banner-close');
+    bannerCloseBtn.addEventListener('click', () => {
+      bannerClosed = true;
+      hideUpdateBanner();
+    });
+
+    // 4) Notification refs (needed by your recently‐viewed toggle)
+    const notificationBtnRef      = document.getElementById('notification-btn');
+    const notificationDropdownRef = document.getElementById('notification-dropdown');
+
+    // 5) Recently Viewed handlers
+    const recentBtnRef      = document.getElementById('recent-btn');
+    const recentDropdownRef = document.getElementById('recent-dropdown');
+    recentBtnRef.addEventListener('click', (e) => {
+      notificationDropdownRef.classList.add('hidden');
+      notificationBtnRef.setAttribute('aria-expanded', 'false');
+      const isOpen = !recentDropdownRef.classList.toggle('hidden');
+      recentBtnRef.setAttribute('aria-expanded', String(isOpen));
+    });
+    document.addEventListener('click', (e) => {
+      if (
+        !recentDropdownRef.contains(e.target) &&
+        e.target !== recentBtnRef
+      ) {
+        recentDropdownRef.classList.add('hidden');
+        recentBtnRef.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    // 6) Render recents once on load
+    renderRecentlyViewed(JSON.parse(localStorage.getItem('recentlyViewed') || '[]'));
+
+    // 7) Zero‐out the notif count
+    setNotifCount(0);
+  });
 </script>
 </body>
 </html>
