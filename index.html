@@ -814,43 +814,39 @@ clearNotifsBtn.onclick = () => {
         hideUpdateBanner();
       });
 
-    // 4) Notification & Recent Viewed toggles
-    const notifBtn   = document.getElementById('notification-btn');
-    const recentBtn  = document.getElementById('recent-btn');
-    const notifDrop  = document.getElementById('notification-dropdown');
-    const recentDrop = document.getElementById('recent-list');
+// ── dropdown toggles for Notifications & Recently Viewed ──
+const notificationBtn      = document.getElementById('notification-btn');
+const notificationDropdown = document.getElementById('notification-dropdown');
+const recentBtn            = document.getElementById('recent-btn');
+const recentDropdown       = document.getElementById('recent-list');
 
-    notifBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      const open = !notifDrop.classList.toggle('hidden');
-      notifBtn.setAttribute('aria-expanded', open);
-      // close the other
-      recentDrop.classList.add('hidden');
-      recentBtn.setAttribute('aria-expanded', 'false');
-    });
+notificationBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const open = !notificationDropdown.classList.toggle('hidden');
+  notificationBtn.setAttribute('aria-expanded', open);
+  // close Recent if open
+  recentDropdown.classList.add('hidden');
+  recentBtn.setAttribute('aria-expanded', 'false');
+});
 
-    recentBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      const open = !recentDrop.classList.toggle('hidden');
-      recentBtn.setAttribute('aria-expanded', open);
-      // close the other
-      notifDrop.classList.add('hidden');
-      notifBtn.setAttribute('aria-expanded', 'false');
-    });
+recentBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const open = !recentDropdown.classList.toggle('hidden');
+  recentBtn.setAttribute('aria-expanded', open);
+  // close Notifications if open
+  notificationDropdown.classList.add('hidden');
+  notificationBtn.setAttribute('aria-expanded', 'false');
+});
 
-    // 5) Close on outside click or Esc
-    function closeAllDropdowns() {
-      notifDrop.classList.add('hidden');
-      recentDrop.classList.add('hidden');
-      notifBtn.setAttribute('aria-expanded', 'false');
-      recentBtn.setAttribute('aria-expanded', 'false');
-    }
-
-    document.addEventListener('click', () => closeAllDropdowns());
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') closeAllDropdowns();
-    });
-
+function closeAllDropdowns() {
+  notificationDropdown.classList.add('hidden');
+  recentDropdown.classList.add('hidden');
+  notificationBtn.setAttribute('aria-expanded', 'false');
+  recentBtn.setAttribute('aria-expanded', 'false');
+}
+document.addEventListener('click', closeAllDropdowns);
+document.addEventListener('keydown', e => e.key === 'Escape' && closeAllDropdowns());
+  
     // 6) Initialize notification count
     setNotifCount(0);
   });
