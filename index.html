@@ -110,13 +110,16 @@
     </div>
   </header>
 
-  <!-- update banner -->
+<!-- update banner -->
 <div id="update-banner"
      role="status" aria-live="polite" aria-atomic="true"
-     class="hidden bg-indigo-600 text-white flex items-center justify-between px-6 py-3">
-  <div id="update-banner-content" class="flex-1 text-sm font-medium"></div>
-  <button id="update-banner-close" aria-label="Close banner"
-          class="ml-4 text-xl font-bold leading-none focus:outline-none">&times;</button>
+     class="hidden bg-indigo-600 text-white flex items-center justify-center px-6 py-3 relative">
+  <div id="update-banner-content" class="flex-1 text-sm font-medium text-center"></div>
+  <button id="update-banner-close"
+          aria-label="Close banner"
+          class="absolute right-4 text-xl font-bold leading-none focus:outline-none">
+    &times;
+  </button>
 </div>
 
   <!-- Mobile Recent Updates Accordion -->
