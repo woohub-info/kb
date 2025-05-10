@@ -760,69 +760,105 @@ detailList.innerHTML = `
     return { updates: '🔔', 'email-templates': '✉️', processes: '🛠️', reports: '📊', links: '🔗', tutorials: '🎥', directory: '📇' }[type] || '🆕';
   }
 
-  // === Poll notifications & flag card badges ===
-  async function pollNotifications() {
-    let allItems = [];
-    try {
-      const res = await fetch('data/updates.json');
-      if (res.ok) {
-        const data = await res.json();
-        allItems = data.map(u => ({
-          id: u.id || u.timestamp + u.text,
-          text: u.text,
-          time: u.timestamp,
-          type: 'updates'
-        }));
-      }
-    } catch {}
-    for (const c of cardsData) {
-      if (c.slug === 'reports') continue;
-      try {
-        const res = await fetch(`data/${c.slug}.json`);
-        if (!res.ok) continue;
-        const data = await res.json();
-        const arr = Array.isArray(data) ? data : Object.values(data).flat();
-        allItems.push(...arr.map(i => ({
-          id: `${c.slug}|${i.name}`,
-          text: `New ${c.title}: ${i.name}`,
-          time: new Date().toISOString(),
-          type: c.slug
-        })));
-      } catch {}
-    }
-    allItems.sort((a,b) => new Date(b.time) - new Date(a.time));
-    notifListEl.innerHTML = '';
-    let newCount = 0;
-    allItems.forEach(item => {
-      const li = document.createElement('li');
-      li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between items-center';
-      const wrapper = document.createElement('div');
-      if (!seenNotifIds.has(item.id)) {
-        const nb = document.createElement('span');
-        nb.textContent = 'New ';
-        nb.className = 'new-badge text-red-600 text-xs font-semibold mr-1';
-        wrapper.appendChild(nb);
-        newCount++;
-      }
-      const txt = document.createElement('span');
-      txt.textContent = `${iconFor(item.type)} ${item.text}`;
-      wrapper.appendChild(txt);
-      li.appendChild(wrapper);
-      const tm = document.createElement('time');
-      tm.className = 'text-xs text-gray-500';
-      tm.textContent = new Date(item.time).toLocaleTimeString();
-      li.appendChild(tm);
-      notifListEl.appendChild(li);
-      seenNotifIds.add(item.id);
-    });
-    localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
-    setNotifCount(newCount);
-    const bellIcon = document.getElementById('bellIcon');
-    bellIcon.style.animation = 'bell-bounce 0.6s';
-    bellIcon.addEventListener('animationend', () => {
-      bellIcon.style.animation = '';
-    }, { once: true });
+  // === Helper: format relative times ===
+function getRelativeTime(date) {
+  const now     = new Date();
+  const diffSec = (now - date) / 1000;
+  if (diffSec < 60)      return 'just now';
+  if (diffSec < 3600)    {
+    const m = Math.floor(diffSec / 60);
+    return `${m} min${m > 1 ? 's' : ''} ago`;
   }
+  if (diffSec < 86400)   {
+    const h = Math.floor(diffSec / 3600);
+    return `${h} hour${h > 1 ? 's' : ''} ago`;
+  }
+  // older than 24 hours → show calendar date
+  return date.toLocaleDateString();
+}
+
+// === Poll notifications & flag card badges ===
+async function pollNotifications() {
+  let allItems = [];
+
+  // 1) load “updates” JSON
+  try {
+    const res = await fetch('data/updates.json');
+    if (res.ok) {
+      const data = await res.json();
+      allItems = data.map(u => ({
+        id:   u.id || u.timestamp + u.text,
+        text: u.text,
+        time: new Date(u.timestamp),
+        type: 'updates'
+      }));
+    }
+  } catch {}
+
+  // 2) load each card’s JSON
+  for (const c of cardsData) {
+    if (c.slug === 'reports') continue;
+    try {
+      const res = await fetch(`data/${c.slug}.json`);
+      if (!res.ok) continue;
+      const items = Array.isArray(await res.json())
+                  ? await res.json()
+                  : Object.values(await res.json()).flat();
+      allItems.push(...items.map(i => ({
+        id:   `${c.slug}|${i.name}`,
+        text: `New ${c.title}: ${i.name}`,
+        time: new Date(i.timestamp || Date.now()),
+        type: c.slug
+      })));
+    } catch {}
+  }
+
+  // 3) split unread vs. read, sort each by date desc, then concat
+  const unread = allItems.filter(i => !seenNotifIds.has(i.id));
+  const read   = allItems.filter(i =>  seenNotifIds.has(i.id));
+  const sortDesc = list => list.sort((a, b) => b.time - a.time);
+  const sorted   = [...sortDesc(unread), ...sortDesc(read)];
+
+  // 4) render
+  notifListEl.innerHTML = '';
+  let newCount = unread.length;
+
+  sorted.forEach(item => {
+    const li = document.createElement('li');
+    li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between items-center';
+
+    const wrapper = document.createElement('div');
+    if (!seenNotifIds.has(item.id)) {
+      const nb = document.createElement('span');
+      nb.textContent = 'New ';
+      nb.className   = 'new-badge text-red-600 text-xs font-semibold mr-1';
+      wrapper.appendChild(nb);
+    }
+    const txt = document.createElement('span');
+    txt.textContent = `${iconFor(item.type)} ${item.text}`;
+    wrapper.appendChild(txt);
+    li.appendChild(wrapper);
+
+    const tm = document.createElement('time');
+    tm.className = 'text-xs text-gray-500';
+    tm.textContent = getRelativeTime(item.time);        // relative text
+    tm.title       = item.time.toLocaleString();        // hover shows exact
+    li.appendChild(tm);
+
+    notifListEl.appendChild(li);
+    seenNotifIds.add(item.id);
+  });
+
+  localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
+  setNotifCount(newCount);
+
+  // bell-bounce animation
+  const bellIcon = document.getElementById('bellIcon');
+  bellIcon.style.animation = 'bell-bounce 0.6s';
+  bellIcon.addEventListener('animationend', () => {
+    bellIcon.style.animation = '';
+  }, { once: true });
+}
   setInterval(pollNotifications, 60000);
   pollNotifications();
 
