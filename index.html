@@ -552,20 +552,26 @@ async function showContent(slug, title) {
 
 // ─── LINKS CASE (grouped) ───
 if (slug === 'links') {
-  // 1) Fetch the grouped data
   const data = await fetchItems('links');
 
-  // 2) For each category, render the header + links
+  // Build a set of the old IDs
+  const oldIds = new Set((prev['links'] || []).map(i => i.id));
+
+  // For each category in your JSON
   for (const [category, items] of Object.entries(data)) {
+    // Category header
     if (category) {
       const hdr = document.createElement('h3');
       hdr.className = 'text-lg font-semibold mt-4';
       hdr.textContent = category;
       detailList.appendChild(hdr);
     }
+
     items.forEach(item => {
-      // Mark each link as “read” immediately
-      markItemRead('links', item.name);
+      // Only mark as read if it was in the old snapshot
+      if (oldIds.has(item.name)) {
+        markItemRead('links', item.name);
+      }
 
       const li = document.createElement('li');
       const a  = document.createElement('a');
@@ -579,12 +585,11 @@ if (slug === 'links') {
     });
   }
 
-  // 3) Now that everything’s “read,” update the badge state
+  // Refresh badge—now only new IDs (not in oldIds) remain unread
   updateCardBadges();
-
-  return;  // stop further processing
+  return;
 }
-
+  
   if (slug === 'reports') {
     // Top-row images (static, side-by-side)
     const imagePaths = [
