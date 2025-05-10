@@ -1023,7 +1023,7 @@ recentBtnRef.addEventListener('click', (e) => {
 <!-- ===== Content-watcher + persistence script (new-to-old) ===== -->
 <script>
 (function() {
-  const POLL_INTERVAL = 60_000;
+  const POLL_INTERVAL = 5000;
   const slugs         = cardsData.map(c => c.slug);
   const logBox        = document.getElementById('change-log');
 
@@ -1130,9 +1130,12 @@ recentBtnRef.addEventListener('click', (e) => {
 
   // 7) Clear both UI & storage on click
   logBox.addEventListener('click', () => {
-    logBox.textContent = 'No changes detected yet.';
+    logBox.textContent = 'No changes made yet.';
     localStorage.removeItem('changeLog');
   });
+
+  // ← Add this line to expose it globally
+window.checkUpdates = checkUpdates;
 
   // kick things off
   initWatcher();
