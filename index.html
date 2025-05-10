@@ -985,108 +985,123 @@ detailList.innerHTML = `
     <!-- …all your existing <script>…</script> blocks above… -->
     </script> <!-- end of your main app code -->
 
-    <!-- ===== Content‐watcher + persistence script ===== -->
-    <script>
-    (function() {
-      const POLL_INTERVAL = 60_000;
-      const slugs         = cardsData.map(c => c.slug);
-      const logBox        = document.getElementById('change-log');
+<!-- ===== Content-watcher + persistence script (new-to-old) ===== -->
+<script>
+(function() {
+  const POLL_INTERVAL = 60_000;
+  const slugs         = cardsData.map(c => c.slug);
+  const logBox        = document.getElementById('change-log');
 
-      // 1) Rehydrate previous log entries
-      (function loadHistory() {
-        const saved = JSON.parse(localStorage.getItem('changeLog') || '[]');
-        if (saved.length) {
-          logBox.textContent = '';
-          saved.forEach(text => {
-            const e = document.createElement('div');
-            e.className = 'mb-1';
-            e.textContent = text;
-            logBox.appendChild(e);
-          });
-          logBox.scrollTop = logBox.scrollHeight;
+  // 1) Rehydrate saved history (newest-first)
+  (function loadHistory() {
+    const saved = JSON.parse(localStorage.getItem('changeLog') || '[]');
+    if (!saved.length) return;
+    logBox.textContent = '';  // clear the “No changes” placeholder
+    saved.forEach(text => {
+      const e = document.createElement('div');
+      e.className = 'mb-1';
+      e.textContent = text;
+      logBox.appendChild(e);   // appends in order: newest at top
+    });
+    logBox.scrollTop = 0;      // scroll to top
+  })();
+
+  // 2) Create & persist a new log entry (prepended)
+  function appendLog(msg) {
+    const entryText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    const entry     = document.createElement('div');
+    entry.className = 'mb-1';
+    entry.textContent = entryText;
+
+    // clear placeholder if it’s still showing
+    if (logBox.textContent.startsWith('No changes')) {
+      logBox.textContent = '';
+    }
+
+    // prepend newest on top
+    logBox.insertBefore(entry, logBox.firstChild);
+    logBox.scrollTop = 0;
+
+    // persist with newest-first
+    const history = JSON.parse(localStorage.getItem('changeLog') || '[]');
+    history.unshift(entryText);
+    localStorage.setItem('changeLog', JSON.stringify(history));
+  }
+
+  // 3) Normalize JSON data into {id,content} records
+  function normalize(data) {
+    const arr = Array.isArray(data) ? data : Object.values(data).flat();
+    return arr.map(item => ({
+      id:      item.id ?? item.name,
+      content: JSON.stringify(item)
+    }));
+  }
+
+  const prev = {};
+
+  // 4) Fetch fresh JSON (cache-busting)
+  async function fetchFresh(slug) {
+    const res = await fetch(`data/${slug}.json?cb=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`Failed to load ${slug}`);
+    return res.json();
+  }
+
+  // 5) Initialize snapshots silently
+  async function initWatcher() {
+    for (const slug of slugs) {
+      try {
+        prev[slug] = normalize(await fetchFresh(slug));
+      } catch {
+        prev[slug] = [];
+      }
+    }
+    setInterval(checkUpdates, POLL_INTERVAL);
+  }
+
+  // 6) Poll & diff; only log on real changes
+  async function checkUpdates() {
+    for (const slug of slugs) {
+      let newArr;
+      try {
+        newArr = normalize(await fetchFresh(slug));
+      } catch {
+        continue;
+      }
+      const oldMap = Object.fromEntries(prev[slug].map(i => [i.id, i]));
+      const newMap = Object.fromEntries(newArr.map(i => [i.id, i]));
+
+      // additions
+      for (const id of Object.keys(newMap)) {
+        if (!oldMap[id]) {
+          appendLog(`✓ [${slug}] added “${id}”`);
         }
-      })();
-
-      // 2) Append & persist helper
-      function appendLog(msg) {
-        const timestamp = new Date().toLocaleTimeString();
-        const entryText = `[${timestamp}] ${msg}`;
-        // DOM
-        const entry = document.createElement('div');
-        entry.className = 'mb-1';
-        entry.textContent = entryText;
-        if (logBox.textContent.startsWith('No changes')) logBox.textContent = '';
-        logBox.appendChild(entry);
-        logBox.scrollTop = logBox.scrollHeight;
-        // storage
-        const history = JSON.parse(localStorage.getItem('changeLog') || '[]');
-        history.push(entryText);
-        localStorage.setItem('changeLog', JSON.stringify(history));
       }
-
-      function normalize(data) {
-        const arr = Array.isArray(data) ? data : Object.values(data).flat();
-        return arr.map(item => ({
-          id:      item.id ?? item.name,
-          content: JSON.stringify(item)
-        }));
-      }
-
-      const prev = {};
-
-      async function fetchFresh(slug) {
-        const res = await fetch(`data/${slug}.json?cb=${Date.now()}`, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`Failed to load ${slug}`);
-        return res.json();
-      }
-
-      async function initWatcher() {
-        for (const slug of slugs) {
-          try {
-            prev[slug] = normalize(await fetchFresh(slug));
-          } catch {
-            prev[slug] = [];
-          }
+      // removals
+      for (const id of Object.keys(oldMap)) {
+        if (!newMap[id]) {
+          appendLog(`✗ [${slug}] removed “${id}”`);
         }
-        appendLog('Initialized content watcher.');
-        setInterval(checkUpdates, POLL_INTERVAL);
       }
-
-      async function checkUpdates() {
-        for (const slug of slugs) {
-          let newArr;
-          try {
-            newArr = normalize(await fetchFresh(slug));
-          } catch {
-            continue;
-          }
-          const oldMap = Object.fromEntries(prev[slug].map(i => [i.id, i]));
-          const newMap = Object.fromEntries(newArr.map(i => [i.id, i]));
-
-          for (const id of Object.keys(newMap)) {
-            if (!oldMap[id]) appendLog(`✓ [${slug}] added “${id}”`);
-          }
-          for (const id of Object.keys(oldMap)) {
-            if (!newMap[id]) appendLog(`✗ [${slug}] removed “${id}”`);
-          }
-          for (const id of Object.keys(newMap)) {
-            if (oldMap[id] && oldMap[id].content !== newMap[id].content) {
-              appendLog(`✎ [${slug}] updated “${id}”`);
-            }
-          }
-          prev[slug] = newArr;
+      // content edits
+      for (const id of Object.keys(newMap)) {
+        if (oldMap[id] && oldMap[id].content !== newMap[id].content) {
+          appendLog(`✎ [${slug}] updated “${id}”`);
         }
       }
 
-      initWatcher();
+      prev[slug] = newArr;
+    }
+  }
 
-      // 3) Clear both screen + storage on click
-      logBox.addEventListener('click', () => {
-        logBox.textContent = 'No changes detected yet.';
-        localStorage.removeItem('changeLog');
-      });
-    })();
-    </script>
+  // 7) Clear both UI & storage on click
+  logBox.addEventListener('click', () => {
+    logBox.textContent = 'No changes detected yet.';
+    localStorage.removeItem('changeLog');
+  });
 
+  // kick things off
+  initWatcher();
+})();
+</script>
 </body>
 </html>
