@@ -961,21 +961,21 @@ detailList.innerHTML = `
     // 5) Recently Viewed handlers
     const recentBtnRef      = document.getElementById('recent-btn');
     const recentDropdownRef = document.getElementById('recent-dropdown');
-    recentBtnRef.addEventListener('click', (e) => {
-      notificationDropdownRef.classList.add('hidden');
-      notificationBtnRef.setAttribute('aria-expanded', 'false');
-      const isOpen = !recentDropdownRef.classList.toggle('hidden');
-      recentBtnRef.setAttribute('aria-expanded', String(isOpen));
-    });
+// When the button itself is clicked, toggle the dropdown
+recentBtnRef.addEventListener('click', (e) => {
+  e.stopPropagation();  // prevent the document click‐handler from firing immediately
+  const isOpen = !recentDropdownRef.classList.toggle('hidden');
+  recentBtnRef.setAttribute('aria-expanded', String(isOpen));
+});
     document.addEventListener('click', (e) => {
-      if (
-        !recentDropdownRef.contains(e.target) &&
-        e.target !== recentBtnRef
-      ) {
-        recentDropdownRef.classList.add('hidden');
-        recentBtnRef.setAttribute('aria-expanded', 'false');
-      }
-    });
+  if (
+    e.target !== recentBtnRef &&
+    !recentDropdownRef.contains(e.target)
+  ) {
+    recentDropdownRef.classList.add('hidden');
+    recentBtnRef.setAttribute('aria-expanded', 'false');
+  }
+});
 
     // 6) Render recents once on load
     renderRecentlyViewed(JSON.parse(localStorage.getItem('recentlyViewed') || '[]'));
