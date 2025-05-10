@@ -552,21 +552,21 @@ async function showContent(slug, title) {
 
 // ─── LINKS CASE (grouped) ───
 if (slug === 'links') {
-  // fetchItems('links') now returns { "Group A": [...], "Group B": [...] }
+  // 1) Fetch the grouped data
   const data = await fetchItems('links');
 
-  // For each category in your JSON
+  // 2) For each category, render the header + links
   for (const [category, items] of Object.entries(data)) {
-    // 1) Render the category header (if not the root group)
     if (category) {
       const hdr = document.createElement('h3');
       hdr.className = 'text-lg font-semibold mt-4';
       hdr.textContent = category;
       detailList.appendChild(hdr);
     }
-
-    // 2) Render each link
     items.forEach(item => {
+      // Mark each link as “read” immediately
+      markItemRead('links', item.name);
+
       const li = document.createElement('li');
       const a  = document.createElement('a');
       a.href        = item.url;
@@ -578,6 +578,9 @@ if (slug === 'links') {
       detailList.appendChild(li);
     });
   }
+
+  // 3) Now that everything’s “read,” update the badge state
+  updateCardBadges();
 
   return;  // stop further processing
 }
