@@ -544,51 +544,53 @@
 
 // === Show content for a card ===
 async function showContent(slug, title) {
+  // 1) Track recents & swap panels
   addToRecents({ id: slug, slug, title, type: 'card' });
   container.classList.add('hidden');
   detailContainer.classList.remove('hidden');
   detailTitle.textContent = title;
-  detailList.innerHTML = '';
+  detailList.innerHTML = '';              // clear out any old content
 
-// ─── LINKS CASE (grouped) ───
-if (slug === 'links') {
-  const data = await fetchItems('links');
+  // 2) LINKS CASE: grouped JSON -> <a> links under headers
+  if (slug === 'links') {
+    const groups = await fetchItems('links');  
+    console.log('Links data:', groups);     // <-- verify it’s actually being fetched
 
-  // Build a set of the old IDs
-  const oldIds = new Set((prev['links'] || []).map(i => i.id));
+    // Build a set of old IDs so we only mark pre-existing links read
+    const oldIds = new Set((prev['links'] || []).map(i => i.id));
 
-  // For each category in your JSON
-  for (const [category, items] of Object.entries(data)) {
-    // Category header
-    if (category) {
-      const hdr = document.createElement('h3');
-      hdr.className = 'text-lg font-semibold mt-4';
-      hdr.textContent = category;
-      detailList.appendChild(hdr);
-    }
-
-    items.forEach(item => {
-      // Only mark as read if it was in the old snapshot
-      if (oldIds.has(item.name)) {
-        markItemRead('links', item.name);
+    for (const [category, items] of Object.entries(groups)) {
+      // Category header
+      if (category) {
+        const hdr = document.createElement('h3');
+        hdr.className = 'text-lg font-semibold mt-4';
+        hdr.textContent = category;
+        detailList.appendChild(hdr);
       }
 
-      const li = document.createElement('li');
-      const a  = document.createElement('a');
-      a.href        = item.url;
-      a.target      = '_blank';
-      a.rel         = 'noopener noreferrer';
-      a.textContent = item.name;
-      a.className   = 'text-indigo-600 hover:underline';
-      li.appendChild(a);
-      detailList.appendChild(li);
-    });
-  }
+      // Each link
+      items.forEach(item => {
+        // Mark it read only if it already existed
+        if (oldIds.has(item.name)) {
+          markItemRead('links', item.name);
+        }
 
-  // Refresh badge—now only new IDs (not in oldIds) remain unread
-  updateCardBadges();
-  return;
-}
+        const li = document.createElement('li');
+        const a  = document.createElement('a');
+        a.href        = item.url;
+        a.target      = '_blank';
+        a.rel         = 'noopener noreferrer';
+        a.textContent = item.name;
+        a.className   = 'text-indigo-600 hover:underline';
+        li.appendChild(a);
+        detailList.appendChild(li);
+      });
+    }
+
+    // Refresh the badge now that we've marked the old ones read
+    updateCardBadges();
+    return;  // stop here—don’t fall into your reports/default code
+  }
   
   if (slug === 'reports') {
     // Top-row images (static, side-by-side)
