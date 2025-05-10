@@ -550,6 +550,23 @@ async function showContent(slug, title) {
   detailTitle.textContent = title;
   detailList.innerHTML = '';
 
+    // ─── 2) LINKS CASE ───
+  if (slug === 'links') {
+    const links = await fetchItems('links');
+    links.forEach(item => {
+      const li = document.createElement('li');
+      const a  = document.createElement('a');
+      a.href        = item.url;
+      a.target      = '_blank';
+      a.rel         = 'noopener noreferrer';
+      a.textContent = item.name;
+      a.className   = 'text-indigo-600 hover:underline';
+      li.appendChild(a);
+      detailList.appendChild(li);
+    });
+    return;  // stop here for links
+  }
+
   if (slug === 'reports') {
     // Top-row images (static, side-by-side)
     const imagePaths = [
