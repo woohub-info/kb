@@ -240,44 +240,43 @@
   </details>
 
   <!-- Content Wrapper -->
-  <div class="flex flex-1 w-full max-w-[2000px] mx-auto px-4 pt-6 ml-80 lg:ml-96">
+  <div class="flex flex-1 w-full max-w-[2000px] mx-auto px-4 pt-6">
 
     <!-- Desktop Sidebar with both panels -->
-    <aside class="hidden lg:block fixed top-[6rem] left-0 w-96 h-[calc(100vh-6rem)] bg-white border-r border-gray-200 overflow-y-auto z-30 px-4 py-6">
-  <div class="space-y-6">
+    <aside class="w-80 lg:w-96 mr-6 hidden lg:block">
+      <div class="space-y-6">
 
-    <!-- Recent Updates Panel -->
-    <div class="bg-white border border-gray-200 rounded-lg p-4 max-h-[45vh] overflow-y-auto">
-      <div class="flex items-center justify-between mb-2">
-        <h2 class="text-lg font-semibold">Recent Updates</h2>
-        <button id="updates-filter-toggle" class="p-1 focus:outline-none" aria-label="Toggle filter">
-          <!-- filter icon -->
-        </button>
-      </div>
-      <div id="updates-filter-container" class="hidden mb-2">
-        <input id="updates-filter" type="text"
-               class="w-full px-3 py-1 border border-gray-300 rounded-lg
-                      focus:outline-none focus:ring-1 focus:ring-indigo-500
-                      text-gray-800 placeholder-gray-500"
-               placeholder="Filter updates..." />
-      </div>
-      <ul id="updates-container" class="pr-2 space-y-2" aria-live="polite"></ul>
-      <button id="load-more-btn"
-              class="mt-2 w-full text-center text-indigo-600 hover:underline">
-        Load More
-      </button>
-    </div>
+        <!-- Recent Updates Panel -->
+        <div class="bg-white border border-gray-200 rounded-lg p-4 sticky top-24">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-lg font-semibold">Recent Updates</h2>
+            <button id="updates-filter-toggle" class="p-1 focus:outline-none" aria-label="Toggle filter">
+              <!-- filter icon -->
+            </button>
+          </div>
+          <div id="updates-filter-container" class="hidden mb-2">
+            <input id="updates-filter" … />
+          </div>
+          <ul id="updates-container" class="max-h-96 overflow-y-auto pr-2 space-y-2" aria-live="polite"></ul>
+          <button id="load-more-btn" class="mt-2 w-full text-center text-indigo-600 hover:underline">
+            Load More
+          </button>
+        </div>
 
     <!-- What’s Changed Panel -->
-    <div class="bg-white border border-gray-200 rounded-lg p-4 max-h-[40vh] overflow-y-auto">
+    <div
+      class="bg-white border border-gray-200 rounded-lg p-4 sticky top-[calc(6rem+1.5rem)]"
+      <!-- NO overflow or max-height here! -->
+      
       <h2 class="text-lg font-semibold mb-2">What’s changed?</h2>
-      <div id="change-log" class="text-sm text-gray-600 space-y-1">
+      <!-- Inner scrollable area -->
+      <div id="change-log" class="text-sm text-gray-600 max-h-48 overflow-y-auto">
         No changes detected yet.
       </div>
-      <button id="show-more-btn"
-              class="mt-2 text-indigo-600 hover:underline focus:outline-none">
-        See more
-      </button>
+      <button
+        id="show-more-btn"
+        class="mt-2 text-indigo-600 hover:underline focus:outline-none"
+      >See more</button>
     </div>
 
   </div>
