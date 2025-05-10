@@ -540,13 +540,13 @@ async function showContent(slug, title) {
   detailList.innerHTML = '';
 
   if (slug === 'reports') {
-    // Top‐row images
+    // Top-row images (static, side-by-side)
     const imagePaths = [
       'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
       'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_amz.png'
     ];
 
-    // Bottom‐row images
+    // Bottom-row images (static, side-by-side)
     const extraImagePaths = [
       'https://raw.githubusercontent.com/chmpzu/assets/main/reports/autoapex_ebay.png',
     ];
@@ -554,7 +554,7 @@ async function showContent(slug, title) {
     detailList.innerHTML = `
       <div class="prose max-w-none space-y-8">
 
-        <!-- Link above first carousel -->
+        <!-- Link above first image row -->
         <p>
           <a
             href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
@@ -562,30 +562,21 @@ async function showContent(slug, title) {
             rel="noopener noreferrer"
             class="text-blue-600 hover:underline"
           >
-            WooParts eBay and Amazon Performance – 2025
+            WooParts eBay and Amazon Monthly Performance – April 2025
           </a>
         </p>
 
-        <!-- first carousel -->
-        <div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
-          <div id="slider" class="flex transition-transform duration-300" style="transform: translateX(0%)">
-            ${imagePaths.map(path =>
-              `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report">`
-            ).join('')}
-          </div>
-          <button
-            id="prevSlide"
-            class="absolute top-1/2 left-2 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md"
-            aria-label="Previous report slide"
-          >&lsaquo;</button>
-          <button
-            id="nextSlide"
-            class="absolute top-1/2 right-2 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md"
-            aria-label="Next report slide"
-          >&rsaquo;</button>
+        <!-- First two images side-by-side, flush left -->
+        <div class="flex gap-4 justify-start">
+          ${imagePaths.map(path =>
+            `<img src="${path}"
+                  loading="lazy"
+                  class="h-64 w-auto object-contain"
+                  alt="Report">`
+          ).join('')}
         </div>
 
-        <!-- Link above second carousel -->
+        <!-- Link above second image row -->
         <p>
           <a
             href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/EdkrNcbAsn1Oj6R_91SAOs4BwbNHpXFXBZtCrfaNoLYq3Q?e=7qIebl"
@@ -593,59 +584,23 @@ async function showContent(slug, title) {
             rel="noopener noreferrer"
             class="text-blue-600 hover:underline"
           >
-            AutoApex eBay Performance – 2025
+            AutoApex eBay Monthly Performance – February 2025
           </a>
         </p>
 
-        <!-- second carousel -->
-        <div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
-          <div id="slider2" class="flex transition-transform duration-300" style="transform: translateX(0%)">
-            ${extraImagePaths.map(path =>
-              `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Extra Report">`
-            ).join('')}
-          </div>
-          <button
-            id="prevSlide2"
-            class="absolute top-1/2 left-2 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md"
-            aria-label="Previous extra slide"
-          >&lsaquo;</button>
-          <button
-            id="nextSlide2"
-            class="absolute top-1/2 right-2 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md"
-            aria-label="Next extra slide"
-          >&rsaquo;</button>
+        <!-- Second two images side-by-side, flush left -->
+        <div class="flex gap-4 justify-start">
+          ${extraImagePaths.map(path =>
+            `<img src="${path}"
+                  loading="lazy"
+                  class="h-64 w-auto object-contain"
+                  alt="Extra Report">`
+          ).join('')}
         </div>
 
       </div>
     `;
 
-    // === wire up first slider ===
-    let currentSlide = 0;
-    const sliderEl    = document.getElementById('slider');
-    const totalSlides = imagePaths.length;
-
-    document.getElementById('prevSlide').onclick = () => {
-      currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-      sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
-    };
-    document.getElementById('nextSlide').onclick = () => {
-      currentSlide = (currentSlide + 1) % totalSlides;
-      sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
-    };
-
-    // === wire up second slider ===
-    let currentSlide2  = 0;
-    const sliderEl2    = document.getElementById('slider2');
-    const totalSlides2 = extraImagePaths.length;
-
-    document.getElementById('prevSlide2').onclick = () => {
-      currentSlide2 = (currentSlide2 - 1 + totalSlides2) % totalSlides2;
-      sliderEl2.style.transform = `translateX(-${currentSlide2 * 100}%)`;
-    };
-    document.getElementById('nextSlide2').onclick = () => {
-      currentSlide2 = (currentSlide2 + 1) % totalSlides2;
-      sliderEl2.style.transform = `translateX(-${currentSlide2 * 100}%)`;
-    };
 
   } else {
     try {
@@ -673,7 +628,7 @@ async function showContent(slug, title) {
             markItemRead(slug, id);
             dot.classList.add('hidden');
             if (!hasUnreadForSlug(slug)) {
-              const badge = document.querySelector(`[data-slug="${slug}"] .badge`);
+              const badge = document.querySelector(`[data-slug="\${slug}"] .badge`);
               if (badge) badge.classList.add('hidden');
             }
           };
@@ -686,6 +641,7 @@ async function showContent(slug, title) {
     }
   }
 }
+
 
 
   // === Trap focus in modal ===
