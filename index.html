@@ -272,6 +272,13 @@
           Load More
         </button>
       </div>
+        <!-- What’s Changed box (separate) -->
+  <div class="bg-white border border-gray-200 rounded-lg p-4 mt-6">
+    <h2 class="text-lg font-semibold mb-2">What’s changed?</h2>
+    <div id="change-log" class="text-sm text-gray-600 max-h-40 overflow-auto">
+      No changes detected yet.
+    </div>
+  </div>
     </aside>
 
     <!-- Main content -->
@@ -300,6 +307,7 @@
       <section id="card-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"></section>
     </main>
   </div>
+
 
 <!-- Overlay Modal -->
 <div id="overlay"
@@ -973,6 +981,112 @@ detailList.innerHTML = `
     setNotifCount(0);
   });
 </script>
+
+    <!-- …all your existing <script>…</script> blocks above… -->
+    </script> <!-- end of your main app code -->
+
+    <!-- ===== Content‐watcher + persistence script ===== -->
+    <script>
+    (function() {
+      const POLL_INTERVAL = 60_000;
+      const slugs         = cardsData.map(c => c.slug);
+      const logBox        = document.getElementById('change-log');
+
+      // 1) Rehydrate previous log entries
+      (function loadHistory() {
+        const saved = JSON.parse(localStorage.getItem('changeLog') || '[]');
+        if (saved.length) {
+          logBox.textContent = '';
+          saved.forEach(text => {
+            const e = document.createElement('div');
+            e.className = 'mb-1';
+            e.textContent = text;
+            logBox.appendChild(e);
+          });
+          logBox.scrollTop = logBox.scrollHeight;
+        }
+      })();
+
+      // 2) Append & persist helper
+      function appendLog(msg) {
+        const timestamp = new Date().toLocaleTimeString();
+        const entryText = `[${timestamp}] ${msg}`;
+        // DOM
+        const entry = document.createElement('div');
+        entry.className = 'mb-1';
+        entry.textContent = entryText;
+        if (logBox.textContent.startsWith('No changes')) logBox.textContent = '';
+        logBox.appendChild(entry);
+        logBox.scrollTop = logBox.scrollHeight;
+        // storage
+        const history = JSON.parse(localStorage.getItem('changeLog') || '[]');
+        history.push(entryText);
+        localStorage.setItem('changeLog', JSON.stringify(history));
+      }
+
+      function normalize(data) {
+        const arr = Array.isArray(data) ? data : Object.values(data).flat();
+        return arr.map(item => ({
+          id:      item.id ?? item.name,
+          content: JSON.stringify(item)
+        }));
+      }
+
+      const prev = {};
+
+      async function fetchFresh(slug) {
+        const res = await fetch(`data/${slug}.json?cb=${Date.now()}`, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`Failed to load ${slug}`);
+        return res.json();
+      }
+
+      async function initWatcher() {
+        for (const slug of slugs) {
+          try {
+            prev[slug] = normalize(await fetchFresh(slug));
+          } catch {
+            prev[slug] = [];
+          }
+        }
+        appendLog('Initialized content watcher.');
+        setInterval(checkUpdates, POLL_INTERVAL);
+      }
+
+      async function checkUpdates() {
+        for (const slug of slugs) {
+          let newArr;
+          try {
+            newArr = normalize(await fetchFresh(slug));
+          } catch {
+            continue;
+          }
+          const oldMap = Object.fromEntries(prev[slug].map(i => [i.id, i]));
+          const newMap = Object.fromEntries(newArr.map(i => [i.id, i]));
+
+          for (const id of Object.keys(newMap)) {
+            if (!oldMap[id]) appendLog(`✓ [${slug}] added “${id}”`);
+          }
+          for (const id of Object.keys(oldMap)) {
+            if (!newMap[id]) appendLog(`✗ [${slug}] removed “${id}”`);
+          }
+          for (const id of Object.keys(newMap)) {
+            if (oldMap[id] && oldMap[id].content !== newMap[id].content) {
+              appendLog(`✎ [${slug}] updated “${id}”`);
+            }
+          }
+          prev[slug] = newArr;
+        }
+      }
+
+      initWatcher();
+
+      // 3) Clear both screen + storage on click
+      logBox.addEventListener('click', () => {
+        logBox.textContent = 'No changes detected yet.';
+        localStorage.removeItem('changeLog');
+      });
+    })();
+    </script>
 
 </body>
 </html>
