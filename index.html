@@ -241,47 +241,41 @@
 
   <!-- Content Wrapper -->
   <div class="flex flex-1 w-full max-w-[2000px] mx-auto px-4 pt-6">
-    <!-- Desktop Recent Updates Panel -->
+
+    <!-- Desktop Sidebar with both panels -->
     <aside class="w-80 lg:w-96 mr-6 hidden lg:block">
-      <div class="bg-white border border-gray-200 rounded-lg p-4 sticky top-24">
-        <div class="flex items-center justify-between mb-2">
-          <h2 class="text-lg font-semibold">Recent Updates</h2>
-          <button id="updates-filter-toggle" class="p-1 focus:outline-none" aria-label="Toggle filter">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none"
-                 viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2
-                       a1 1 0 01-.293.707l-7.414 7.414
-                       a1 1 0 00-.293.707V19l-4-4v-4
-                       a1 1 0 00-.293-.707L3.293 6.707
-                       A1 1 0 013 6V4z" />
-            </svg>
+      <div class="space-y-6">
+
+        <!-- Recent Updates Panel -->
+        <div class="bg-white border border-gray-200 rounded-lg p-4 sticky top-24">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-lg font-semibold">Recent Updates</h2>
+            <button id="updates-filter-toggle" class="p-1 focus:outline-none" aria-label="Toggle filter">
+              <!-- filter icon -->
+            </button>
+          </div>
+          <div id="updates-filter-container" class="hidden mb-2">
+            <input id="updates-filter" … />
+          </div>
+          <ul id="updates-container" class="max-h-96 overflow-y-auto pr-2 space-y-2" aria-live="polite"></ul>
+          <button id="load-more-btn" class="mt-2 w-full text-center text-indigo-600 hover:underline">
+            Load More
           </button>
         </div>
-        <div id="updates-filter-container" class="hidden mb-2">
-          <input id="updates-filter" type="text" placeholder="Filter updates..."
-                 aria-label="Filter updates"
-                 class="w-full px-3 py-1 border border-gray-300 rounded-lg
-                        focus:outline-none focus:ring-1 focus:ring-indigo-500
-                        text-gray-800 placeholder-gray-500" />
+
+        <!-- What's Changed Panel -->
+        <div class="bg-white border border-gray-200 rounded-lg p-4 sticky top-[calc(24px+4rem)]">
+          <!-- note top offset to sit neatly under the first panel -->
+          <h2 class="text-lg font-semibold mb-2">What’s changed?</h2>
+          <div id="change-log" class="text-sm text-gray-600 max-h-60 overflow-y-auto">
+            No changes detected yet.
+          </div>
+          <button id="show-more-btn" class="mt-2 text-indigo-600 hover:underline">
+            See more
+          </button>
         </div>
-        <ul id="updates-container" class="max-h-96 overflow-y-auto pr-2 space-y-2"
-            aria-live="polite"></ul>
-        <button id="load-more-btn" class="mt-2 w-full text-center text-indigo-600
-                                         hover:underline focus:outline-none">
-          Load More
-        </button>
+
       </div>
-<!-- What’s Changed box (separate) -->
-<div
-  class="bg-white border border-gray-200 rounded-lg p-4 mt-6 overflow-y-auto sticky top-24"
-  style="max-height: calc(100vh - 300px);"
->
-  <h2 class="text-lg font-semibold mb-2">What’s changed?</h2>
-  <div id="change-log" class="text-sm text-gray-600">
-    No changes detected yet.
-  </div>
-</div>
     </aside>
 
     <!-- Main content -->
@@ -1066,50 +1060,52 @@ recentBtnRef.addEventListener('click', (e) => {
     <!-- …all your existing <script>…</script> blocks above… -->
     </script> <!-- end of your main app code -->
 
-<!-- ===== Content-watcher + persistence script (new-to-old) ===== -->
 <script>
+// render helper: limit = number of items to show (0 = all)
+function renderChangeLog(entries, limit = 5) {
+  const logBox = document.getElementById('change-log');
+  logBox.innerHTML = '';
+  const toShow = limit > 0 ? entries.slice(0, limit) : entries;
+  if (!toShow.length) {
+    logBox.textContent = 'No changes detected yet.';
+    return;
+  }
+  toShow.forEach(text => {
+    const div = document.createElement('div');
+    div.className = 'mb-1';
+    div.textContent = text;
+    logBox.appendChild(div);
+  });
+}
+
 (function() {
   const POLL_INTERVAL = 5000;
-  const slugs         = cardsData.map(c => c.slug);
-  const logBox        = document.getElementById('change-log');
+  const slugs    = cardsData.map(c => c.slug);
+  // in-memory history array
+  const stored   = JSON.parse(localStorage.getItem('changeLog') || '[]');
+  const logBox   = document.getElementById('change-log');
+  const showMoreBtn = document.getElementById('show-more-btn');
+  let showingAll = false;
 
-  // 1) Rehydrate saved history (newest-first)
-  (function loadHistory() {
-    const saved = JSON.parse(localStorage.getItem('changeLog') || '[]');
-    if (!saved.length) return;
-    logBox.textContent = '';  // clear the “No changes” placeholder
-    saved.forEach(text => {
-      const e = document.createElement('div');
-      e.className = 'mb-1';
-      e.textContent = text;
-      logBox.appendChild(e);   // appends in order: newest at top
-    });
-    logBox.scrollTop = 0;      // scroll to top
-  })();
+  // INITIAL RENDER (first 5)
+  renderChangeLog(stored, 5);
 
-  // 2) Create & persist a new log entry (prepended)
+  // TOGGLE BUTTON
+  showMoreBtn.addEventListener('click', () => {
+    showingAll = !showingAll;
+    renderChangeLog(stored, showingAll ? 0 : 5);
+    showMoreBtn.textContent = showingAll ? 'Show less' : 'See more';
+  });
+
   function appendLog(msg) {
     const entryText = `[${new Date().toLocaleTimeString()}] ${msg}`;
-    const entry     = document.createElement('div');
-    entry.className = 'mb-1';
-    entry.textContent = entryText;
-
-    // clear placeholder if it’s still showing
-    if (logBox.textContent.startsWith('No changes')) {
-      logBox.textContent = '';
-    }
-
-    // prepend newest on top
-    logBox.insertBefore(entry, logBox.firstChild);
-    logBox.scrollTop = 0;
-
-    // persist with newest-first
-    const history = JSON.parse(localStorage.getItem('changeLog') || '[]');
-    history.unshift(entryText);
-    localStorage.setItem('changeLog', JSON.stringify(history));
+    // prepend to array
+    stored.unshift(entryText);
+    localStorage.setItem('changeLog', JSON.stringify(stored));
+    // re-render with current mode
+    renderChangeLog(stored, showingAll ? 0 : 5);
   }
 
-  // 3) Normalize JSON data into {id,content} records
   function normalize(data) {
     const arr = Array.isArray(data) ? data : Object.values(data).flat();
     return arr.map(item => ({
@@ -1118,31 +1114,14 @@ recentBtnRef.addEventListener('click', (e) => {
     }));
   }
 
-  const prev = {};
-
-  // 4) Fetch fresh JSON (cache-busting)
   async function fetchFresh(slug) {
     const res = await fetch(`data/${slug}.json?cb=${Date.now()}`, { cache: 'no-store' });
     if (!res.ok) throw new Error(`Failed to load ${slug}`);
     return res.json();
   }
 
-  // 5) Initialize snapshots silently
-  async function initWatcher() {
-    for (const slug of slugs) {
-      try {
-        prev[slug] = normalize(await fetchFresh(slug));
-      } catch {
-        prev[slug] = [];
-      }
-    }
+  const prev = {};
 
-      window.initialLinks = prev['links'];
-    
-    setInterval(checkUpdates, POLL_INTERVAL);
-  }
-
-  // 6) Poll & diff; only log on real changes
   async function checkUpdates() {
     for (const slug of slugs) {
       let newArr;
@@ -1155,34 +1134,40 @@ recentBtnRef.addEventListener('click', (e) => {
       const newMap = Object.fromEntries(newArr.map(i => [i.id, i]));
 
       // additions
-      for (const id of Object.keys(newMap)) {
-        if (!oldMap[id]) {
-          appendLog(`✓ [${slug}] added “${id}”`);
-        }
-      }
+      Object.keys(newMap).forEach(id => {
+        if (!oldMap[id]) appendLog(`✓ [${slug}] added “${id}”`);
+      });
       // removals
-      for (const id of Object.keys(oldMap)) {
-        if (!newMap[id]) {
-          appendLog(`✗ [${slug}] removed “${id}”`);
-        }
-      }
-      // content edits
-      for (const id of Object.keys(newMap)) {
+      Object.keys(oldMap).forEach(id => {
+        if (!newMap[id]) appendLog(`✗ [${slug}] removed “${id}”`);
+      });
+      // edits
+      Object.keys(newMap).forEach(id => {
         if (oldMap[id] && oldMap[id].content !== newMap[id].content) {
           appendLog(`✎ [${slug}] updated “${id}”`);
         }
-      }
+      });
 
       prev[slug] = newArr;
     }
   }
 
-  // ← Add this line to expose it globally
-window.checkUpdates = checkUpdates;
+  async function initWatcher() {
+    for (const slug of slugs) {
+      try {
+        prev[slug] = normalize(await fetchFresh(slug));
+      } catch {
+        prev[slug] = [];
+      }
+    }
+    setInterval(checkUpdates, POLL_INTERVAL);
+    checkUpdates();
+  }
 
-  // kick things off
+  window.checkUpdates = checkUpdates;
   initWatcher();
 })();
 </script>
+
 </body>
 </html>
