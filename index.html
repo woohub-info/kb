@@ -531,93 +531,163 @@
     updateCardBadges();
   }
 
-  // === Show content for a card ===
-  async function showContent(slug, title) {
-    addToRecents({ id: slug, slug, title, type: 'card' });
-    container.classList.add('hidden');
-    detailContainer.classList.remove('hidden');
-    detailTitle.textContent = title;
-    detailList.innerHTML = '';
+// === Show content for a card ===
+async function showContent(slug, title) {
+  addToRecents({ id: slug, slug, title, type: 'card' });
+  container.classList.add('hidden');
+  detailContainer.classList.remove('hidden');
+  detailTitle.textContent = title;
+  detailList.innerHTML = '';
 
-    if (slug === 'reports') {
-      const imagePaths = [
-        'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
-        'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_amz.png'
-      ];
-      detailList.innerHTML = `
-        <div class="prose max-w-none space-y-4">
-          <p>
-            <a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
-               target="_blank"
-               class="text-blue-600 hover:underline">
-              WooParts eBay and Amazon Performance - 2025
-            </a>
-          </p>
-          <div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
-            <div id="slider" class="flex transition-transform duration-300" style="transform: translateX(0%)">
-              ${imagePaths.map(path => `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report Image">`).join('')}
-            </div>
-            <button id="prevSlide"
-                    class="absolute top-1/2 left-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">
-              &lsaquo;
-            </button>
-            <button id="nextSlide"
-                    class="absolute top-1/2 right-0 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md">
-              &rsaquo__;
-            </button>
+  if (slug === 'reports') {
+    // Top‐row images
+    const imagePaths = [
+      'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
+      'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_amz.png'
+    ];
+
+    // Bottom‐row images
+    const extraImagePaths = [
+      'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_shopify.png',
+      'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_walmart.png'
+    ];
+
+    detailList.innerHTML = `
+      <div class="prose max-w-none space-y-8">
+
+        <!-- Link above first carousel -->
+        <p>
+          <a
+            href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-blue-600 hover:underline"
+          >
+            WooParts eBay and Amazon Performance – 2025
+          </a>
+        </p>
+
+        <!-- first carousel -->
+        <div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
+          <div id="slider" class="flex transition-transform duration-300" style="transform: translateX(0%)">
+            ${imagePaths.map(path =>
+              `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Report">`
+            ).join('')}
           </div>
+          <button
+            id="prevSlide"
+            class="absolute top-1/2 left-2 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md"
+            aria-label="Previous report slide"
+          >&lsaquo;</button>
+          <button
+            id="nextSlide"
+            class="absolute top-1/2 right-2 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md"
+            aria-label="Next report slide"
+          >&rsaquo;</button>
         </div>
-      `;
-      let currentSlide = 0,
-          sliderEl     = document.getElementById('slider'),
-          totalSlides  = imagePaths.length;
-      document.getElementById('prevSlide').onclick = () => {
-        currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-        sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
-      };
-      document.getElementById('nextSlide').onclick = () => {
-        currentSlide = (currentSlide + 1) % totalSlides;
-        sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
-      };
-    } else {
-      try {
-        const data = await fetchItems(slug);
-        const groups = Array.isArray(data) ? { '': data } : data;
-        Object.entries(groups).forEach(([category, items]) => {
-          if (category) {
-            const hdr = document.createElement('h3');
-            hdr.className = 'text-lg font-semibold mt-4';
-            hdr.textContent = category;
-            detailList.appendChild(hdr);
-          }
-          items.forEach(item => {
-            const li  = document.createElement('li');
-            const btn = document.createElement('button');
-            btn.className = 'flex items-center text-indigo-600 hover:underline focus:outline-none';
-            btn.textContent = item.name;
-            const id = item.id || item.name;
-            const dot = document.createElement('span');
-            dot.className = 'ml-2 inline-block w-2 h-2 bg-red-600 rounded-full';
-            if (isItemRead(slug, id)) dot.classList.add('hidden');
-            btn.appendChild(dot);
-            btn.onclick = () => {
-              openEmailOverlay(item.name, item.content, slug);
-              markItemRead(slug, id);
-              dot.classList.add('hidden');
-              if (!hasUnreadForSlug(slug)) {
-                const badge = document.querySelector(`[data-slug="${slug}"] .badge`);
-                if (badge) badge.classList.add('hidden');
-              }
-            };
-            li.appendChild(btn);
-            detailList.appendChild(li);
-          });
+
+        <!-- Link above second carousel -->
+        <p>
+          <a
+            href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-blue-600 hover:underline"
+          >
+            WooParts eBay and Amazon Performance – 2025
+          </a>
+        </p>
+
+        <!-- second carousel -->
+        <div class="relative w-full max-w-full overflow-hidden rounded-lg shadow-md">
+          <div id="slider2" class="flex transition-transform duration-300" style="transform: translateX(0%)">
+            ${extraImagePaths.map(path =>
+              `<img src="${path}" loading="lazy" class="w-full flex-shrink-0 object-contain" alt="Extra Report">`
+            ).join('')}
+          </div>
+          <button
+            id="prevSlide2"
+            class="absolute top-1/2 left-2 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md"
+            aria-label="Previous extra slide"
+          >&lsaquo;</button>
+          <button
+            id="nextSlide2"
+            class="absolute top-1/2 right-2 transform -translate-y-1/2 px-3 py-1 bg-white text-gray-700 shadow-md"
+            aria-label="Next extra slide"
+          >&rsaquo;</button>
+        </div>
+
+      </div>
+    `;
+
+    // === wire up first slider ===
+    let currentSlide = 0;
+    const sliderEl    = document.getElementById('slider');
+    const totalSlides = imagePaths.length;
+
+    document.getElementById('prevSlide').onclick = () => {
+      currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+      sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
+    };
+    document.getElementById('nextSlide').onclick = () => {
+      currentSlide = (currentSlide + 1) % totalSlides;
+      sliderEl.style.transform = `translateX(-${currentSlide * 100}%)`;
+    };
+
+    // === wire up second slider ===
+    let currentSlide2  = 0;
+    const sliderEl2    = document.getElementById('slider2');
+    const totalSlides2 = extraImagePaths.length;
+
+    document.getElementById('prevSlide2').onclick = () => {
+      currentSlide2 = (currentSlide2 - 1 + totalSlides2) % totalSlides2;
+      sliderEl2.style.transform = `translateX(-${currentSlide2 * 100}%)`;
+    };
+    document.getElementById('nextSlide2').onclick = () => {
+      currentSlide2 = (currentSlide2 + 1) % totalSlides2;
+      sliderEl2.style.transform = `translateX(-${currentSlide2 * 100}%)`;
+    };
+
+  } else {
+    try {
+      const data = await fetchItems(slug);
+      const groups = Array.isArray(data) ? { '': data } : data;
+      Object.entries(groups).forEach(([category, items]) => {
+        if (category) {
+          const hdr = document.createElement('h3');
+          hdr.className = 'text-lg font-semibold mt-4';
+          hdr.textContent = category;
+          detailList.appendChild(hdr);
+        }
+        items.forEach(item => {
+          const li  = document.createElement('li');
+          const btn = document.createElement('button');
+          btn.className = 'flex items-center text-indigo-600 hover:underline focus:outline-none';
+          btn.textContent = item.name;
+          const id = item.id || item.name;
+          const dot = document.createElement('span');
+          dot.className = 'ml-2 inline-block w-2 h-2 bg-red-600 rounded-full';
+          if (isItemRead(slug, id)) dot.classList.add('hidden');
+          btn.appendChild(dot);
+          btn.onclick = () => {
+            openEmailOverlay(item.name, item.content, slug);
+            markItemRead(slug, id);
+            dot.classList.add('hidden');
+            if (!hasUnreadForSlug(slug)) {
+              const badge = document.querySelector(`[data-slug="${slug}"] .badge`);
+              if (badge) badge.classList.add('hidden');
+            }
+          };
+          li.appendChild(btn);
+          detailList.appendChild(li);
         });
-      } catch {
-        detailList.innerHTML = `<li class="text-red-500">This page is under construction – check back soon!</li>`;
-      }
+      });
+    } catch {
+      detailList.innerHTML = `<li class="text-red-500">This page is under construction – check back soon!</li>`;
     }
   }
+}
+
 
   // === Trap focus in modal ===
   function trapFocus(e) {
