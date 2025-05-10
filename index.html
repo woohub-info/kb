@@ -1128,12 +1128,6 @@ recentBtnRef.addEventListener('click', (e) => {
     }
   }
 
-  // 7) Clear both UI & storage on click
-  logBox.addEventListener('click', () => {
-    logBox.textContent = 'No changes made yet.';
-    localStorage.removeItem('changeLog');
-  });
-
   // ← Add this line to expose it globally
 window.checkUpdates = checkUpdates;
 
