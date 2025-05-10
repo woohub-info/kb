@@ -1066,7 +1066,7 @@ recentBtnRef.addEventListener('click', (e) => {
 
 <script>
 // render helper: limit = number of items to show (0 = all)
-function renderChangeLog(entries, limit = 5) {
+function renderChangeLog(entries, limit = 3) {
   const logBox = document.getElementById('change-log');
   logBox.innerHTML = '';
   const toShow = limit > 0 ? entries.slice(0, limit) : entries;
