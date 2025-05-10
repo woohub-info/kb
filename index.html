@@ -550,10 +550,23 @@ async function showContent(slug, title) {
   detailTitle.textContent = title;
   detailList.innerHTML = '';
 
-    // ─── 2) LINKS CASE ───
-  if (slug === 'links') {
-    const links = await fetchItems('links');
-    links.forEach(item => {
+// ─── LINKS CASE (grouped) ───
+if (slug === 'links') {
+  // fetchItems('links') now returns { "Group A": [...], "Group B": [...] }
+  const data = await fetchItems('links');
+
+  // For each category in your JSON
+  for (const [category, items] of Object.entries(data)) {
+    // 1) Render the category header (if not the root group)
+    if (category) {
+      const hdr = document.createElement('h3');
+      hdr.className = 'text-lg font-semibold mt-4';
+      hdr.textContent = category;
+      detailList.appendChild(hdr);
+    }
+
+    // 2) Render each link
+    items.forEach(item => {
       const li = document.createElement('li');
       const a  = document.createElement('a');
       a.href        = item.url;
@@ -564,8 +577,10 @@ async function showContent(slug, title) {
       li.appendChild(a);
       detailList.appendChild(li);
     });
-    return;  // stop here for links
   }
+
+  return;  // stop further processing
+}
 
   if (slug === 'reports') {
     // Top-row images (static, side-by-side)
