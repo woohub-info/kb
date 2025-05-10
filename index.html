@@ -557,7 +557,7 @@ async function showContent(slug, title) {
     console.log('Links data:', groups);     // <-- verify it’s actually being fetched
 
     // Build a set of old IDs so we only mark pre-existing links read
-    const oldIds = new Set((prev['links'] || []).map(i => i.id));
+    const oldIds = new Set((window.initialLinks || []).map(i => i.id));
 
     for (const [category, items] of Object.entries(groups)) {
       // Category header
@@ -1100,6 +1100,9 @@ recentBtnRef.addEventListener('click', (e) => {
         prev[slug] = [];
       }
     }
+
+      window.initialLinks = prev['links'];
+    
     setInterval(checkUpdates, POLL_INTERVAL);
   }
 
