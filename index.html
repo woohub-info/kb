@@ -551,55 +551,57 @@ async function showContent(slug, title) {
       'https://raw.githubusercontent.com/chmpzu/assets/main/reports/autoapex_ebay.png',
     ];
 
-    detailList.innerHTML = `
-      <div class="prose max-w-none space-y-8">
+detailList.innerHTML = `
+  <div class="prose max-w-none space-y-8">
 
-        <!-- Link above first image row -->
-        <p>
-          <a
-            href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-blue-600 hover:underline"
-          >
-            WooParts eBay and Amazon Monthly Performance – April 2025
-          </a>
-        </p>
+    <!-- Link above first image stack -->
+    <p>
+      <a
+        href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-blue-600 hover:underline"
+      >
+        WooParts eBay and Amazon Monthly Performance – 2025
+      </a>
+    </p>
 
-        <!-- First two images side-by-side, flush left -->
-        <div class="flex gap-4 justify-start">
-          ${imagePaths.map(path =>
-            `<img src="${path}"
-                  loading="lazy"
-                  class="h-64 w-auto object-contain"
-                  alt="Report">`
-          ).join('')}
-        </div>
+    <!-- First images stacked vertically, left-aligned -->
+    <div class="space-y-4">
+      ${imagePaths.map(path =>
+        `<img
+           src="${path}"
+           loading="lazy"
+           class="h-64 w-auto object-contain block"
+           alt="Report">`
+      ).join('')}
+    </div>
 
-        <!-- Link above second image row -->
-        <p>
-          <a
-            href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/EdkrNcbAsn1Oj6R_91SAOs4BwbNHpXFXBZtCrfaNoLYq3Q?e=7qIebl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-blue-600 hover:underline"
-          >
-            AutoApex eBay Monthly Performance – February 2025
-          </a>
-        </p>
+    <!-- Link above second image stack -->
+    <p>
+      <a
+        href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/EdkrNcbAsn1Oj6R_91SAOs4BwbNHpXFXBZtCrfaNoLYq3Q?e=7qIebl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-blue-600 hover:underline"
+      >
+        AutoApex eBay Monthly Performance – 2025
+      </a>
+    </p>
 
-        <!-- Second two images side-by-side, flush left -->
-        <div class="flex gap-4 justify-start">
-          ${extraImagePaths.map(path =>
-            `<img src="${path}"
-                  loading="lazy"
-                  class="h-64 w-auto object-contain"
-                  alt="Extra Report">`
-          ).join('')}
-        </div>
+    <!-- Second images stacked vertically, left-aligned -->
+    <div class="space-y-4">
+      ${extraImagePaths.map(path =>
+        `<img
+           src="${path}"
+           loading="lazy"
+           class="h-64 w-auto object-contain block"
+           alt="Extra Report">`
+      ).join('')}
+    </div>
 
-      </div>
-    `;
+  </div>
+`;
 
 
   } else {
