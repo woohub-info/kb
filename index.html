@@ -263,20 +263,24 @@
           </button>
         </div>
 
-        <!-- What's Changed Panel -->
-        <div class="bg-white border border-gray-200 rounded-lg p-4 sticky top-[calc(24px+4rem)]">
-          <!-- note top offset to sit neatly under the first panel -->
-          <h2 class="text-lg font-semibold mb-2">What’s changed?</h2>
-          <div id="change-log" class="text-sm text-gray-600 max-h-60 overflow-y-auto">
-            No changes detected yet.
-          </div>
-          <button id="show-more-btn" class="mt-2 text-indigo-600 hover:underline">
-            See more
-          </button>
-        </div>
-
+    <!-- What’s Changed Panel -->
+    <div
+      class="bg-white border border-gray-200 rounded-lg p-4 sticky top-[calc(6rem+1.5rem)]"
+      <!-- NO overflow or max-height here! -->
+      
+      <h2 class="text-lg font-semibold mb-2">What’s changed?</h2>
+      <!-- Inner scrollable area -->
+      <div id="change-log" class="text-sm text-gray-600 max-h-48 overflow-y-auto">
+        No changes detected yet.
       </div>
-    </aside>
+      <button
+        id="show-more-btn"
+        class="mt-2 text-indigo-600 hover:underline focus:outline-none"
+      >See more</button>
+    </div>
+
+  </div>
+</aside>
 
     <!-- Main content -->
     <main role="main" class="flex-1 flex flex-col">
