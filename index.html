@@ -283,7 +283,7 @@
 </aside>
 
     <!-- Main content -->
-    <main role="main" class="flex-1 flex flex-col">
+    <main role="main" class="relative flex-1 flex flex-col">
       <!-- Breadcrumbs -->
       <nav role="navigation" class="text-sm mb-4" aria-label="Breadcrumb">
         <ol class="list-reset flex text-gray-600">
@@ -293,25 +293,35 @@
         </ol>
       </nav>
 
-      <!-- Detail View -->
+<!-- Detail View -->
 <section
-  id="detail-container"
-  class="hidden bg-white rounded-lg shadow p-6
-         h-[calc(100vh-4rem)]
-         overflow-y-auto
-         flex flex-col"
-  role="region"
-  aria-labelledby="detail-title">
-  
-<button
-  id="back-btn"
-  class="self-start text-indigo-600 hover:underline mb-4 focus:outline-none">
-  ← Back to Dashboard
-</button>
-  
-  <h2 id="detail-title" class="text-2xl font-semibold mb-4 flex-none"></h2>
-  <ul id="detail-list" class="list-disc pl-5 space-y-2 flex-1 overflow-y-auto"></ul>
-</section>
+    id="detail-container"
+    class="hidden
+           absolute inset-0               /* fill the <main> area */
+           bg-white rounded-lg shadow p-6
+           flex flex-col overflow-hidden"  /* flex so only the list scrolls */
+    role="region"
+    aria-labelledby="detail-title"
+  >
+    <button
+      id="back-btn"
+      class="self-start text-indigo-600 hover:underline mb-4 focus:outline-none flex-none"
+    >
+      ← Back to Dashboard
+    </button>
+
+    <h2
+      id="detail-title"
+      class="text-2xl font-semibold mb-4 flex-none"
+    ></h2>
+
+    <ul
+      id="detail-list"
+      class="flex-1 overflow-y-auto list-disc pl-5 space-y-2"
+    >
+      <!-- your detail items here -->
+    </ul>
+  </section>
 
       <!-- Card Grid -->
       <section id="card-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"></section>
@@ -555,7 +565,6 @@ async function showContent(slug, title) {
   addToRecents({ id: slug, slug, title, type: 'card' });
   container.classList.add('hidden');
   detailContainer.classList.remove('hidden');
-  document.documentElement.style.overflow = 'hidden';
   detailTitle.textContent = title;
   detailList.innerHTML = '';              // clear out any old content
 
