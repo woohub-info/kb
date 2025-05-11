@@ -246,34 +246,51 @@
     <aside class="w-80 lg:w-96 mr-6 hidden lg:block">
       <div class="space-y-6">
 
-        <!-- Recent Updates Panel -->
-        <div class="bg-white border border-gray-200 rounded-lg p-4 sticky top-24">
-          <div class="flex items-center justify-between mb-2">
-            <h2 class="text-lg font-semibold">Recent Updates</h2>
-            <button id="updates-filter-toggle" class="p-1 focus:outline-none" aria-label="Toggle filter">
-              <!-- filter icon -->
-            </button>
-          </div>
-          <div id="updates-filter-container" class="hidden mb-2">
-            <input id="updates-filter" … />
-          </div>
-          <ul id="updates-container" class="max-h-96 overflow-y-auto pr-2 space-y-2" aria-live="polite"></ul>
-          <button id="load-more-btn" class="mt-2 w-full text-center text-indigo-600 hover:underline">
-            Load More
-          </button>
-        </div>
+<!-- Recent Updates Panel -->
+<div class="bg-white border border-gray-200 rounded-lg p-4 sticky top-24">
+  <div class="flex items-center justify-between mb-2">
+    <h2 class="text-lg font-semibold">Recent Updates</h2>
+    <button id="updates-filter-toggle" class="p-1 focus:outline-none" aria-label="Toggle filter">
+      <!-- filter icon -->
+    </button>
+  </div>
+  <div id="updates-filter-container" class="hidden mb-2">
+    <input id="updates-filter" … />
+  </div>
+
+  <!-- Scrollable wrapper now contains both the list and the Load More button -->
+  <div class="max-h-96 overflow-y-auto pr-2 space-y-2">
+    <ul id="updates-container" class="space-y-2" aria-live="polite">
+      <!-- your <li> items -->
+    </ul>
+    <button
+      id="load-more-btn"
+      class="w-full text-center text-indigo-600 hover:underline focus:outline-none"
+    >
+      Load More
+    </button>
+  </div>
+</div>
+
 
     <!-- What’s Changed Panel -->
 <div
   class="bg-white border border-gray-200 rounded-lg p-4
-         sticky top-[calc(6rem+1.5rem)]"
+         sticky top-[calc(6rem+1.5rem)]
+         max-h-[16rem]                /* cap total panel height */
+         flex flex-col overflow-hidden"
 >
-  <h2 class="text-lg font-semibold mb-2">What’s changed?</h2>
+  <h2 class="text-lg font-semibold mb-2 flex-none">What’s changed?</h2>
 
-  <!-- THIS is where you clamp the height -->
-  <div id="change-log" class="max-h-[16rem] overflow-y-auto text-sm text-gray-600">
-    <!-- your list of changes… -->
+  <!-- THIS is your scrollable area -->
+  <div
+    id="change-log"
+    class="flex-1 overflow-y-auto text-sm text-gray-600 pr-2"
+  >
+    <!-- all entries + inline Show more/Show less button -->
   </div>
+</div>
+
 
   </div>
 </aside>
