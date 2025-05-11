@@ -308,10 +308,11 @@
     class="hidden
            absolute inset-0               /* fill the <main> area */
            bg-white rounded-lg shadow p-6
-           flex flex-col overflow-hidden"  /* flex so only the list scrolls */
+           flex flex-col overflow-auto"  /* Enable scrolling */
+    style="max-height: calc(100vh - 4rem);"  /* Adjust height to fit viewport */
     role="region"
     aria-labelledby="detail-title"
-  >
+>
     <button
       id="back-btn"
       class="self-start text-indigo-600 hover:underline mb-4 focus:outline-none flex-none"
