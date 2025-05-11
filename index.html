@@ -294,18 +294,24 @@
       </nav>
 
       <!-- Detail View -->
-      <section
+<section
   id="detail-container"
-  class="hidden bg-white rounded-lg shadow p-6 mb-6 overflow-y-auto max-h-[calc(100vh-4rem)]"
+  class="hidden bg-white rounded-lg shadow p-6
+         h-[calc(100vh-4rem)]
+         overflow-y-auto
+         flex flex-col"
   role="region"
   aria-labelledby="detail-title">
-        <button id="back-btn"
-        class="text-indigo-600 hover:underline mb-4 focus:outline-none">
-          ← Back to Dashboard
-        </button>
-        <h2 id="detail-title" class="text-2xl font-semibold mb-4"></h2>
-        <ul id="detail-list" class="list-disc pl-5 space-y-2"></ul>
-      </section>
+  
+<button
+  id="back-btn"
+  class="self-start text-indigo-600 hover:underline mb-4 focus:outline-none">
+  ← Back to Dashboard
+</button>
+  
+  <h2 id="detail-title" class="text-2xl font-semibold mb-4 flex-none"></h2>
+  <ul id="detail-list" class="list-disc pl-5 space-y-2 flex-1 overflow-y-auto"></ul>
+</section>
 
       <!-- Card Grid -->
       <section id="card-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"></section>
