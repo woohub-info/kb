@@ -357,6 +357,17 @@
 </footer>
 
 <script>
+  function formatTimestamp(ts) {
+    const d = new Date(ts);
+    const M  = d.getMonth() + 1;
+    const D  = d.getDate();
+    const YY = String(d.getFullYear() % 100).padStart(2, '0');
+    let h    = d.getHours();
+    const m  = String(d.getMinutes()).padStart(2, '0');
+    const ampm = h < 12 ? 'AM' : 'PM';
+    h = h % 12 || 12;
+    return `${M}/${D}/${YY} ${h}:${m}${ampm}`;
+  }
   // === persist “read” state across reloads ===
   const badgeDataMap = {};
   function getReadItems() {
@@ -1031,7 +1042,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const evtSource = new EventSource('/events');
   evtSource.onmessage = e => {
     const { file, updatedAt } = JSON.parse(e.data);
-    const ts = new Date(updatedAt).toLocaleTimeString();
+    const ts = formatTimestamp(updatedAt);
     stored.unshift(`[${ts}] ${file} changed`);
     renderChangeLog(stored);
   };
@@ -1094,43 +1105,40 @@ recentBtnRef.addEventListener('click', (e) => {
 
 <script>
 // render helper: limit = number of items to show (0 = all)
-let showingAll = false;  // toggles between 3 items and all
+let showingAll = false;  // track collapsed vs. expanded
 
 function renderChangeLog(entries) {
   const logBox = document.getElementById('change-log');
   logBox.innerHTML = '';
 
-  // decide how many to show
-  const toShow = showingAll ? entries : entries.slice(0, 3);
+  // decide which entries to show
+  const visible = showingAll ? entries : entries.slice(0, 3);
 
-  if (!toShow.length) {
+  if (visible.length === 0) {
     logBox.textContent = 'No changes detected yet.';
     return;
   }
 
-  toShow.forEach((text, idx) => {
-    const div = document.createElement('div');
-    div.className = 'mb-1 flex items-center';
-
-    // entry text
-    const span = document.createElement('span');
-    span.textContent = text;
-    div.appendChild(span);
-
-    // if this is the last visible entry *and* there are more entries, append the toggle
-    if (idx === toShow.length - 1 && entries.length > 3) {
-      const toggle = document.createElement('button');
-      toggle.className = 'ml-2 text-indigo-600 hover:underline focus:outline-none';
-      toggle.textContent = showingAll ? 'Show less' : 'Show more';
-      toggle.onclick = () => {
-        showingAll = !showingAll;
-        renderChangeLog(entries);
-      };
-      div.appendChild(toggle);
-    }
-
-    logBox.appendChild(div);
+  // render each visible entry
+  visible.forEach(text => {
+    const entryDiv = document.createElement('div');
+    entryDiv.className = 'mb-1';
+    entryDiv.textContent = text;
+    logBox.appendChild(entryDiv);
   });
+
+  // if there are more entries hidden, append the toggle centered on its own line
+  if (entries.length > visible.length) {
+    const toggle = document.createElement('button');
+    toggle.className =
+      'block mx-auto text-indigo-600 hover:underline focus:outline-none';
+    toggle.textContent = showingAll ? 'Show less' : 'Show more';
+    toggle.onclick = () => {
+      showingAll = !showingAll;
+      renderChangeLog(entries);
+    };
+    logBox.appendChild(toggle);
+  }
 }
 
 (function() {
@@ -1151,7 +1159,7 @@ function renderChangeLog(entries) {
   });
 
   function appendLog(msg) {
-    const entryText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    const entryText = `[${formatTimestamp(Date.now())}] ${msg}`;
     // prepend to array
     stored.unshift(entryText);
     localStorage.setItem('changeLog', JSON.stringify(stored));
