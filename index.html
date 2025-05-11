@@ -1061,6 +1061,9 @@ async function pollNotifications() {
 
   // === Final init ===
 document.addEventListener('DOMContentLoaded', () => {
+    const key = 'recentlyViewed';
+    const recents = JSON.parse(localStorage.getItem(key) || '[]');
+    renderRecentlyViewed(recents);
   // 0) Initial rendering & index build
   renderCards();
   buildSearchIndex();
