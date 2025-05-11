@@ -933,6 +933,9 @@ async function pollNotifications() {
     setNotifCount(0);
   };
 
+     // Add the event listener for the update-banner-close button
+   document.getElementById('update-banner-close').addEventListener('click', hideUpdateBanner);
+
   // === Recent updates panel ===
   let allUpdates = [], displayCount = 5;
   async function pollUpdatesPanel() {
