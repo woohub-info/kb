@@ -130,7 +130,7 @@
     },
     {
       "name": "Multishipment - Final Email",
-      "content": "<p>Hi,</p><p>We wanted to inform you that your recent order will be shipped in multiple shipments. You can track the progress of each package using the following tracking numbers:</p><ol><li>[Tracking 1]</li><li>[Tracking 2]</li></ol><p>Thank you for your purchase, and please let us know if you need any further assistance.</p><p>Best regards,<br>WooParts</p>"
+      "content": "<p>Hi,</p><p>We wanted to inform you that your recent order will be shipped in multiple shipments. You can track the progress of each package using the following tracking numbers:</p><ol><li>[Carrier: Tracking 1]</li><li>[Carrier: Tracking 2]</li></ol><p>Thank you for your purchase, and please let us know if you need any further assistance.</p><p>Best regards,<br>WooParts</p>"
     }
   ]
 }
