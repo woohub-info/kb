@@ -277,20 +277,18 @@
 <div
   class="bg-white border border-gray-200 rounded-lg p-4
          sticky top-[calc(6rem+1.5rem)]
-         max-h-[16rem]                /* cap total panel height */
+         max-h-[16rem]        <!-- always here -->
          flex flex-col overflow-hidden"
 >
   <h2 class="text-lg font-semibold mb-2 flex-none">What’s changed?</h2>
 
-  <!-- THIS is your scrollable area -->
   <div
     id="change-log"
     class="flex-1 overflow-y-auto text-sm text-gray-600 pr-2"
   >
-    <!-- all entries + inline Show more/Show less button -->
+    <!-- entries + inline toggle go here -->
   </div>
 </div>
-
 
   </div>
 </aside>
@@ -1121,44 +1119,41 @@ recentBtnRef.addEventListener('click', (e) => {
     </script> <!-- end of your main app code -->
 
 <script>
-// render helper: limit = number of items to show (0 = all)
-let showingAll = false;  // track collapsed vs. expanded
+let showingAll = false;  // collapsed vs. expanded
 
 function renderChangeLog(entries) {
   const logBox = document.getElementById('change-log');
-
-  // 1) Toggle the height clamp based on state
-  //    when collapsed → enforce max-height, when expanded → remove it
-  logBox.classList.toggle('max-h-[16rem]', !showingAll);
-
-  // 2) Rebuild contents
   logBox.innerHTML = '';
+
+  // Choose 3 or all
   const visible = showingAll ? entries : entries.slice(0, 3);
 
-  if (visible.length === 0) {
+  if (!visible.length) {
     logBox.textContent = 'No changes detected yet.';
     return;
   }
 
+  // Render each entry
   visible.forEach(text => {
-    const entryDiv = document.createElement('div');
-    entryDiv.className = 'mb-1';
-    entryDiv.textContent = text;
-    logBox.appendChild(entryDiv);
+    const div = document.createElement('div');
+    div.className = 'mb-1';
+    div.textContent = text;
+    logBox.appendChild(div);
   });
 
-  // 3) Append the toggle centered on its own line
+  // If there are more hidden, append the toggle *inside* the scroll area
   if (entries.length > visible.length) {
-    const toggle = document.createElement('button');
-    toggle.className = 'block mx-auto text-indigo-600 hover:underline focus:outline-none';
-    toggle.textContent = showingAll ? 'Show less' : 'Show more';
-    toggle.onclick = () => {
+    const btn = document.createElement('button');
+    btn.className = 'block mx-auto text-indigo-600 hover:underline focus:outline-none';
+    btn.textContent = showingAll ? 'Show less' : 'Show more';
+    btn.onclick = () => {
       showingAll = !showingAll;
       renderChangeLog(entries);
     };
-    logBox.appendChild(toggle);
+    logBox.appendChild(btn);
   }
 }
+
   
 (function() {
   const POLL_INTERVAL = 5000;
