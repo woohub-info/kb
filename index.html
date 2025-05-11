@@ -1109,9 +1109,13 @@ let showingAll = false;  // track collapsed vs. expanded
 
 function renderChangeLog(entries) {
   const logBox = document.getElementById('change-log');
-  logBox.innerHTML = '';
 
-  // decide which entries to show
+  // 1) Toggle the height clamp based on state
+  //    when collapsed → enforce max-height, when expanded → remove it
+  logBox.classList.toggle('max-h-[16rem]', !showingAll);
+
+  // 2) Rebuild contents
+  logBox.innerHTML = '';
   const visible = showingAll ? entries : entries.slice(0, 3);
 
   if (visible.length === 0) {
@@ -1119,7 +1123,6 @@ function renderChangeLog(entries) {
     return;
   }
 
-  // render each visible entry
   visible.forEach(text => {
     const entryDiv = document.createElement('div');
     entryDiv.className = 'mb-1';
@@ -1127,11 +1130,10 @@ function renderChangeLog(entries) {
     logBox.appendChild(entryDiv);
   });
 
-  // if there are more entries hidden, append the toggle centered on its own line
+  // 3) Append the toggle centered on its own line
   if (entries.length > visible.length) {
     const toggle = document.createElement('button');
-    toggle.className =
-      'block mx-auto text-indigo-600 hover:underline focus:outline-none';
+    toggle.className = 'block mx-auto text-indigo-600 hover:underline focus:outline-none';
     toggle.textContent = showingAll ? 'Show less' : 'Show more';
     toggle.onclick = () => {
       showingAll = !showingAll;
@@ -1140,7 +1142,7 @@ function renderChangeLog(entries) {
     logBox.appendChild(toggle);
   }
 }
-
+  
 (function() {
   const POLL_INTERVAL = 5000;
   const slugs = cardsData.map(c => c.slug);
