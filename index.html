@@ -1021,10 +1021,20 @@ async function pollNotifications() {
   });
 
   // === Final init ===
-  document.addEventListener('DOMContentLoaded', () => {
-    // 0) Initial rendering & index build
-    renderCards();
-    buildSearchIndex();
+document.addEventListener('DOMContentLoaded', () => {
+  // 0) Initial rendering & index build
+  renderCards();
+  buildSearchIndex();
+  renderChangeLog(stored);
+
+  // Now subscribe to live events:
+  const evtSource = new EventSource('/events');
+  evtSource.onmessage = e => {
+    const { file, updatedAt } = JSON.parse(e.data);
+    const ts = new Date(updatedAt).toLocaleTimeString();
+    stored.unshift(`[${ts}] ${file} changed`);
+    renderChangeLog(stored);
+  };
 
     // 1) Tilt effect on cards
     VanillaTilt.init(document.querySelectorAll('article[data-tilt]'), {
