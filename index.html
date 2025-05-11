@@ -264,18 +264,24 @@
         </div>
 
     <!-- What’s Changed Panel -->
-    <div class="bg-white border border-gray-200 rounded-lg p-4 sticky top-[calc(6rem+1.5rem)] max-h-[calc(100vh-20rem)] overflow-y-auto">
-      
-      <h2 class="text-lg font-semibold mb-2">What’s changed?</h2>
-      <!-- Inner scrollable area -->
-      <div id="change-log" class="text-sm text-gray-600 max-h-48 overflow-y-auto">
-        No changes detected yet.
-      </div>
-      <button
-        id="show-more-btn"
-        class="mt-2 text-indigo-600 hover:underline focus:outline-none"
-      >See more</button>
-    </div>
+<div
+  class="bg-white border border-gray-200 rounded-lg p-4
+         sticky top-[calc(6rem+1.5rem)]"
+>
+  <h2 class="text-lg font-semibold mb-2">What’s changed?</h2>
+
+  <!-- THIS is where you clamp the height -->
+  <div id="change-log" class="max-h-[12rem] overflow-y-auto text-sm text-gray-600">
+    <!-- your list of changes… -->
+  </div>
+
+  <button
+    id="show-more-btn"
+    class="mt-2 text-indigo-600 hover:underline focus:outline-none"
+  >
+    Show more
+  </button>
+</div>
 
   </div>
 </aside>
