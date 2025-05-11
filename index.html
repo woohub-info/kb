@@ -153,14 +153,14 @@
       </div>
 
       <!-- Recently Viewed -->
-      <div class="relative ml-4">
-        <button
-          id="recent-btn"
-          class="p-2 focus:outline-none"
-          aria-label="Recently Viewed"
-          aria-haspopup="true"
-          aria-expanded="false"
-        >
+<div class="relative ml-4">
+  <button
+    id="recent-btn"
+    class="p-2 focus:outline-none"
+    aria-label="Recently Viewed"
+    aria-haspopup="true"
+    aria-expanded="false"
+  >
           <svg
             class="w-6 h-6 text-gray-600"
             fill="none"
@@ -176,21 +176,19 @@
             />
           </svg>
         </button>
-        <div
-          id="recent-dropdown"
-          class="hidden absolute right-0 mt-2 w-72 p-4 bg-white border border-gray-200
-                 rounded-lg shadow-lg z-40"
-          role="menu"
-          aria-label="Recently viewed items"
-        >
-          <ul
-            id="recent-list"
-            class="max-h-60 overflow-y-auto divide-y divide-gray-200"
-          >
-            <li class="py-2 text-gray-500">No recently viewed items</li>
-          </ul>
-        </div>
-      </div>
+  <div
+    id="recent-dropdown"
+    class="hidden absolute right-0 mt-2 w-72 p-4 bg-white border border-gray-200
+           rounded-lg shadow-lg z-40"
+    role="menu"
+    aria-label="Recently viewed items"
+  >
+    <ul
+      id="recent-list"
+      class="max-h-60 overflow-y-auto divide-y divide-gray-200"
+    ></ul>
+  </div>
+</div>
     </div>
  </header>
 
@@ -1088,24 +1086,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const notificationBtnRef      = document.getElementById('notification-btn');
     const notificationDropdownRef = document.getElementById('notification-dropdown');
 
-    // 5) Recently Viewed handlers
-    const recentBtnRef      = document.getElementById('recent-btn');
-    const recentDropdownRef = document.getElementById('recent-dropdown');
-// When the button itself is clicked, toggle the dropdown
-recentBtnRef.addEventListener('click', (e) => {
-  e.stopPropagation();  // prevent the document click‐handler from firing immediately
-  const isOpen = !recentDropdownRef.classList.toggle('hidden');
-  recentBtnRef.setAttribute('aria-expanded', String(isOpen));
-});
-    document.addEventListener('click', (e) => {
-  if (
-    e.target !== recentBtnRef &&
-    !recentDropdownRef.contains(e.target)
-  ) {
-    recentDropdownRef.classList.add('hidden');
-    recentBtnRef.setAttribute('aria-expanded', 'false');
-  }
-});
+// 5a) Recently Viewed dropdown toggle
+  // 1) Select the button & dropdown once
+  const recentBtn    = document.getElementById('recent-btn');
+  const recentDrop   = document.getElementById('recent-dropdown');
+
+  // 2) Toggle dropdown on button click
+  recentBtn.addEventListener('click', e => {
+    e.stopPropagation();                              // don’t let this click bubble to document
+    const isNowOpen = recentDrop.classList.toggle('hidden') === false;
+    recentBtn.setAttribute('aria-expanded', isNowOpen);
+  });
+
+  // 3) Anywhere else on the page closes it
+  document.addEventListener('click', e => {
+    if (!recentDrop.classList.contains('hidden')) {
+      // if click is outside both button and dropdown → hide
+      if (!recentBtn.contains(e.target) && !recentDrop.contains(e.target)) {
+        recentDrop.classList.add('hidden');
+        recentBtn.setAttribute('aria-expanded', 'false');
+      }
+    }
+  });
 
     // 6) Render recents once on load
     renderRecentlyViewed(JSON.parse(localStorage.getItem('recentlyViewed') || '[]'));
