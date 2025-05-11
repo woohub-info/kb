@@ -294,8 +294,11 @@
       </nav>
 
       <!-- Detail View -->
-      <section id="detail-container" class="hidden bg-white rounded-lg shadow p-6 mb-6"
-               role="region" aria-labelledby="detail-title">
+      <section
+  id="detail-container"
+  class="hidden bg-white rounded-lg shadow p-6 mb-6 overflow-y-auto max-h-[calc(100vh-4rem)]"
+  role="region"
+  aria-labelledby="detail-title">
         <button id="back-btn"
         class="text-indigo-600 hover:underline mb-4 focus:outline-none">
           ← Back to Dashboard
@@ -546,6 +549,7 @@ async function showContent(slug, title) {
   addToRecents({ id: slug, slug, title, type: 'card' });
   container.classList.add('hidden');
   detailContainer.classList.remove('hidden');
+  document.documentElement.style.overflow = 'hidden';
   detailTitle.textContent = title;
   detailList.innerHTML = '';              // clear out any old content
 
@@ -718,6 +722,7 @@ detailList.innerHTML = `
   let lastFocused;
   function openEmailOverlay(name, htmlContent, slug) {
     lastFocused = document.activeElement;
+    document.documentElement.style.overflow = 'hidden';
     overlayHeader.textContent = name;
     const card     = cardsData.find(c => c.slug === slug);
     const titleHtml = card ? `<h3 class="text-lg font-semibold mb-2">${card.title}</h3>` : '';
@@ -731,6 +736,7 @@ detailList.innerHTML = `
   overlayClose.onclick = () => {
     overlay.classList.add('hidden');
     overlayDialog.classList.remove('opacity-100','scale-100');
+    document.documentElement.style.overflow = '';
     lastFocused?.focus();
   };
   overlay.onclick = e => {
@@ -747,6 +753,7 @@ detailList.innerHTML = `
   backBtn.onclick = () => {
     detailContainer.classList.add('hidden');
     container.classList.remove('hidden');
+    document.documentElement.style.overflow = '';
   };
   window.addEventListener('scroll', () => {
     toTopBtn.classList.toggle('hidden', window.scrollY < 300);
