@@ -1092,28 +1092,50 @@ recentBtnRef.addEventListener('click', (e) => {
 
 <script>
 // render helper: limit = number of items to show (0 = all)
-// render helper: limit = number of items to show (0 = all)
-function renderChangeLog(entries, limit = 3) {
+let showingAll = false;  // toggles between 3 items and all
+
+function renderChangeLog(entries) {
   const logBox = document.getElementById('change-log');
   logBox.innerHTML = '';
-  const toShow = limit > 0 ? entries.slice(0, limit) : entries;
+
+  // decide how many to show
+  const toShow = showingAll ? entries : entries.slice(0, 3);
+
   if (!toShow.length) {
     logBox.textContent = 'No changes detected yet.';
     return;
   }
-  toShow.forEach(text => {
+
+  toShow.forEach((text, idx) => {
     const div = document.createElement('div');
-    div.className = 'mb-1';
-    div.textContent = text;
+    div.className = 'mb-1 flex items-center';
+
+    // entry text
+    const span = document.createElement('span');
+    span.textContent = text;
+    div.appendChild(span);
+
+    // if this is the last visible entry *and* there are more entries, append the toggle
+    if (idx === toShow.length - 1 && entries.length > 3) {
+      const toggle = document.createElement('button');
+      toggle.className = 'ml-2 text-indigo-600 hover:underline focus:outline-none';
+      toggle.textContent = showingAll ? 'Show less' : 'Show more';
+      toggle.onclick = () => {
+        showingAll = !showingAll;
+        renderChangeLog(entries);
+      };
+      div.appendChild(toggle);
+    }
+
     logBox.appendChild(div);
   });
 }
 
 (function() {
   const POLL_INTERVAL = 5000;
-  const slugs    = cardsData.map(c => c.slug);
-  const stored   = JSON.parse(localStorage.getItem('changeLog') || '[]');
-  const showMoreBtn = document.getElementById('show-more-btn');
+  const slugs = cardsData.map(c => c.slug);
+  const stored = JSON.parse(localStorage.getItem('changeLog') || '[]');
+  const logBox = document.getElementById('change-log');
   let showingAll = false;
 
   // ← INITIAL RENDER (first 3)
@@ -1181,20 +1203,30 @@ function renderChangeLog(entries, limit = 3) {
     }
   }
 
-  async function initWatcher() {
-    for (const slug of slugs) {
-      try {
-        prev[slug] = normalize(await fetchFresh(slug));
-      } catch {
-        prev[slug] = [];
-      }
+async function initWatcher() {
+  // 1) Load the initial “prev” so checkUpdates can diff
+  for (const slug of slugs) {
+    try {
+      prev[slug] = normalize(await fetchFresh(slug));
+    } catch {
+      prev[slug] = [];
     }
-    setInterval(checkUpdates, POLL_INTERVAL);
-    checkUpdates();
   }
 
-  window.checkUpdates = checkUpdates;
-  initWatcher();
+  // 2) Do an initial check + render
+  checkUpdates();
+  renderChangeLog(stored);
+
+  // 3) Poll every POLL_INTERVAL, then re-render
+  setInterval(async () => {
+    await checkUpdates();
+    renderChangeLog(stored);
+  }, POLL_INTERVAL);
+}
+
+window.checkUpdates = checkUpdates;
+initWatcher();
+
 })();
 </script>
 
