@@ -523,28 +523,40 @@
     return data;
   }
 
-  // === Recently Viewed Logic (global scope) ===
-  function renderRecentlyViewed(recents) {
+// === Recently Viewed Logic (global scope) ===
+
+// Add the event listener globally to toggle the dropdown
+document.getElementById('recent-btn').addEventListener('click', () => {
+    const dropdown = document.getElementById('recent-dropdown');
+    dropdown.classList.toggle('hidden');
+});
+
+// Function to render the Recently Viewed list
+function renderRecentlyViewed(recents) {
     const recentList = document.getElementById('recent-list');
-    recentList.innerHTML = '';
+    recentList.innerHTML = ''; // Clear the list before rendering
+    
+    // If no recently viewed items, display a message
     if (!recents.length) {
-      recentList.innerHTML = '<li class="py-2 text-gray-500">No recently viewed items</li>';
-      return;
+        recentList.innerHTML = '<li class="py-2 text-gray-500 italic">No recently viewed items</li>';
+        return;
     }
+
+    // Loop through the recents and render each item
     recents.forEach(item => {
-      const li = document.createElement('li');
-      li.className = 'py-2 text-indigo-600 hover:underline cursor-pointer';
-      li.textContent = item.title;
-      li.onclick = () => {
-        if (item.type === 'card') {
-          showContent(item.slug, item.title);
-        } else {
-          openEmailOverlay(item.title, item.content, item.slug);
-        }
-      };
-      recentList.appendChild(li);
+        const li = document.createElement('li');
+        li.className = 'py-2 text-indigo-600 hover:underline cursor-pointer';
+        li.textContent = item.title;
+        li.onclick = () => {
+            if (item.type === 'card') {
+                showContent(item.slug, item.title);
+            } else {
+                openEmailOverlay(item.title, item.content, item.slug);
+            }
+        };
+        recentList.appendChild(li);
     });
-  }
+}
 
   function addToRecents(item) {
     const key = 'recentlyViewed';
