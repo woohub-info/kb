@@ -1094,6 +1094,7 @@ recentBtnRef.addEventListener('click', (e) => {
 
 <script>
 // render helper: limit = number of items to show (0 = all)
+// render helper: limit = number of items to show (0 = all)
 function renderChangeLog(entries, limit = 3) {
   const logBox = document.getElementById('change-log');
   logBox.innerHTML = '';
@@ -1113,20 +1114,18 @@ function renderChangeLog(entries, limit = 3) {
 (function() {
   const POLL_INTERVAL = 5000;
   const slugs    = cardsData.map(c => c.slug);
-  // in-memory history array
   const stored   = JSON.parse(localStorage.getItem('changeLog') || '[]');
-  const logBox   = document.getElementById('change-log');
   const showMoreBtn = document.getElementById('show-more-btn');
   let showingAll = false;
 
-  // INITIAL RENDER (first 5)
-  renderChangeLog(stored, 5);
+  // ← INITIAL RENDER (first 3)
+  renderChangeLog(stored, 3);
 
   // TOGGLE BUTTON
   showMoreBtn.addEventListener('click', () => {
     showingAll = !showingAll;
-    renderChangeLog(stored, showingAll ? 0 : 5);
-    showMoreBtn.textContent = showingAll ? 'Show less' : 'See more';
+    renderChangeLog(stored, showingAll ? 0 : 3);    // ← toggle between all (0) and 3
+    showMoreBtn.textContent = showingAll ? 'Show less' : 'Show more';
   });
 
   function appendLog(msg) {
