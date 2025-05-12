@@ -306,6 +306,8 @@
         });
 
         if (!response.ok) {
+          // Log the response details for debugging
+          console.error(`HTTP error! Status: ${response.status}`, await response.text());
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
@@ -323,11 +325,12 @@
           // Clear the input box
           input.value = '';
         } else {
-          alert('Failed to save the update. Please try again.');
+          // Show the specific error message from the backend
+          alert(`Failed to save the update: ${result.message}`);
         }
       } catch (error) {
         console.error("Error adding update:", error);
-        alert('Failed to add the update. Check the console for details.');
+        alert(`An error occurred: ${error.message}. Check the console for details.`);
       }
     } else {
       alert('Please enter an update.');
