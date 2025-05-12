@@ -280,14 +280,49 @@
 >
   <h2 class="text-lg font-semibold mb-2 flex-none">What’s changed?</h2>
 
-  <div
-    id="change-log"
-    class="flex-1 overflow-y-auto text-sm text-gray-600 pr-2"
-  >
-    <!-- entries + inline toggle go here -->
-  </div>
+<div
+  id="change-log"
+  class="flex-1 overflow-y-auto text-sm text-gray-600 pr-2"
+>
+  <!-- entries + inline toggle go here -->
+  <p>No updates yet...</p>
 </div>
 
+<!-- Inject the SSE script here -->
+<script>
+  // Establish SSE connection to receive real-time updates
+  const eventSource = new EventSource('/updates'); // Replace '/updates' with your SSE endpoint
+
+  // Listen for updates from the server
+  eventSource.onmessage = function(event) {
+      const data = JSON.parse(event.data); // Parse the incoming JSON data
+      updateChangeLog(data); // Update the "What's Changed" panel
+  };
+
+  // Function to update the "What's Changed" panel
+  function updateChangeLog(update) {
+      const changeLog = document.getElementById('change-log');
+
+      // Clear the "No updates yet..." message if it exists
+      if (changeLog.textContent.includes('No updates yet')) {
+          changeLog.innerHTML = '';
+      }
+
+      // Create a new update item
+      const updateItem = document.createElement('div');
+      updateItem.className = 'update-item';
+      updateItem.textContent = `${update.timestamp}: ${update.message}`;
+      changeLog.prepend(updateItem); // Add the new update to the top of the list
+  };
+
+  // Handle connection errors
+  eventSource.onerror = function() {
+      console.error('Error connecting to the server.');
+      const changeLog = document.getElementById('change-log');
+      changeLog.innerHTML = '<p style="color: red;">Unable to fetch updates...</p>';
+  };
+</script>
+  
   </div>
 </aside>
 
