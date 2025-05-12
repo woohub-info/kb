@@ -993,24 +993,31 @@ async function pollNotifications() {
   pollNotifications();
 
   // === Notification bell handlers ===
-  notifBtn.onclick = () => {
-    const isOpen = !notifDropdown.classList.toggle('hidden');
-    notifBtn.setAttribute('aria-expanded', String(isOpen));
-    if (!isOpen) {
-      setNotifCount(0);
-      document.querySelectorAll('#notification-list li .new-badge')
-              .forEach(el => el.remove());
-      localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
-    }
-  };
-  clearNotifsBtn.onclick = () => {
-    const allKnownIds = Object.values(badgeDataMap).flat();
-    allKnownIds.forEach(id => seenNotifIds.add(id));
-    localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
-    notifListEl.innerHTML = '';
-    setNotifCount(0);
-  };
+notifBtn.onclick = () => {
+  const isOpen = !notifDropdown.classList.toggle('hidden');
+  notifBtn.setAttribute('aria-expanded', String(isOpen));
 
+  if (isOpen) {
+    // Reset count only when the dropdown is opened
+    setNotifCount(0);
+    document.querySelectorAll('#notification-list li .new-badge')
+      .forEach(el => el.remove());
+
+    // Save seen notifications to localStorage
+    localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
+  }
+};
+
+clearNotifsBtn.onclick = () => {
+  const allKnownIds = Object.values(badgeDataMap).flat();
+  allKnownIds.forEach(id => seenNotifIds.add(id));
+  localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
+
+  // Clear the notification list and reset the count
+  notifListEl.innerHTML = '';
+  setNotifCount(0);
+};
+  
      // Add the event listener for the update-banner-close button
    document.getElementById('update-banner-close').addEventListener('click', hideUpdateBanner);
 
