@@ -911,49 +911,46 @@ function getRelativeTime(date) {
 async function pollNotifications() {
   let allItems = [];
 
-  // 1) load “updates” JSON
+  // Fetch the list of JSON files dynamically
   try {
-    const res = await fetch('data/updates.json');
+    const res = await fetch('data/');
     if (res.ok) {
-      const data = await res.json();
-      allItems = data.map(u => ({
-        id:   u.id || u.timestamp + u.text,
-        text: u.text,
-        time: new Date(u.timestamp),
-        type: 'updates'
-      }));
-    }
-  } catch {}
+      const files = await res.json();
+      const jsonFiles = files.filter(file => file.name.endsWith('.json'));
 
-  // 2) load each card’s JSON
-  for (const c of cardsData) {
-    if (c.slug === 'reports') continue;
-    try {
-      const res = await fetch(`data/${c.slug}.json`);
-      if (!res.ok) continue;
-      const items = Array.isArray(await res.json())
-                  ? await res.json()
-                  : Object.values(await res.json()).flat();
-      allItems.push(...items.map(i => ({
-        id:   `${c.slug}|${i.name}`,
-        text: `New ${c.title}: ${i.name}`,
-        time: new Date(i.timestamp || Date.now()),
-        type: c.slug
-      })));
-    } catch {}
+      for (const file of jsonFiles) {
+        try {
+          const fileRes = await fetch(`data/${file.name}`);
+          if (!fileRes.ok) continue;
+
+          const data = await fileRes.json();
+          const items = Array.isArray(data) ? data : Object.values(data).flat();
+
+          allItems.push(
+            ...items.map((item) => ({
+              id: `${file.name}|${item.name || item.id}`,
+              text: `New item in ${file.name}: ${item.name || item.id}`,
+              time: new Date(item.timestamp || Date.now()),
+              type: 'general', // Update type if necessary
+            }))
+          );
+        } catch (err) {
+          console.error(`Failed to fetch or process ${file.name}`, err);
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Failed to fetch JSON file list', err);
   }
 
-  // 3) split unread vs. read, sort each by date desc, then concat
-  const unread = allItems.filter(i => !seenNotifIds.has(i.id));
-  const read   = allItems.filter(i =>  seenNotifIds.has(i.id));
-  const sortDesc = list => list.sort((a, b) => b.time - a.time);
-  const sorted   = [...sortDesc(unread), ...sortDesc(read)];
+  // Separate unread vs. read notifications
+  const unread = allItems.filter((i) => !seenNotifIds.has(i.id));
+  const read = allItems.filter((i) => seenNotifIds.has(i.id));
+  const sorted = [...unread.sort((a, b) => b.time - a.time), ...read.sort((a, b) => b.time - a.time)];
 
-  // 4) render
+  // Update Notification List
   notifListEl.innerHTML = '';
-  let newCount = unread.length;
-
-  sorted.forEach(item => {
+  sorted.forEach((item) => {
     const li = document.createElement('li');
     li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between items-center';
 
@@ -961,7 +958,7 @@ async function pollNotifications() {
     if (!seenNotifIds.has(item.id)) {
       const nb = document.createElement('span');
       nb.textContent = 'New ';
-      nb.className   = 'new-badge text-red-600 text-xs font-semibold mr-1';
+      nb.className = 'new-badge text-red-600 text-xs font-semibold mr-1';
       wrapper.appendChild(nb);
     }
     const txt = document.createElement('span');
@@ -971,18 +968,17 @@ async function pollNotifications() {
 
     const tm = document.createElement('time');
     tm.className = 'text-xs text-gray-500';
-    tm.textContent = getRelativeTime(item.time);        // relative text
-    tm.title       = item.time.toLocaleString();        // hover shows exact
+    tm.textContent = getRelativeTime(item.time); // Relative time
+    tm.title = item.time.toLocaleString(); // Exact time on hover
     li.appendChild(tm);
 
     notifListEl.appendChild(li);
-    seenNotifIds.add(item.id);
   });
 
-  localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
-  setNotifCount(newCount);
+  // Update Notification Count
+  setNotifCount(unread.length);
 
-  // bell-bounce animation
+  // Add Animation to Bell
   const bellIcon = document.getElementById('bellIcon');
   bellIcon.style.animation = 'bell-bounce 0.6s';
   bellIcon.addEventListener('animationend', () => {
@@ -994,16 +990,13 @@ async function pollNotifications() {
 
   // === Notification bell handlers ===
 notifBtn.onclick = () => {
-  const isOpen = !notifDropdown.classList.toggle('hidden');
-  notifBtn.setAttribute('aria-expanded', String(isOpen));
+  const isOpen = notifDropdown.classList.toggle('hidden');
+  notifBtn.setAttribute('aria-expanded', String(!isOpen));
 
-  if (isOpen) {
-    // Reset count only when the dropdown is opened
+  if (!isOpen) {
+    // Reset the notification count only when the dropdown is opened
     setNotifCount(0);
-    document.querySelectorAll('#notification-list li .new-badge')
-      .forEach(el => el.remove());
-
-    // Save seen notifications to localStorage
+    seenNotifIds = new Set([...seenNotifIds, ...Array.from(notifListEl.querySelectorAll('li')).map(li => li.dataset.id)]);
     localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
   }
 };
