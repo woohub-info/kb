@@ -262,81 +262,8 @@
       <!-- your <li> items -->
     </ul>
   </div>
-
-<!-- Recent Updates Section -->
-<div class="mb-4">
-  <input
-    id="new-update-input"
-    type="text"
-    placeholder="Enter new update..."
-    class="w-full p-2 border rounded mb-2"
-  />
- <button
-  id="add-update-btn"
-  class="w-full bg-indigo-600 text-white font-medium px-4 py-2 rounded hover:bg-indigo-700"
-  onclick="addUpdate()"
->
-  Add Update
-</button>
 </div>
 
-<!-- Scrollable Wrapper for Updates -->
-<div class="max-h-96 overflow-y-auto pr-2 space-y-2">
-  <ul id="updates-container" class="space-y-2" aria-live="polite">
-    <!-- Updates will appear here -->
-  </ul>
-</div>
-</div>
-
-<script>
-  // Your deployed Google Apps Script URL
-  const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-ahmwd9vGaCQkps8bAreoO2TpPLVECGIZ8orcL_OFIuIs2X7ftc8S0ulqC1sSO3_FrA/exec';
-
-  // Function to add an update
-  async function addUpdate() {
-    const input = document.getElementById('new-update-input');
-    const updatesContainer = document.getElementById('updates-container');
-    const newUpdate = input.value.trim();
-
-    if (!newUpdate) {
-      alert('Please enter an update.');
-      return;
-    }
-
-    try {
-      // Send update to the Google Apps Script endpoint
-      const response = await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newUpdate }),
-      });
-
-      // Check if the response is successful
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const result = await response.json(); // Parse the JSON response
-      if (result.status === 'success') {
-        const timestamp = new Date().toLocaleString();
-        const updateItem = document.createElement('li');
-        updateItem.className = 'p-2 bg-gray-100 rounded-lg shadow-sm';
-        updateItem.innerHTML = `<strong>${timestamp}</strong>: ${newUpdate}`;
-        updatesContainer.prepend(updateItem); // Add the update to the top of the list
-        input.value = ''; // Clear the input field
-      } else {
-        alert(`Failed to save the update: ${result.message}`);
-      }
-    } catch (error) {
-      console.error('Error adding update:', error);
-      alert('Failed to add the update. Check the console for details.');
-    }
-  }
-
-  // Attach the function to the button's click event
-  document.getElementById('add-update-btn').addEventListener('click', addUpdate);
-</script>
-    
     <!-- What’s Changed Panel -->
 <div
   class="bg-white border border-gray-200 rounded-lg p-4
@@ -984,6 +911,20 @@ function getRelativeTime(date) {
 async function pollNotifications() {
   let allItems = [];
 
+  // 1) load “updates” JSON
+  try {
+    const res = await fetch('data/updates.json');
+    if (res.ok) {
+      const data = await res.json();
+      allItems = data.map(u => ({
+        id:   u.id || u.timestamp + u.text,
+        text: u.text,
+        time: new Date(u.timestamp),
+        type: 'updates'
+      }));
+    }
+  } catch {}
+
   // 2) load each card’s JSON
   for (const c of cardsData) {
     if (c.slug === 'reports') continue;
@@ -1077,6 +1018,7 @@ async function pollNotifications() {
   let allUpdates = [], displayCount = 5;
   async function pollUpdatesPanel() {
     try {
+      const res = await fetch('data/updates.json');
       if (!res.ok) return;
       allUpdates = (await res.json()).map(u => ({ text: u.text, time: u.timestamp, link: u.link }));
       renderUpdatesPanel();
