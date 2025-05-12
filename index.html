@@ -253,23 +253,16 @@
     </button>
   </div>
   <div id="updates-filter-container" class="hidden mb-2">
-    <input id="updates-filter" … />
+    <input id="updates-filter" type="text" placeholder="Filter updates..." class="w-full p-2 border rounded" />
   </div>
 
-  <!-- Scrollable wrapper now contains both the list and the Load More button -->
+  <!-- Scrollable wrapper now contains only the list -->
   <div class="max-h-96 overflow-y-auto pr-2 space-y-2">
     <ul id="updates-container" class="space-y-2" aria-live="polite">
       <!-- your <li> items -->
     </ul>
-    <button
-      id="load-more-btn"
-      class="w-full text-center text-indigo-600 hover:underline focus:outline-none"
-    >
-      Load More
-    </button>
   </div>
 </div>
-
 
     <!-- What’s Changed Panel -->
 <div
@@ -567,8 +560,6 @@
   const mobileUpdatesToggleBtn  = document.getElementById('mobile-updates-filter-toggle');
   const updatesContainer        = document.getElementById('updates-container');
   const mobileUpdatesContainer  = document.getElementById('mobile-updates-container');
-  const loadMoreBtn             = document.getElementById('load-more-btn');
-  const mobileLoadMoreBtn       = document.getElementById('mobile-load-more-btn');
   const toTopBtn                = document.getElementById('to-top');
 
   // helper to show/hide the red count bubble
@@ -1086,8 +1077,6 @@ async function pollNotifications() {
   mobileUpdatesToggleBtn.onclick = () => mobileUpdatesFilterContainer.classList.toggle('hidden');
   updatesFilter?.addEventListener('input', debounce(renderUpdatesPanel, 200));
   mobileUpdatesFilter?.addEventListener('input', debounce(renderUpdatesPanel, 200));
-  loadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
-  mobileLoadMoreBtn.onclick = () => { displayCount += 5; renderUpdatesPanel(); };
 
   // === Fuzzy search ===
   let fuse;
