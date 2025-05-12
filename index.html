@@ -288,57 +288,44 @@
 </div>
 
 <script>
-  const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-ahmwd9vGaCQkps8bAreoO2TpPLVECGIZ8orcL_OFIuIs2X7ftc8S0ulqC1sSO3_FrA/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-ahmwd9vGaCQkps8bAreoO2TpPLVECGIZ8orcL_OFIuIs2X7ftc8S0ulqC1sSO3_FrA/exec';
 
-  async function addUpdate() {
-    const input = document.getElementById('new-update-input');
-    const updatesContainer = document.getElementById('updates-container');
-    const newUpdate = input.value.trim();
+async function addUpdate() {
+  const input = document.getElementById('new-update-input');
+  const updatesContainer = document.getElementById('updates-container');
+  const newUpdate = input.value.trim();
 
-    if (newUpdate) {
-      try {
-        console.log("Sending update:", newUpdate);
+  if (newUpdate) {
+    try {
+      const response = await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: newUpdate }),
+      });
 
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: newUpdate }),
-        });
-
-        if (!response.ok) {
-          // Log the response details for debugging
-          console.error(`HTTP error! Status: ${response.status}`, await response.text());
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        console.log("Response from Web App:", result);
-
-        if (result.status === 'success') {
-          // Add the new update to the DOM
-          const timestamp = new Date().toLocaleString();
-          const updateItem = document.createElement('li');
-          updateItem.className = 'p-2 bg-gray-100 rounded-lg shadow-sm';
-          updateItem.innerHTML = `<strong>${timestamp}</strong>: ${newUpdate}`;
-          updatesContainer.prepend(updateItem);
-
-          // Clear the input box
-          input.value = '';
-        } else {
-          // Show the specific error message from the backend
-          alert(`Failed to save the update: ${result.message}`);
-        }
-      } catch (error) {
-        console.error("Error adding update:", error);
-        alert(`An error occurred: ${error.message}. Check the console for details.`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
-    } else {
-      alert('Please enter an update.');
-    }
-  }
 
-  // Attach the event listener to the "Add Update" button
-  document.getElementById('add-update-btn').addEventListener('click', addUpdate);
+      const result = await response.json();
+      if (result.status === 'success') {
+        const timestamp = new Date().toLocaleString();
+        const updateItem = document.createElement('li');
+        updateItem.className = 'p-2 bg-gray-100 rounded-lg shadow-sm';
+        updateItem.innerHTML = `<strong>${timestamp}</strong>: ${newUpdate}`;
+        updatesContainer.prepend(updateItem);
+        input.value = ''; // Clear the input
+      } else {
+        alert(`Failed to save the update: ${result.message}`);
+      }
+    } catch (error) {
+      console.error("Error adding update:", error);
+      alert('Failed to add the update. Check the console for details.');
+    }
+  } else {
+    alert('Please enter an update.');
+  }
+}
 </script>
     
     <!-- What’s Changed Panel -->
