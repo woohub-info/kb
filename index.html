@@ -306,32 +306,32 @@
 <section
     id="detail-container"
     class="hidden
-           absolute inset-0               /* fill the <main> area */
+           absolute inset-0
            bg-white rounded-lg shadow p-6
-           flex flex-col overflow-auto"  /* Enable scrolling */
-    style="max-height: calc(100vh - 4rem);"  /* Adjust height to fit viewport */
+           flex flex-col"
+    style="height: calc(100% - 1rem); max-height: calc(100vh - 1rem); overflow-y: auto; margin-bottom: 1rem;"
     role="region"
-    aria-labelledby="detail-title"
->
+    aria-labelledby="detail-title">
+  
     <button
-      id="back-btn"
-      class="self-start text-indigo-600 hover:underline mb-4 focus:outline-none flex-none"
+        id="back-btn"
+        class="self-start text-indigo-600 hover:underline mb-4 focus:outline-none flex-none"
     >
-      ← Back to Dashboard
+        ← Back to Dashboard
     </button>
 
     <h2
-      id="detail-title"
-      class="text-2xl font-semibold mb-4 flex-none"
+        id="detail-title"
+        class="text-2xl font-semibold mb-4 flex-none"
     ></h2>
 
     <ul
-      id="detail-list"
-      class="flex-1 overflow-y-auto list-disc pl-5 space-y-2"
+        id="detail-list"
+        class="flex-1 overflow-y-auto list-disc pl-5 space-y-2"
     >
-      <!-- your detail items here -->
+        <!-- your detail items here -->
     </ul>
-  </section>
+</section>
 
       <!-- Card Grid -->
       <section id="card-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"></section>
