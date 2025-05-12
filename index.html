@@ -987,20 +987,6 @@ function getRelativeTime(date) {
 async function pollNotifications() {
   let allItems = [];
 
-  // 1) load “updates” JSON
-  try {
-    const res = await fetch('data/updates.json');
-    if (res.ok) {
-      const data = await res.json();
-      allItems = data.map(u => ({
-        id:   u.id || u.timestamp + u.text,
-        text: u.text,
-        time: new Date(u.timestamp),
-        type: 'updates'
-      }));
-    }
-  } catch {}
-
   // 2) load each card’s JSON
   for (const c of cardsData) {
     if (c.slug === 'reports') continue;
@@ -1094,7 +1080,6 @@ async function pollNotifications() {
   let allUpdates = [], displayCount = 5;
   async function pollUpdatesPanel() {
     try {
-      const res = await fetch('data/updates.json');
       if (!res.ok) return;
       allUpdates = (await res.json()).map(u => ({ text: u.text, time: u.timestamp, link: u.link }));
       renderUpdatesPanel();
