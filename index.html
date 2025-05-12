@@ -271,12 +271,13 @@
     placeholder="Enter new update..."
     class="w-full p-2 border rounded mb-2"
   />
-  <button
-    id="add-update-btn"
-    class="w-full bg-indigo-600 text-white font-medium px-4 py-2 rounded hover:bg-indigo-700"
-  >
-    Add Update
-  </button>
+ <button
+  id="add-update-btn"
+  class="w-full bg-indigo-600 text-white font-medium px-4 py-2 rounded hover:bg-indigo-700"
+  onclick="addUpdate()"
+>
+  Add Update
+</button>
 </div>
 
 <!-- Scrollable Wrapper for Updates -->
@@ -288,44 +289,52 @@
 </div>
 
 <script>
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-ahmwd9vGaCQkps8bAreoO2TpPLVECGIZ8orcL_OFIuIs2X7ftc8S0ulqC1sSO3_FrA/exec';
+  // Your deployed Google Apps Script URL
+  const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-ahmwd9vGaCQkps8bAreoO2TpPLVECGIZ8orcL_OFIuIs2X7ftc8S0ulqC1sSO3_FrA/exec';
 
-async function addUpdate() {
-  const input = document.getElementById('new-update-input');
-  const updatesContainer = document.getElementById('updates-container');
-  const newUpdate = input.value.trim();
+  // Function to add an update
+  async function addUpdate() {
+    const input = document.getElementById('new-update-input');
+    const updatesContainer = document.getElementById('updates-container');
+    const newUpdate = input.value.trim();
 
-  if (newUpdate) {
+    if (!newUpdate) {
+      alert('Please enter an update.');
+      return;
+    }
+
     try {
+      // Send update to the Google Apps Script endpoint
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: newUpdate }),
       });
 
+      // Check if the response is successful
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await response.json(); // Parse the JSON response
       if (result.status === 'success') {
         const timestamp = new Date().toLocaleString();
         const updateItem = document.createElement('li');
         updateItem.className = 'p-2 bg-gray-100 rounded-lg shadow-sm';
         updateItem.innerHTML = `<strong>${timestamp}</strong>: ${newUpdate}`;
-        updatesContainer.prepend(updateItem);
-        input.value = ''; // Clear the input
+        updatesContainer.prepend(updateItem); // Add the update to the top of the list
+        input.value = ''; // Clear the input field
       } else {
         alert(`Failed to save the update: ${result.message}`);
       }
     } catch (error) {
-      console.error("Error adding update:", error);
+      console.error('Error adding update:', error);
       alert('Failed to add the update. Check the console for details.');
     }
-  } else {
-    alert('Please enter an update.');
   }
-}
+
+  // Attach the function to the button's click event
+  document.getElementById('add-update-btn').addEventListener('click', addUpdate);
 </script>
     
     <!-- What’s Changed Panel -->
