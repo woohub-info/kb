@@ -290,6 +290,54 @@
 
 <!-- Inject the SSE script here -->
 <script>
+
+    const changeLogKey = 'changeLogEntries';
+
+  // Function to save updates to localStorage
+  function saveChangeLog(entries) {
+      localStorage.setItem(changeLogKey, JSON.stringify(entries));
+  }
+
+  // Function to load updates from localStorage
+  function loadChangeLog() {
+      return JSON.parse(localStorage.getItem(changeLogKey) || '[]');
+  }
+
+  // Function to update the "What's Changed" panel
+  function updateChangeLog(update) {
+      const changeLog = document.getElementById('change-log');
+      const entries = loadChangeLog();
+
+      // Add the new update to the top of the list
+      entries.unshift(update);
+      saveChangeLog(entries);
+
+      // Clear the panel and re-render all entries
+      changeLog.innerHTML = '';
+      entries.forEach(entry => {
+          const updateItem = document.createElement('div');
+          updateItem.className = 'update-item';
+          updateItem.textContent = `${entry.timestamp}: ${entry.message}`;
+          changeLog.appendChild(updateItem);
+      });
+  }
+
+  // Load existing entries on page load
+  document.addEventListener('DOMContentLoaded', () => {
+      const entries = loadChangeLog();
+      const changeLog = document.getElementById('change-log');
+
+      if (entries.length === 0) {
+          changeLog.innerHTML = '<p>No updates yet...</p>';
+      } else {
+          entries.forEach(entry => {
+              const updateItem = document.createElement('div');
+              updateItem.className = 'update-item';
+              updateItem.textContent = `${entry.timestamp}: ${entry.message}`;
+              changeLog.appendChild(updateItem);
+          });
+      }
+  });
   // Establish SSE connection to receive real-time updates
   const eventSource = new EventSource('/updates'); // Replace '/updates' with your SSE endpoint
 
@@ -1188,7 +1236,7 @@ function renderChangeLog(entries) {
   const visible = showingAll ? entries : entries.slice(0, 3);
 
   if (!visible.length) {
-    logBox.textContent = 'No changes detected yet.';
+    logBox.textContent = 'No updates yet...';
     return;
   }
 
