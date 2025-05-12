@@ -289,7 +289,6 @@
 
 <script>
   const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-ahmwd9vGaCQkps8bAreoO2TpPLVECGIZ8orcL_OFIuIs2X7ftc8S0ulqC1sSO3_FrA/exec';
-  const PROXY_URL = 'https://cors-anywhere.herokuapp.com/';
 
   async function addUpdate() {
     const input = document.getElementById('new-update-input');
@@ -298,10 +297,9 @@
 
     if (newUpdate) {
       try {
-        console.log("Sending update through proxy:", newUpdate);
+        console.log("Sending update:", newUpdate);
 
-        // Use proxy to bypass CORS
-        const response = await fetch(`${PROXY_URL}${GOOGLE_SCRIPT_URL}`, {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ content: newUpdate }),
@@ -312,7 +310,7 @@
         }
 
         const result = await response.json();
-        console.log("Response from Web App (via proxy):", result);
+        console.log("Response from Web App:", result);
 
         if (result.status === 'success') {
           // Add the new update to the DOM
@@ -328,7 +326,7 @@
           alert('Failed to save the update. Please try again.');
         }
       } catch (error) {
-        console.error("Error adding update (via proxy):", error);
+        console.error("Error adding update:", error);
         alert('Failed to add the update. Check the console for details.');
       }
     } else {
