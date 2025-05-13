@@ -244,7 +244,6 @@
     <aside class="w-80 lg:w-96 mr-6 hidden lg:block">
       <div class="space-y-6">
 
-<!-- Recent Updates Panel -->
 <div class="bg-white border border-gray-200 rounded-lg p-4 sticky top-24">
   <div class="flex items-center justify-between mb-2">
     <h2 class="text-lg font-semibold">Recent Updates</h2>
@@ -252,17 +251,40 @@
       <!-- filter icon -->
     </button>
   </div>
+
+  <!-- ↓ New “Add Update” form ↓ -->
+  <div class="mb-4">
+    <textarea
+      id="new-update-text"
+      class="w-full p-2 border border-gray-300 rounded-lg mb-2"
+      rows="2"
+      placeholder="Type your update…"
+    ></textarea>
+    <button
+      id="add-update-btn"
+      class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg"
+    >
+      Add Update
+    </button>
+  </div>
+  <!-- ↑ End form ↑ -->
+
   <div id="updates-filter-container" class="hidden mb-2">
-    <input id="updates-filter" type="text" placeholder="Filter updates..." class="w-full p-2 border rounded" />
+    <input
+      id="updates-filter"
+      type="text"
+      placeholder="Filter updates..."
+      class="w-full p-2 border rounded"
+    />
   </div>
 
-  <!-- Scrollable wrapper now contains only the list -->
   <div class="max-h-96 overflow-y-auto pr-2 space-y-2">
     <ul id="updates-container" class="space-y-2" aria-live="polite">
-      <!-- your <li> items -->
+      <!-- your <li> items will go here -->
     </ul>
   </div>
 </div>
+
 
     <!-- What’s Changed Panel -->
 <div
@@ -360,7 +382,7 @@
   eventSource.onerror = function() {
       console.error('Error connecting to the server.');
       const changeLog = document.getElementById('change-log');
-      changeLog.innerHTML = '<p style="color: red;">Unable to fetch updates...</p>';
+      changeLog.innerHTML = '<p style="color: red;">No updates yet...</p>';
   };
 </script>
   
@@ -1021,69 +1043,91 @@ clearNotifsBtn.onclick = () => {
      // Add the event listener for the update-banner-close button
    document.getElementById('update-banner-close').addEventListener('click', hideUpdateBanner);
 
-  // === Recent updates panel ===
-  let allUpdates = [], displayCount = 5;
-  async function pollUpdatesPanel() {
-    try {
-      const res = await fetch('data/updates.json');
-      if (!res.ok) return;
-      allUpdates = (await res.json()).map(u => ({ text: u.text, time: u.timestamp, link: u.link }));
-      renderUpdatesPanel();
-    } catch { console.error('Updates panel error'); }
-  }
-  function renderUpdatesPanel() {
-    const filterVal = (updatesFilter?.value || mobileUpdatesFilter?.value || '').toLowerCase();
-    const filtered = allUpdates
-      .filter(u => u.text.toLowerCase().includes(filterVal))
-      .sort((a,b) => new Date(b.time) - new Date(a.time));
-    const toShow = filtered.slice(0, displayCount);
-    const lastSeen = getLastSeenUpdate(), latestTime = toShow[0]?.time, isNew = latestTime && latestTime !== lastSeen;
-    [updatesContainer, mobileUpdatesContainer].forEach(cn => {
-      cn.innerHTML = '';
-      if (!toShow.length) {
+  // Render all updates into the list
+  function renderUpdates(updates) {
+    const container = document.getElementById('updates-container');
+    container.innerHTML = '';
+    if (!updates.length) {
+      container.innerHTML = '<li class="py-2 text-gray-500">No updates yet.</li>';
+      return;
+    }
+    updates
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      .forEach(u => {
         const li = document.createElement('li');
-        li.textContent = 'No updates available.';
-        li.className = 'py-2 text-gray-500';
-        cn.appendChild(li);
-      } else {
-        toShow.forEach((u,i) => {
-          const li = document.createElement('li');
-          if (u.link) {
-            const a = document.createElement('a');
-            a.href = u.link; a.className = 'block py-2 hover:underline';
-            if (i === 0 && initialUpdatesLoad) {
-              const badge = document.createElement('span');
-              badge.textContent = 'New ';
-              badge.className = 'text-red-600 text-xs font-semibold';
-              a.appendChild(badge);
-              showUpdateBanner(u.text);
-            }
-            a.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
-            li.appendChild(a);
-          } else {
-            if (i === 0 && initialUpdatesLoad) {
-              const badge = document.createElement('span');
-              badge.textContent = 'New ';
-              badge.className = 'text-red-600 text-xs font-semibold';
-              li.appendChild(badge);
-              showUpdateBanner(u.text);
-            }
-            li.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
-            li.className = 'py-2';
-          }
-          cn.appendChild(li);
-        });
-      }
-    });
-    if (isNew) setLastSeenUpdate(latestTime);
-    initialUpdatesLoad = false;
+        li.className = 'flex justify-between items-start py-2';
+        li.innerHTML = `
+          <div>
+            <time class="text-xs text-gray-500 block">
+              ${new Date(u.timestamp).toLocaleString()}
+            </time>
+            <div id="text-${u.id}" class="mt-1">${u.text}</div>
+          </div>
+          <div class="space-x-2">
+            <button data-id="${u.id}" class="edit-btn text-blue-600 hover:underline text-sm">
+              Edit
+            </button>
+            <button data-id="${u.id}" class="delete-btn text-red-600 hover:underline text-sm">
+              Delete
+            </button>
+          </div>`;
+        container.appendChild(li);
+      });
+    attachItemListeners();
   }
-  setInterval(pollUpdatesPanel, 60000);
-  pollUpdatesPanel();
-  updatesToggleBtn.onclick = () => updatesFilterContainer.classList.toggle('hidden');
-  mobileUpdatesToggleBtn.onclick = () => mobileUpdatesFilterContainer.classList.toggle('hidden');
-  updatesFilter?.addEventListener('input', debounce(renderUpdatesPanel, 200));
-  mobileUpdatesFilter?.addEventListener('input', debounce(renderUpdatesPanel, 200));
+
+  // Fetch and render on load
+  async function loadAllUpdates() {
+    try {
+      const res     = await fetch(WEB_APP_URL);
+      const updates = await res.json();
+      renderUpdates(updates);
+    } catch (e) {
+      console.error('Failed to load updates', e);
+    }
+  }
+  document.addEventListener('DOMContentLoaded', loadAllUpdates);
+
+  const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwLYY2wTO4dFdVGzUd1jCA2FCvW_9EoU2tod0vufW0suoB7UDqyHyuzOYE2dXNu69xM/exec';
+  const txtEl      = document.getElementById('new-update-text');
+  const addBtn     = document.getElementById('add-update-btn');
+  const listEl     = document.getElementById('updates-container');
+
+  function prependUpdate({ id, timestamp, text }) {
+    const li = document.createElement('li');
+    /* …build your <li> just like in the example…and then… */
+    listEl.prepend(li);
+  }
+
+  addBtn.addEventListener('click', async () => {
+    const text = txtEl.value.trim();
+    if (!text) return alert('Please type something.');
+
+    // 1) Optimistic UI
+    const temp = { id: Date.now(), timestamp: new Date().toISOString(), text };
+    prependUpdate(temp);
+    txtEl.value = '';
+
+    // 2) Send to Apps Script
+    try {
+      const res     = await fetch(WEB_APP_URL, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ text })
+      });
+      if (!res.ok) throw new Error(res.statusText);
+      const updates = await res.json();
+      
+      // 3) Re-render full list
+      listEl.innerHTML = '';
+      updates
+        .sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp))
+        .forEach(u => prependUpdate(u));
+    } catch (e) {
+      console.error(e);
+      alert('Could not save update to server.');
+    }
+  });
 
   // === Fuzzy search ===
   let fuse;
