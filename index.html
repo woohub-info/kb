@@ -678,46 +678,64 @@ async function showContent(slug, title) {
   detailTitle.textContent = title;
   detailList.innerHTML = '';              // clear out any old content
 
-  // 2) LINKS CASE: grouped JSON -> <a> links under headers
-  if (slug === 'links') {
-    const groups = await fetchItems('links');  
-    console.log('Links data:', groups);     // <-- verify it’s actually being fetched
+// 2) LINKS CASE: grouped JSON -> <a> links under headers
+if (slug === 'links') {
+  const groups = await fetchItems('links');
+  console.log('Links data:', groups); // <-- verify it’s actually being fetched
 
-    // Build a set of old IDs so we only mark pre-existing links read
-    const oldIds = new Set((window.initialLinks || []).map(i => i.id));
+  // Build a set of old IDs so we only mark pre-existing links read
+  const oldIds = new Set((window.initialLinks || []).map(i => i.id));
 
-    for (const [category, items] of Object.entries(groups)) {
-      // Category header
-      if (category) {
-        const hdr = document.createElement('h3');
-        hdr.className = 'text-lg font-semibold mt-4';
-        hdr.textContent = category;
-        detailList.appendChild(hdr);
-      }
-
-      // Each link
-      items.forEach(item => {
-        // Mark it read only if it already existed
-        if (oldIds.has(item.name)) {
-          markItemRead('links', item.name);
-        }
-
-        const li = document.createElement('li');
-        const a  = document.createElement('a');
-        a.href        = item.url;
-        a.target      = '_blank';
-        a.rel         = 'noopener noreferrer';
-        a.textContent = item.name;
-        a.className   = 'text-indigo-600 hover:underline';
-        li.appendChild(a);
-        detailList.appendChild(li);
-      });
+  for (const [category, items] of Object.entries(groups)) {
+    // Category header
+    if (category) {
+      const hdr = document.createElement('h3');
+      hdr.className = 'text-lg font-semibold mt-4';
+      hdr.textContent = category;
+      detailList.appendChild(hdr);
     }
 
-    // Refresh the badge now that we've marked the old ones read
-    updateCardBadges();
-    return;  // stop here—don’t fall into your reports/default code
+    // Each link
+    items.forEach(item => {
+      // Mark it read only if it already existed
+      if (oldIds.has(item.name)) {
+        markItemRead('links', item.name);
+      }
+
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = item.url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = item.name;
+      a.className = 'text-indigo-600 hover:underline';
+
+      // Add red dot for "new" items
+      const dot = document.createElement('span');
+      dot.className = 'ml-2 inline-block w-2 h-2 bg-red-600 rounded-full';
+
+      // Check if the item is already read
+      if (isItemRead('links', item.name)) {
+        dot.classList.add('hidden'); // Hide dot for already read items
+      }
+
+      // Add click handler to mark as read
+      a.onclick = () => {
+        markItemRead('links', item.name);
+        dot.classList.add('hidden'); // Hide dot after marking as read
+        updateCardBadges(); // Refresh badges for the card
+      };
+
+      li.appendChild(a);
+      li.appendChild(dot); // Add red dot to the list item
+      detailList.appendChild(li);
+    });
   }
+
+  // Refresh the badge now that we've marked the old ones read
+  updateCardBadges();
+  return; // stop here—don’t fall into your reports/default code
+}
   
   if (slug === 'reports') {
     // Top-row images (static, side-by-side)
