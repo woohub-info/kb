@@ -1,0 +1,10 @@
+[
+  {
+    "id": "notif-001",
+    "type": "update", // Type of notification (e.g., update, alert, message)
+    "title": "New Links Added!",
+    "message": "Check out Links card for OEM / Partslink Locator!",
+    "timestamp": "2025-05-14T03:30:00Z",
+    "read": false // Optional: to track read/unread status on the client
+  }
+]
