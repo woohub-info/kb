@@ -678,12 +678,36 @@
     }
   });
 
-  // final init
-  document.addEventListener('DOMContentLoaded', ()=>{
+  document.addEventListener('DOMContentLoaded', async () => {
+    let entries;
+    try {
+      const r = await fetch('/history.json');
+      entries = r.ok
+        ? await r.json()
+        : JSON.parse(localStorage.getItem('changeLogEntries') || '[]');
+    } catch {
+      entries = JSON.parse(localStorage.getItem('changeLogEntries') || '[]');
+    }
+    localStorage.setItem('changeLogEntries', JSON.stringify(entries));
+    document.getElementById('change-log').innerHTML = entries.length
+      ? entries.map(e => `<div class="update-item">${e.timestamp}: ${e.message}</div>`).join('')
+      : '<p>No updates yet…</p>';
+
     renderRecentlyViewed(JSON.parse(localStorage.getItem('recentlyViewed')||'[]'));
     renderCards();
     buildSearchIndex();
   });
+  
+  new EventSource('/updates').onmessage = e => {
+    const update = JSON.parse(e.data);
+    const entries = JSON.parse(localStorage.getItem('changeLogEntries') || '[]');
+    entries.unshift(update);
+    localStorage.setItem('changeLogEntries', JSON.stringify(entries));
+    document.getElementById('change-log').innerHTML = entries.map(e =>
+      `<div class="update-item">${e.timestamp}: ${e.message}</div>`
+    ).join('');
+  };
+
 </script>
 </body>
 </html>
