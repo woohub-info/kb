@@ -7,11 +7,11 @@
   ],
   "Dropship Cancellation": [
     {
-      "name": "USAuto - No Quote ID or Order ID in ZM",
+      "name": "USAuto Cancellation - No Quote ID or Order ID in ZM",
       "content": "<p><strong>Tools:</strong> ShipStation, ZenMighty, Marketplaces, PMB</p><ol><li>In ZenMighty, if the status is Awaiting Shipment and there is no Quote ID or Order ID, cancel the order in ZenMighty and file away the notification in Help Desk (HD).</li><li>In ShipStation, tag the order as <strong>Buyer Cancellation Request</strong> and perform all required pre-cancellation actions.</li><li>Paste the order into the All Supplier PO Spreadsheet, then add a note: <strong>Buyer canceled</strong>.</li><li>In ChannelAdvisor, cancel the order if possible.</li><li>Message the buyer confirming the cancellation.</li><li>Cancel the order on the marketplace or through 3DSellers.</li></ol>"
     },
     {
-      "name": "USAuto - Processing Status in PFG",
+      "name": "USAuto Cancellation - Processing Status in PFG",
       "content": "<p>If order is Pending, Processing, or Shipped in PFG:</p><ol><li>If Processing, tag in ShipStation as Buyer Cancellation Request and Pending Cancellation.</li><li>In Purchases Mailbox, email Team Kool Vue East Service (kveastservice@carparts.com) with subject “Cancellation Request” using template:</li><ol><li>May we please request the cancellation of this order? The buyer wants to cancel.</li><li>PO Number: [Order Number]</li><li>Sales Order Number: [In PFG]</li></ol><li>Message buyer that you will attempt to intercept the order.</li><li>Once USAUTO confirms, proceed: cancel in ShipStation, ChannelAdvisor (if possible), message buyer, cancel on marketplace / 3DSellers.</li><li>Post cancellation in All Supplier PO Spreadsheet.</li></ol>"
     },
     {
