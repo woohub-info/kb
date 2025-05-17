@@ -485,83 +485,91 @@
   }
 
   // poll notifications & refresh badges
-  async function pollNotifications() {
-    let all = [];
-    try {
-      const r = await fetch('data/updates.json');
-      if (r.ok) {
-        const j = await r.json();
-        all = j.map(u => ({ id: u.id || u.timestamp+u.text, text: u.text, time: new Date(u.timestamp), type: 'updates' }));
-      }
-    } catch {}
-    for (const c of cardsData) {
-      if (c.slug === 'reports') continue;
-      try {
-        const r = await fetch(`data/${c.slug}.json`);
-        if (!r.ok) continue;
-        const j = await r.json(), arr = Array.isArray(j)?j:Object.values(j).flat();
-        all.push(...arr.map(i => ({ id: `${c.slug}|${i.name}`, text: `New ${c.title}: ${i.name}`, time: new Date(i.timestamp||Date.now()), type: c.slug })));
-      } catch {}
+const NKEY='notifications',SKEY='seenNotifIds',
+      ls=k=>JSON.parse(localStorage.getItem(k)||'[]'),
+      st=(k,v)=>localStorage.setItem(k,JSON.stringify(v)),
+      seen=new Set(ls(SKEY)),
+      setCount=n=>{
+        const e=document.getElementById('notification-count');
+        n?e.classList.remove('hidden'):e.classList.add('hidden');
+        e.textContent=n;
+      };
+
+async function pollNotifications(){
+  let nots=ls(NKEY);
+  try{
+    let r=await fetch('data/updates.json');
+    if(r.ok) for(let u of await r.json()){
+      let id=u.id||u.timestamp+u.text;
+      if(!nots.some(x=>x.id===id))
+        nots.unshift({id,text:u.text,time:new Date().toISOString(),type:'updates'});
     }
-    const unread = all.filter(i => !seenNotifIds.has(i.id)),
-          read   = all.filter(i => seenNotifIds.has(i.id)),
-          sortDesc = l => l.sort((a,b)=>b.time - a.time),
-          sorted = [...sortDesc(unread),...sortDesc(read)];
-
-    notifListEl.innerHTML = '';
-    let newCount = unread.length;
-    for (const item of sorted) {
-      const li = document.createElement('li');
-      li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between items-center';
-      const wrapper = document.createElement('div');
-      if (!seenNotifIds.has(item.id)) {
-        const nb = document.createElement('span');
-        nb.textContent = 'New ';
-        nb.className   = 'new-badge text-red-600 text-xs font-semibold mr-1';
-        wrapper.appendChild(nb);
+  }catch{}
+  for(let c of cardsData){
+    if(c.slug==='reports') continue;
+    try{
+      let r=await fetch(`data/${c.slug}.json`);
+      if(r.ok){
+        let arr=Array.isArray(await r.json())
+          ? await r.json()
+          : Object.values(await r.json()).flat();
+        for(let i of arr){
+          let id=`${c.slug}|${i.name}`;
+          if(!nots.some(x=>x.id===id))
+            nots.unshift({id,text:`New ${c.title}: ${i.name}`,time:new Date().toISOString(),type:c.slug});
+        }
       }
-      const txt = document.createElement('span');
-      txt.textContent = `${iconFor(item.type)} ${item.text}`;
-      wrapper.appendChild(txt);
-      const tm = document.createElement('time');
-      tm.className    = 'text-xs text-gray-500';
-      tm.textContent = getRelativeTime(item.time);
-      tm.title        = item.time.toLocaleString();
-      li.append(wrapper, tm);
-      notifListEl.appendChild(li);
-      seenNotifIds.add(item.id);
-    }
-    localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
-    setNotifCount(newCount);
-
-    // refresh card “new” badges
-    updateCardBadges();
-
-    const bell = document.getElementById('bellIcon');
-    bell.style.animation = 'bell-bounce .6s';
-    bell.addEventListener('animationend', () => bell.style.animation = '', { once:true });
+    }catch{}
   }
-  setInterval(pollNotifications, 60000);
-  pollNotifications();
-
-  notifBtn.onclick = () => {
-    const open = !notifDropdown.classList.toggle('hidden');
-    notifBtn.setAttribute('aria-expanded', String(open));
-    if (open) {
-      setNotifCount(0);
-      document.querySelectorAll('#notification-list .new-badge').forEach(e=>e.remove());
-      localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
+  st(NKEY,nots);
+  const unread=nots.filter(x=>!seen.has(x.id)),
+        all=[...unread,...nots.filter(x=>seen.has(x.id))],
+        ul=document.getElementById('notification-list');
+  ul.innerHTML='';
+  for(let i of all){
+    let li=document.createElement('li'),
+        wr=document.createElement('div'),
+        tm=document.createElement('time');
+    if(!seen.has(i.id)){
+      let b=document.createElement('span');
+      b.textContent='New '; b.className='new-badge text-red-600 text-xs font-semibold mr-1';
+      wr.appendChild(b);
     }
-  };
-  clearNotifsBtn.onclick = () => {
-    seenNotifIds = new Set(Object.values(badgeDataMap).flat());
-    localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
-    notifListEl.innerHTML = '';
-    setNotifCount(0);
-  };
-  document.getElementById('update-banner-close').addEventListener('click', () => {
-    document.getElementById('update-banner').classList.add('hidden');
-  });
+    wr.appendChild(Object.assign(document.createElement('span'),{textContent:`🔔 ${i.text}`}));
+    let d=new Date(i.time);
+    tm.textContent=d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit',hour12:true});
+    tm.title=d.toLocaleString();
+    li.className='p-2 border-b hover:bg-gray-50 flex justify-between items-center';
+    li.append(wr,tm);
+    ul.appendChild(li);
+    seen.add(i.id);
+  }
+  st(SKEY,[...seen]);
+  setCount(unread.length);
+  updateCardBadges();
+}
+
+setInterval(pollNotifications,60000);
+pollNotifications();
+
+document.getElementById('notification-btn').onclick=e=>{
+  const dd=document.getElementById('notification-dropdown'),
+        open=!dd.classList.toggle('hidden');
+  e.currentTarget.setAttribute('aria-expanded',open);
+  if(open){
+    ls(NKEY).forEach(n=>seen.add(n.id));
+    st(SKEY,[...seen]);
+    setCount(0);
+    document.querySelectorAll('#notification-list .new-badge').forEach(b=>b.remove());
+  }
+};
+
+document.getElementById('clear-notifications').onclick=_=>{
+  ls(NKEY).forEach(n=>seen.add(n.id));
+  st(SKEY,[...seen]);
+  document.getElementById('notification-list').innerHTML='';
+  setCount(0);
+};
 
   // recent updates panel
   let allUpdates = [], displayCount=5, initialUpdatesLoad=true;
