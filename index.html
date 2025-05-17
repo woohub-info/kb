@@ -681,7 +681,7 @@
   document.addEventListener('DOMContentLoaded', async () => {
     let entries;
     try {
-      const r = await fetch('/data/history.json');
+      const r = await fetch('https://chmpzu.github.io/WooHub/data/history.json');
       entries = r.ok
         ? await r.json()
         : JSON.parse(localStorage.getItem('changeLogEntries') || '[]');
