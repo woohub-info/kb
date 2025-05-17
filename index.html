@@ -1,62 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title id="page-title">WooHub</title>
-<!-- Tailwind CSS CDN -->
-<script src="https://cdn.tailwindcss.com"></script>
 
-<!-- Fuse.js for fuzzy search -->
-<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js" defer></script>
+  <!-- Tailwind & libraries -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.2/dist/vanilla-tilt.min.js" defer></script>
 
-<!-- Vanilla-Tilt for card tilt -->
-<script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.2/dist/vanilla-tilt.min.js" defer></script>
-  
-<style>
-  /* 3. Bell-bounce */
-  @keyframes bell-bounce {
-    0%, 100% { transform: rotate(0deg); }
-    25%      { transform: rotate(10deg); }
-    75%      { transform: rotate(-10deg); }
-  }
-
-  /* 4. Gradient background slide */
-  @keyframes gradient-slide {
-    0%   { background-position: 0% 50%; }
-    50%  { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-
-  /* 5. Search suggestion slide-in */
-  .suggestion-enter        { transform: translateX(-20px); opacity: 0; }
-  .suggestion-enter-active { animation: slide-in 0.3s forwards; }
-  @keyframes slide-in {
-    to { transform: translateX(0); opacity: 1; }
-  }
-
-  /* Banner slide-down */
-  @keyframes slide-down {
-    from { transform: translateY(-100%); }
-    to   { transform: translateY(0); }
-  }
-  #update-banner.show {
-    animation: slide-down 0.3s ease-out forwards;
-  }
-
-  /* List styling for overlay */
-  #overlay ol {
-    list-style-type: decimal;
-  }
-</style>
+  <style>
+    @keyframes bell-bounce      {0%,100%{transform:rotate(0);}25%{transform:rotate(10deg);}75%{transform:rotate(-10deg);}}
+    @keyframes gradient-slide   {0%{background-position:0 50;}50%{background-position:100% 50;}100%{background-position:0 50;}}
+    @keyframes slide-in         {to{transform:translateX(0);opacity:1;}}
+    .suggestion-enter           {transform:translateX(-20px);opacity:0;}
+    .suggestion-enter-active    {animation:slide-in .3s forwards;}
+    @keyframes slide-down       {from{transform:translateY(-100%);}to{transform:translateY(0);}}
+    #update-banner.show         {animation:slide-down .3s ease-out forwards;}
+    #overlay ol                 {list-style:decimal;}
+  </style>
 </head>
 
 <body class="bg-gray-100 text-gray-800 antialiased flex flex-col min-h-screen">
 
-  <!-- Parallax background layer -->
+  <!-- Parallax BG -->
   <div id="parallax-bg"
        class="fixed inset-0 bg-[url('/assets/pattern.svg')] bg-center bg-cover pointer-events-none"
-       style="transform: translateY(0);"></div>
+       style="transform:translateY(0)"></div>
 
   <noscript>
     <div class="p-4 bg-yellow-100 text-yellow-800">
@@ -64,1316 +35,163 @@
     </div>
   </noscript>
 
-<!-- Header -->
-<header role="banner" class="relative bg-white shadow sticky top-0 z-20">
-  <div class="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 relative">
-    
-    <!-- Left: Logo -->
-    <a href="#" onclick="event.preventDefault();" class="flex items-center h-16">
-      <img src="/assets/woohub_logo.png" alt="WooHub Logo" class="h-10 w-auto" />
-    </a>
+  <!-- Header -->
+  <header role="banner" class="relative bg-white shadow sticky top-0 z-20">
+    <div class="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+      <a href="#" onclick="event.preventDefault();" class="flex items-center">
+        <img src="/assets/woohub_logo.png" alt="WooHub Logo" class="h-10"/>
+      </a>
 
-    <!-- Centered: Search Input (pulled out and absolutely centered) -->
-    <div class="absolute left-1/2 transform -translate-x-1/2 w-full max-w-lg">
-      <input
-        id="search-input"
-        type="search"
-        placeholder="Search keywords..."
-        aria-label="Search keywords"
-        aria-controls="search-suggestions"
-        aria-expanded="false"
-        aria-autocomplete="list"
-        class="w-full px-4 py-2 border border-gray-300 bg-white rounded-lg
-               focus:outline-none focus:ring-2 focus:ring-indigo-500
-               text-gray-800 placeholder-gray-500"
-      />
-      <ul
-        id="search-suggestions"
-        role="listbox"
-        class="absolute left-0 right-0 mt-1 bg-white border border-gray-200
-               rounded-lg shadow-lg hidden z-30 max-h-60 overflow-auto"
-      ></ul>
-    </div>
-
-    <!-- Right: Notification & Recently Viewed -->
-    <div class="flex items-center">
-      <!-- Notification -->
-      <div class="relative">
-        <button
-          id="notification-btn"
-          class="p-2 focus:outline-none"
-          aria-label="Notifications"
-          aria-haspopup="true"
+      <!-- Center search -->
+      <div class="absolute left-1/2 transform -translate-x-1/2 w-full max-w-lg">
+        <input
+          id="search-input"
+          type="search"
+          placeholder="Search keywords..."
+          aria-label="Search keywords"
+          aria-controls="search-suggestions"
           aria-expanded="false"
-        >
-          <svg
-            id="bellIcon"
-            class="w-6 h-6 text-gray-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11
-                 a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595
-                 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-            />
-          </svg>
-          <span
-            id="notification-count"
-            class="hidden absolute -top-1 -right-1 inline-flex items-center justify-center
-                   px-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full"
-          ></span>
-        </button>
-        <div
-          id="notification-dropdown"
-          class="hidden absolute right-0 mt-2 w-96 p-4 bg-white border border-gray-200
-                 rounded-lg shadow-lg z-40"
-          role="menu"
-          aria-label="Recent notifications"
-        >
-          <ul
-            id="notification-list"
-            class="max-h-64 overflow-y-auto divide-y divide-gray-200"
-            aria-live="polite"
-          ></ul>
-          <div class="text-center p-2">
-            <button
-              id="clear-notifications"
-              class="text-indigo-600 hover:underline focus:outline-none"
-            >
-              Clear All
-            </button>
+          aria-autocomplete="list"
+          class="w-full px-4 py-2 border bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-500"
+        />
+        <ul
+          id="search-suggestions"
+          role="listbox"
+          class="absolute inset-x-0 mt-1 bg-white border rounded-lg shadow-lg hidden z-30 max-h-60 overflow-auto"
+        ></ul>
+      </div>
+
+      <!-- Notifications & Recents -->
+      <div class="flex items-center">
+        <div class="relative">
+          <button id="notification-btn" class="p-2 focus:outline-none" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">
+            <svg id="bellIcon" class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+            <span id="notification-count" class="hidden absolute -top-1 -right-1 inline-flex items-center justify-center px-1 text-xs font-bold text-white bg-red-600 rounded-full"></span>
+          </button>
+          <div id="notification-dropdown" class="hidden absolute right-0 mt-2 w-96 p-4 bg-white border rounded-lg shadow-lg z-40" role="menu" aria-label="Recent notifications">
+            <ul id="notification-list" class="max-h-64 overflow-auto divide-y divide-gray-200" aria-live="polite"></ul>
+            <div class="text-center p-2">
+              <button id="clear-notifications" class="text-indigo-600 hover:underline focus:outline-none">Clear All</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="relative ml-4">
+          <button id="recent-btn" class="p-2 focus:outline-none" aria-label="Recently Viewed" aria-haspopup="true" aria-expanded="false">
+            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </button>
+          <div id="recent-dropdown" class="hidden absolute right-0 mt-2 w-72 p-4 bg-white border rounded-lg shadow-lg z-40" role="menu" aria-label="Recently viewed items">
+            <ul id="recent-list" class="max-h-60 overflow-auto divide-y divide-gray-200"></ul>
           </div>
         </div>
       </div>
-
-      <!-- Recently Viewed -->
-<div class="relative ml-4">
-  <button
-    id="recent-btn"
-    class="p-2 focus:outline-none"
-    aria-label="Recently Viewed"
-    aria-haspopup="true"
-    aria-expanded="false"
-  >
-          <svg
-            class="w-6 h-6 text-gray-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </button>
-  <div
-    id="recent-dropdown"
-    class="hidden absolute right-0 mt-2 w-72 p-4 bg-white border border-gray-200
-           rounded-lg shadow-lg z-40"
-    role="menu"
-    aria-label="Recently viewed items"
-  >
-    <ul
-      id="recent-list"
-      class="max-h-60 overflow-y-auto divide-y divide-gray-200"
-    ></ul>
-  </div>
-</div>
     </div>
- </header>
+  </header>
 
-<!-- update banner -->
-<div id="update-banner"
-     role="status" aria-live="polite" aria-atomic="true"
-     class="hidden bg-indigo-600 text-white flex items-center justify-center px-6 py-3 relative">
-  <div id="update-banner-content" class="flex-1 text-sm font-medium text-center"></div>
-  <button id="update-banner-close"
-          aria-label="Close banner"
-          class="absolute right-4 text-xl font-bold leading-none focus:outline-none">
-    &times;
-  </button>
-</div>
+  <!-- Update Banner -->
+  <div id="update-banner" role="status" aria-live="polite" class="hidden bg-indigo-600 text-white flex items-center justify-center px-6 py-3 relative">
+    <div id="update-banner-content" class="flex-1 text-sm font-medium text-center"></div>
+    <button id="update-banner-close" aria-label="Close banner" class="absolute right-4 text-xl font-bold focus:outline-none">&times;</button>
+  </div>
 
   <!-- Mobile Recent Updates Accordion -->
   <details class="lg:hidden px-4 mt-2">
-    <summary class="font-semibold cursor-pointer flex items-center justify-between" role="button">
+    <summary class="flex items-center justify-between font-semibold cursor-pointer">
       <span>Recent Updates</span>
       <button id="mobile-updates-filter-toggle" class="p-1 focus:outline-none" aria-label="Toggle filter">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none"
-             viewBox="0 0 24 24" stroke="currentColor">
+        <svg class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2
-                   a1 1 0 01-.293.707l-7.414 7.414
-                   a1 1 0 00-.293.707V19l-4-4v-4
-                   a1 1 0 00-.293-.707L3.293 6.707
-                   A1 1 0 013 6V4z" />
+                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2l-7.414 7.414a1 1 0 00-.293.707V19l-4-4v-4a1 1 0 00-.293-.707L3.293 6.707A1 1 0 013 6V4z"/>
         </svg>
       </button>
     </summary>
     <div class="mt-2 space-y-2">
       <div id="mobile-updates-filter-container" class="hidden">
-        <input id="mobile-updates-filter" type="text" placeholder="Filter updates..."
-               aria-label="Filter updates"
-               class="w-full px-3 py-1 mb-2 border border-gray-300 rounded-lg
-                      focus:outline-none focus:ring-1 focus:ring-indigo-500
-                      text-gray-800 placeholder-gray-500" />
+        <input id="mobile-updates-filter" type="text" placeholder="Filter updates..." class="w-full px-3 py-1 mb-2 border rounded-lg focus:ring-1 focus:ring-indigo-500"/>
       </div>
-      <ul id="mobile-updates-container" class="max-h-60 overflow-y-auto pr-2 space-y-2"
-          aria-live="polite"></ul>
-      <button id="mobile-load-more-btn" class="mt-2 w-full text-center text-indigo-600
-                                           hover:underline focus:outline-none">
-        Load More
-      </button>
+      <ul id="mobile-updates-container" class="max-h-60 overflow-auto pr-2 space-y-2" aria-live="polite"></ul>
+      <button id="mobile-load-more-btn" class="w-full mt-2 text-indigo-600 hover:underline focus:outline-none">Load More</button>
     </div>
   </details>
 
-  <!-- Content Wrapper -->
+  <!-- Main Content -->
   <div class="flex flex-1 w-full max-w-[2000px] mx-auto px-4 pt-6">
+    <aside class="hidden lg:block w-80 lg:w-96 mr-6 space-y-6">
+      <!-- Recent Updates Panel -->
+      <div class="bg-white border rounded-lg p-4 sticky top-24">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-lg font-semibold">Recent Updates</h2>
+          <button id="updates-filter-toggle" class="p-1 focus:outline-none"></button>
+        </div>
+        <div id="updates-filter-container" class="hidden mb-2">
+          <input id="updates-filter" type="text" placeholder="Filter updates..." class="w-full p-2 border rounded"/>
+        </div>
+        <div class="max-h-96 overflow-auto pr-2 space-y-2">
+          <ul id="updates-container" class="space-y-2" aria-live="polite"></ul>
+        </div>
+      </div>
 
-    <!-- Desktop Sidebar with both panels -->
-    <aside class="w-80 lg:w-96 mr-6 hidden lg:block">
-      <div class="space-y-6">
+      <!-- What’s Changed Panel -->
+      <div class="bg-white border rounded-lg p-4 sticky top-[calc(6rem+1.5rem)] max-h-[16rem] flex flex-col overflow-hidden">
+        <h2 class="text-lg font-semibold mb-2 flex-none">What’s changed?</h2>
+        <div id="change-log" class="flex-1 overflow-auto text-sm text-gray-600 pr-2">
+          <p>No updates yet...</p>
+        </div>
+      </div>
+    </aside>
 
-<!-- Recent Updates Panel -->
-<div class="bg-white border border-gray-200 rounded-lg p-4 sticky top-24">
-  <div class="flex items-center justify-between mb-2">
-    <h2 class="text-lg font-semibold">Recent Updates</h2>
-    <button id="updates-filter-toggle" class="p-1 focus:outline-none" aria-label="Toggle filter">
-      <!-- filter icon -->
-    </button>
-  </div>
-  <div id="updates-filter-container" class="hidden mb-2">
-    <input id="updates-filter" type="text" placeholder="Filter updates..." class="w-full p-2 border rounded" />
-  </div>
-
-  <!-- Scrollable wrapper now contains only the list -->
-  <div class="max-h-96 overflow-y-auto pr-2 space-y-2">
-    <ul id="updates-container" class="space-y-2" aria-live="polite">
-      <!-- your <li> items -->
-    </ul>
-  </div>
-</div>
-
-    <!-- What’s Changed Panel -->
-<div
-  class="bg-white border border-gray-200 rounded-lg p-4
-         sticky top-[calc(6rem+1.5rem)]
-         max-h-[16rem]        <!-- always here -->
-         flex flex-col overflow-hidden"
->
-  <h2 class="text-lg font-semibold mb-2 flex-none">What’s changed?</h2>
-
-<div
-  id="change-log"
-  class="flex-1 overflow-y-auto text-sm text-gray-600 pr-2"
->
-  <!-- entries + inline toggle go here -->
-  <p>No updates yet...</p>
-</div>
-
-<!-- Inject the SSE script here -->
-<script>
-
-    const changeLogKey = 'changeLogEntries';
-
-  // Function to save updates to localStorage
-  function saveChangeLog(entries) {
-      localStorage.setItem(changeLogKey, JSON.stringify(entries));
-  }
-
-  // Function to load updates from localStorage
-  function loadChangeLog() {
-      return JSON.parse(localStorage.getItem(changeLogKey) || '[]');
-  }
-
-  // Function to update the "What's Changed" panel
-  function updateChangeLog(update) {
-      const changeLog = document.getElementById('change-log');
-      const entries = loadChangeLog();
-
-      // Add the new update to the top of the list
-      entries.unshift(update);
-      saveChangeLog(entries);
-
-      // Clear the panel and re-render all entries
-      changeLog.innerHTML = '';
-      entries.forEach(entry => {
-          const updateItem = document.createElement('div');
-          updateItem.className = 'update-item';
-          updateItem.textContent = `${entry.timestamp}: ${entry.message}`;
-          changeLog.appendChild(updateItem);
-      });
-  }
-
-  // Load existing entries on page load
-  document.addEventListener('DOMContentLoaded', () => {
-      const entries = loadChangeLog();
-      const changeLog = document.getElementById('change-log');
-
-      if (entries.length === 0) {
-          changeLog.innerHTML = '<p>No updates yet...</p>';
-      } else {
-          entries.forEach(entry => {
-              const updateItem = document.createElement('div');
-              updateItem.className = 'update-item';
-              updateItem.textContent = `${entry.timestamp}: ${entry.message}`;
-              changeLog.appendChild(updateItem);
-          });
-      }
-  });
-  // Establish SSE connection to receive real-time updates
-  const eventSource = new EventSource('/updates'); // Replace '/updates' with your SSE endpoint
-
-  // Listen for updates from the server
-  eventSource.onmessage = function(event) {
-      const data = JSON.parse(event.data); // Parse the incoming JSON data
-      updateChangeLog(data); // Update the "What's Changed" panel
-  };
-
-  // Function to update the "What's Changed" panel
-  function updateChangeLog(update) {
-      const changeLog = document.getElementById('change-log');
-
-      // Clear the "No updates yet..." message if it exists
-      if (changeLog.textContent.includes('No updates yet')) {
-          changeLog.innerHTML = '';
-      }
-
-      // Create a new update item
-      const updateItem = document.createElement('div');
-      updateItem.className = 'update-item';
-      updateItem.textContent = `${update.timestamp}: ${update.message}`;
-      changeLog.prepend(updateItem); // Add the new update to the top of the list
-  };
-
-  // Handle connection errors
-  eventSource.onerror = function() {
-      console.error('Error connecting to the server.');
-      const changeLog = document.getElementById('change-log');
-      changeLog.innerHTML = '<p style="color: red;">Unable to fetch updates...</p>';
-  };
-</script>
-  
-  </div>
-</aside>
-
-    <!-- Main content -->
-    <main role="main" class="relative flex-1 flex flex-col">
+    <main role="main" class="flex-1 relative flex flex-col">
       <!-- Breadcrumbs -->
-      <nav role="navigation" class="text-sm mb-4" aria-label="Breadcrumb">
-        <ol class="list-reset flex text-gray-600">
+      <nav aria-label="Breadcrumb" class="text-sm mb-4">
+        <ol class="flex text-gray-600">
           <li><a href="#" onclick="event.preventDefault();" class="hover:underline">Home</a></li>
           <li><span class="mx-2">/</span></li>
           <li>Dashboard</li>
         </ol>
       </nav>
 
-<!-- Detail View -->
-<section
-    id="detail-container"
-    class="hidden
-           absolute inset-0
-           bg-white rounded-lg shadow p-6
-           flex flex-col"
-    style="height: calc(100% - 1rem); max-height: calc(100vh - 1rem); overflow-y: auto; margin-bottom: 1rem;"
-    role="region"
-    aria-labelledby="detail-title">
-  
-    <button
-        id="back-btn"
-        class="self-start text-indigo-600 hover:underline mb-4 focus:outline-none flex-none"
-    >
-        ← Back to Dashboard
-    </button>
-
-    <h2
-        id="detail-title"
-        class="text-2xl font-semibold mb-4 flex-none"
-    ></h2>
-
-    <ul
-        id="detail-list"
-        class="flex-1 overflow-y-auto list-disc pl-5 space-y-2"
-    >
-        <!-- your detail items here -->
-    </ul>
-</section>
+      <!-- Detail View -->
+      <section id="detail-container"
+               class="hidden absolute inset-0 bg-white rounded-lg shadow p-6 flex flex-col overflow-auto"
+               style="margin-bottom:1rem;">
+        <button id="back-btn" class="self-start text-indigo-600 hover:underline mb-4 focus:outline-none">← Back to Dashboard</button>
+        <h2 id="detail-title" class="text-2xl font-semibold mb-4"></h2>
+        <ul id="detail-list" class="flex-1 overflow-auto list-disc pl-5 space-y-2"></ul>
+      </section>
 
       <!-- Card Grid -->
       <section id="card-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"></section>
     </main>
   </div>
 
-
-<!-- Overlay Modal -->
-<div id="overlay"
-     class="fixed inset-0 bg-black bg-opacity-50 hidden items-start justify-center overflow-y-auto z-40"
-     role="dialog" aria-modal="true" aria-labelledby="overlay-header" aria-describedby="overlay-body">
-  <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 max-h-[90vh] overflow-y-auto p-6
-              relative mt-20 mx-auto" tabindex="-1">
-    <button id="overlay-close"
-            aria-label="Close dialog"
-            class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none">
-      &times;
-    </button>
-      <button id="copy-btn"
-              class="absolute top-4 right-12 text-sm text-gray-500 hover:text-gray-700 hidden focus:outline-none">Copy</button>
+  <!-- Overlay Modal -->
+  <div id="overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 items-start justify-center overflow-auto z-40" role="dialog" aria-modal="true">
+    <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 max-h-[90vh] overflow-auto p-6 relative mt-20 mx-auto" tabindex="-1">
+      <button id="overlay-close" class="absolute top-4 right-4 text-2xl focus:outline-none">&times;</button>
+      <button id="copy-btn" class="absolute top-4 right-12 text-sm hidden focus:outline-none">Copy</button>
       <h2 id="overlay-header" class="text-2xl font-semibold mb-4"></h2>
       <div id="overlay-body" class="space-y-4" tabindex="0"></div>
     </div>
   </div>
 
   <!-- Jump to Top -->
-  <button id="to-top"
-          class="fixed bottom-6 right-6 p-3 bg-indigo-600 text-white rounded-full shadow-lg hidden focus:outline-none"
-          aria-label="Scroll to top">↑</button>
+  <button id="to-top" class="hidden fixed bottom-6 right-6 p-3 rounded-full shadow-lg bg-indigo-600 text-white focus:outline-none" aria-label="Scroll to top">↑</button>
 
   <!-- Footer -->
-<footer
-    class="bg-white border-t border-gray-200 z-20"
-    style="position: relative; bottom: 0; width: 100%;"
->
+  <footer class="bg-white border-t relative bottom-0 w-full z-20">
     <div class="flex justify-between items-center h-12 px-4">
-        <p class="text-sm text-gray-500 m-0">&copy; 2025 WooHub. All rights reserved.</p>
-        <p class="text-sm text-gray-500 m-0">Developed By: Christine Anastacio</p>
+      <p class="text-sm text-gray-500 m-0">© 2025 WooHub. All rights reserved.</p>
+      <p class="text-sm text-gray-500 m-0">Developed By: Christine Anastacio</p>
     </div>
-</footer>
+  </footer>
 
-<script>
-  function formatTimestamp(ts) {
-    const d = new Date(ts);
-    const M  = d.getMonth() + 1;
-    const D  = d.getDate();
-    const YY = String(d.getFullYear() % 100).padStart(2, '0');
-    let h    = d.getHours();
-    const m  = String(d.getMinutes()).padStart(2, '0');
-    const ampm = h < 12 ? 'AM' : 'PM';
-    h = h % 12 || 12;
-    return `${M}/${D}/${YY} ${h}:${m}${ampm}`;
-  }
-  // === persist “read” state across reloads ===
-  const badgeDataMap = {};
-  function getReadItems() {
-    try { return JSON.parse(localStorage.getItem('readItems') || '{}'); }
-    catch { return {}; }
-  }
-  function saveReadItems(obj) {
-    localStorage.setItem('readItems', JSON.stringify(obj));
-  }
-  function markItemRead(slug, id) {
-    const read = getReadItems();
-    read[slug] = read[slug] || [];
-    if (!read[slug].includes(id)) {
-      read[slug].push(id);
-      saveReadItems(read);
-    }
-  }
-  function isItemRead(slug, id) {
-    const read = getReadItems();
-    return Array.isArray(read[slug]) && read[slug].includes(id);
-  }
-  function hasUnreadForSlug(slug) {
-    const ids = badgeDataMap[slug] || [];
-    return ids.some(id => !isItemRead(slug, id));
-  }
-
-  // persist “seen” state for notification bell
-  let seenNotifIds = new Set(JSON.parse(localStorage.getItem('seenNotifIds') || '[]'));
-
-  // === persist “seen” state for Recent Updates ===
-  function getLastSeenUpdate() {
-    return localStorage.getItem('lastSeenUpdate');
-  }
-  function setLastSeenUpdate(ts) {
-    localStorage.setItem('lastSeenUpdate', ts);
-  }
-
-  // === banner & badge control ===
-  let initialUpdatesLoad = true;
-  let bannerClosed = false;
-
-  async function updateCardBadges() {
-    for (const c of cardsData) {
-      const badge = document.querySelector(`[data-slug="${c.slug}"] .badge`);
-      if (!badge) continue;
-      try {
-        const data = await fetchItems(c.slug);
-        const items = Array.isArray(data) ? data : Object.values(data).flat();
-        const hasUnread = items.some(item => {
-          const id = item.id || item.name;
-          return !isItemRead(c.slug, id);
-        });
-        badge.classList.toggle('hidden', !hasUnread);
-      } catch (err) {
-        // If fetching fails, leave badge as-is
-      }
-    }
-  }
-  function showUpdateBanner(message) {
-    if (bannerClosed) return;
-    const banner = document.getElementById('update-banner');
-    const content = document.getElementById('update-banner-content');
-    content.textContent = message;
-    banner.classList.remove('hidden');
-    banner.classList.add('show');
-  }
-  function hideUpdateBanner() {
-    const banner = document.getElementById('update-banner');
-    banner.classList.add('hidden');
-    banner.classList.remove('show');
-  }
-
-  // === Element refs ===
-  const container               = document.getElementById('card-container');
-  const detailContainer         = document.getElementById('detail-container');
-  const detailTitle             = document.getElementById('detail-title');
-  const detailList              = document.getElementById('detail-list');
-  const backBtn                 = document.getElementById('back-btn');
-  const overlay                 = document.getElementById('overlay');
-  const overlayDialog           = overlay.querySelector('[tabindex="-1"]');
-  const overlayClose            = document.getElementById('overlay-close');
-  const copyBtn                 = document.getElementById('copy-btn');
-  const overlayHeader           = document.getElementById('overlay-header');
-  const overlayBody             = document.getElementById('overlay-body');
-  const searchInput             = document.getElementById('search-input');
-  const searchSuggestions       = document.getElementById('search-suggestions');
-  const notifBtn                = document.getElementById('notification-btn');
-  const notifCountEl            = document.getElementById('notification-count');
-  const notifDropdown           = document.getElementById('notification-dropdown');
-  const notifListEl             = document.getElementById('notification-list');
-  const clearNotifsBtn          = document.getElementById('clear-notifications');
-  const updatesFilterContainer  = document.getElementById('updates-filter-container');
-  const updatesFilter           = document.getElementById('updates-filter');
-  const updatesToggleBtn        = document.getElementById('updates-filter-toggle');
-  const mobileUpdatesFilterContainer = document.getElementById('mobile-updates-filter-container');
-  const mobileUpdatesFilter     = document.getElementById('mobile-updates-filter');
-  const mobileUpdatesToggleBtn  = document.getElementById('mobile-updates-filter-toggle');
-  const updatesContainer        = document.getElementById('updates-container');
-  const mobileUpdatesContainer  = document.getElementById('mobile-updates-container');
-  const toTopBtn                = document.getElementById('to-top');
-
-  // helper to show/hide the red count bubble
-  function setNotifCount(count) {
-    if (count > 0) {
-      notifCountEl.textContent = count;
-      notifCountEl.classList.remove('hidden');
-    } else {
-      notifCountEl.classList.add('hidden');
-    }
-  }
-
-  // === Card data ===
-  const cardsData = [
-    { title: 'Email Templates', slug: 'email-templates', description: 'Browse pre-built email templates.' },
-    { title: 'Processes',      slug: 'processes',      description: 'Step-by-step how-to guides and workflows.' },
-    { title: 'Reports',        slug: 'reports',        description: 'Access performance and usage reports.' },
-    { title: 'Links',          slug: 'links',          description: 'Quick access to essential resources.' },
-    { title: 'Tutorials',      slug: 'tutorials',      description: 'Video lessons to guide you through every step.' },
-    { title: 'Directory',      slug: 'directory',      description: 'Key people to contact.' }
-  ];
-
-  // === Caching & debounce ===
-  const contentCache = {};
-  function debounce(fn, ms) {
-    let t;
-    return (...args) => {
-      clearTimeout(t);
-      t = setTimeout(() => fn(...args), ms);
-    };
-  }
-
-  async function fetchItems(slug) {
-    if (contentCache[slug]) return contentCache[slug];
-    const res = await fetch(`data/${slug}.json`);
-    if (!res.ok) throw new Error('Failed to load data');
-    const data = await res.json();
-    contentCache[slug] = data;
-    return data;
-  }
-
-// === Recently Viewed Logic (global scope) ===
-
-// Add the event listener globally to toggle the dropdown
-document.getElementById('recent-btn').addEventListener('click', () => {
-    const dropdown = document.getElementById('recent-dropdown');
-    dropdown.classList.toggle('hidden');
-});
-
-// Function to render the Recently Viewed list
-function renderRecentlyViewed(recents) {
-    const recentList = document.getElementById('recent-list');
-    recentList.innerHTML = ''; // Clear the list before rendering
-    
-    // If no recently viewed items, display a message
-    if (!recents.length) {
-        recentList.innerHTML = '<li class="py-2 text-gray-500 italic">No recently viewed items</li>';
-        return;
-    }
-
-    // Loop through the recents and render each item
-    recents.forEach(item => {
-        const li = document.createElement('li');
-        li.className = 'py-2 text-indigo-600 hover:underline cursor-pointer';
-        li.textContent = item.title;
-        li.onclick = () => {
-            if (item.type === 'card') {
-                showContent(item.slug, item.title);
-            } else {
-                openEmailOverlay(item.title, item.content, item.slug);
-            }
-        };
-        recentList.appendChild(li);
-    });
-}
-
-  function addToRecents(item) {
-    const key = 'recentlyViewed';
-    let recents = JSON.parse(localStorage.getItem(key) || '[]');
-    recents = recents.filter(r => !(r.slug === item.slug && r.id === item.id));
-    recents.unshift(item);
-    recents = recents.slice(0, 10);
-    localStorage.setItem(key, JSON.stringify(recents));
-    renderRecentlyViewed(recents);
-  }
-
-  // === Render cards ===
-  function renderCards() {
-    container.innerHTML = '';
-    cardsData.forEach(card => {
-      const article = document.createElement('article');
-      article.setAttribute('data-tilt', '');
-      article.dataset.slug = card.slug;
-      article.className = 'relative bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6 flex flex-col';
-      article.innerHTML = `
-        <span class="badge absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full hidden">new</span>
-        <h3 tabindex="0" class="text-xl font-semibold mb-2 hover:text-indigo-600 cursor-pointer">${card.title}</h3>
-        <p class="text-gray-600 flex-1">${card.description}</p>
-        <button class="bg-indigo-600 hover:bg-indigo-700 text-white mt-4 font-medium px-4 py-2 rounded-lg transition">
-          View ${card.title} →
-        </button>
-      `;
-      article.querySelector('h3').onclick    = () => showContent(card.slug, card.title);
-      article.querySelector('button').onclick = () => showContent(card.slug, card.title);
-      container.appendChild(article);
-    });
-    updateCardBadges();
-  }
-
-// === Show content for a card ===
-async function showContent(slug, title) {
-  // 1) Track recents & swap panels
-  addToRecents({ id: slug, slug, title, type: 'card' });
-  container.classList.add('hidden');
-  detailContainer.classList.remove('hidden');
-  detailTitle.textContent = title;
-  detailList.innerHTML = '';              // clear out any old content
-
-// 2) LINKS CASE: grouped JSON -> <a> links under headers
-if (slug === 'links') {
-  const groups = await fetchItems('links');
-  console.log('Links data:', groups); // <-- verify it’s actually being fetched
-
-  // Build a set of old IDs so we only mark pre-existing links read
-  const oldIds = new Set((window.initialLinks || []).map(i => i.id));
-
-  for (const [category, items] of Object.entries(groups)) {
-    // Category header
-    if (category) {
-      const hdr = document.createElement('h3');
-      hdr.className = 'text-lg font-semibold mt-4';
-      hdr.textContent = category;
-      detailList.appendChild(hdr);
-    }
-
-    // Each link
-    items.forEach(item => {
-      // Mark it read only if it already existed
-      if (oldIds.has(item.name)) {
-        markItemRead('links', item.name);
-      }
-
-      const li = document.createElement('li');
-      const a = document.createElement('a');
-      a.href = item.url;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      a.textContent = item.name;
-      a.className = 'text-indigo-600 hover:underline';
-
-      // Add red dot for "new" items
-      const dot = document.createElement('span');
-      dot.className = 'ml-2 inline-block w-2 h-2 bg-red-600 rounded-full';
-
-      // Check if the item is already read
-      if (isItemRead('links', item.name)) {
-        dot.classList.add('hidden'); // Hide dot for already read items
-      }
-
-      // Add click handler to mark as read
-      a.onclick = () => {
-        markItemRead('links', item.name);
-        dot.classList.add('hidden'); // Hide dot after marking as read
-        updateCardBadges(); // Refresh badges for the card
-      };
-
-      li.appendChild(a);
-      li.appendChild(dot); // Add red dot to the list item
-      detailList.appendChild(li);
-    });
-  }
-
-  // Refresh the badge now that we've marked the old ones read
-  updateCardBadges();
-  return; // stop here—don’t fall into your reports/default code
-}
-  
-  if (slug === 'reports') {
-    // Top-row images (static, side-by-side)
-    const imagePaths = [
-      'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
-      'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_amz.png'
-    ];
-
-    // Bottom-row images (static, side-by-side)
-    const extraImagePaths = [
-      'https://raw.githubusercontent.com/chmpzu/assets/main/reports/autoapex_ebay.png',
-    ];
-
-detailList.innerHTML = `
-  <div class="prose max-w-none space-y-8">
-
-    <!-- Link above first image stack -->
-    <p>
-      <a
-        href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="text-blue-600 hover:underline"
-      >
-        WooParts eBay and Amazon Monthly Performance – 2025
-      </a>
-    </p>
-
-    <!-- First images stacked vertically, left-aligned -->
-    <div class="space-y-4">
-      ${imagePaths.map(path =>
-        `<img
-           src="${path}"
-           loading="lazy"
-           class="h-64 w-auto object-contain block"
-           alt="Report">`
-      ).join('')}
-    </div>
-
-    <!-- Link above second image stack -->
-    <p>
-      <a
-        href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/EdkrNcbAsn1Oj6R_91SAOs4BwbNHpXFXBZtCrfaNoLYq3Q?e=7qIebl"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="text-blue-600 hover:underline"
-      >
-        AutoApex eBay Monthly Performance – 2025
-      </a>
-    </p>
-
-    <!-- Second images stacked vertically, left-aligned -->
-    <div class="space-y-4">
-      ${extraImagePaths.map(path =>
-        `<img
-           src="${path}"
-           loading="lazy"
-           class="h-64 w-auto object-contain block"
-           alt="Extra Report">`
-      ).join('')}
-    </div>
-
-  </div>
-`;
-
-
-  } else {
-    try {
-      const data = await fetchItems(slug);
-      const groups = Array.isArray(data) ? { '': data } : data;
-      Object.entries(groups).forEach(([category, items]) => {
-        if (category) {
-          const hdr = document.createElement('h3');
-          hdr.className = 'text-lg font-semibold mt-4';
-          hdr.textContent = category;
-          detailList.appendChild(hdr);
-        }
-        items.forEach(item => {
-          const li  = document.createElement('li');
-          const btn = document.createElement('button');
-          btn.className = 'flex items-center text-indigo-600 hover:underline focus:outline-none';
-          btn.textContent = item.name;
-          const id = item.id || item.name;
-          const dot = document.createElement('span');
-          dot.className = 'ml-2 inline-block w-2 h-2 bg-red-600 rounded-full';
-          if (isItemRead(slug, id)) dot.classList.add('hidden');
-          btn.appendChild(dot);
-          btn.onclick = () => {
-            openEmailOverlay(item.name, item.content, slug);
-            markItemRead(slug, id);
-            dot.classList.add('hidden');
-            if (!hasUnreadForSlug(slug)) {
-              const badge = document.querySelector(`[data-slug="\${slug}"] .badge`);
-              if (badge) badge.classList.add('hidden');
-            }
-          };
-          li.appendChild(btn);
-          detailList.appendChild(li);
-        });
-      });
-    } catch {
-      detailList.innerHTML = `<li class="text-red-500">This page is under construction – check back soon!</li>`;
-    }
-  }
-}
-
-
-
-  // === Trap focus in modal ===
-  function trapFocus(e) {
-    const focusable = Array.from(overlayDialog.querySelectorAll('button, [href], input, textarea, [tabindex]:not([tabindex="-1"])'))
-                           .filter(el => !el.disabled);
-    if (!overlay.classList.contains('hidden') && e.key === 'Tab') {
-      const idx = focusable.indexOf(document.activeElement);
-      if (e.shiftKey && idx === 0) {
-        focusable[focusable.length - 1].focus();
-        e.preventDefault();
-      } else if (!e.shiftKey && idx === focusable.length - 1) {
-        focusable[0].focus();
-        e.preventDefault();
-      }
-    }
-  }
-  document.addEventListener('keydown', trapFocus);
-
-  // === Overlay open/close & copy ===
-  let lastFocused;
-  function openEmailOverlay(name, htmlContent, slug) {
-    lastFocused = document.activeElement;
-    document.documentElement.style.overflow = 'hidden';
-    overlayHeader.textContent = name;
-    const card     = cardsData.find(c => c.slug === slug);
-    const titleHtml = card ? `<h3 class="text-lg font-semibold mb-2">${card.title}</h3>` : '';
-    overlayBody.innerHTML = titleHtml + `<div class="prose max-w-none space-y-4">${htmlContent}</div>`;
-    addToRecents({ id: name, slug, title: name, content: htmlContent, type: 'item' });
-    overlay.classList.remove('hidden');
-    overlayDialog.classList.add('opacity-100','scale-100');
-    copyBtn.classList.remove('hidden');
-    overlayClose.focus();
-  }
-  overlayClose.onclick = () => {
-    overlay.classList.add('hidden');
-    overlayDialog.classList.remove('opacity-100','scale-100');
-    document.documentElement.style.overflow = '';
-    lastFocused?.focus();
-  };
-  overlay.onclick = e => {
-    if (e.target === overlay) overlayClose.click();
-  };
-  copyBtn.onclick = () => {
-    navigator.clipboard.writeText(overlayBody.innerText).then(() => {
-      copyBtn.textContent = 'Copied!';
-      setTimeout(() => (copyBtn.textContent = 'Copy'), 2000);
-    });
-  };
-
-  // === Back to grid & jump to top ===
-  backBtn.onclick = () => {
-    detailContainer.classList.add('hidden');
-    container.classList.remove('hidden');
-    document.documentElement.style.overflow = '';
-  };
-  window.addEventListener('scroll', () => {
-    toTopBtn.classList.toggle('hidden', window.scrollY < 300);
-  });
-  toTopBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
-
-  // === Notification icon helper ===
-  function iconFor(type) {
-    return { updates: '🔔', 'email-templates': '✉️', processes: '🛠️', reports: '📊', links: '🔗', tutorials: '🎥', directory: '📇' }[type] || '🆕';
-  }
-
-  // === Helper: format relative times ===
-function getRelativeTime(date) {
-  const now     = new Date();
-  const diffSec = (now - date) / 1000;
-  if (diffSec < 60)      return 'just now';
-  if (diffSec < 3600)    {
-    const m = Math.floor(diffSec / 60);
-    return `${m} min${m > 1 ? 's' : ''} ago`;
-  }
-  if (diffSec < 86400)   {
-    const h = Math.floor(diffSec / 3600);
-    return `${h} hour${h > 1 ? 's' : ''} ago`;
-  }
-  // older than 24 hours → show calendar date
-  return date.toLocaleDateString();
-}
-
-// === Poll notifications & flag card badges ===
-async function pollNotifications() {
-  let allItems = [];
-
-  // 1) load “updates” JSON
-  try {
-    const res = await fetch('data/updates.json');
-    if (res.ok) {
-      const data = await res.json();
-      allItems = data.map(u => ({
-        id:   u.id || u.timestamp + u.text,
-        text: u.text,
-        time: new Date(u.timestamp),
-        type: 'updates'
-      }));
-    }
-  } catch {}
-
-  // 2) load each card’s JSON
-  for (const c of cardsData) {
-    if (c.slug === 'reports') continue;
-    try {
-      const res = await fetch(`data/${c.slug}.json`);
-      if (!res.ok) continue;
-      const items = Array.isArray(await res.json())
-                  ? await res.json()
-                  : Object.values(await res.json()).flat();
-      allItems.push(...items.map(i => ({
-        id:   `${c.slug}|${i.name}`,
-        text: `New ${c.title}: ${i.name}`,
-        time: new Date(i.timestamp || Date.now()),
-        type: c.slug
-      })));
-    } catch {}
-  }
-
-  // 3) split unread vs. read, sort each by date desc, then concat
-  const unread = allItems.filter(i => !seenNotifIds.has(i.id));
-  const read   = allItems.filter(i =>  seenNotifIds.has(i.id));
-  const sortDesc = list => list.sort((a, b) => b.time - a.time);
-  const sorted   = [...sortDesc(unread), ...sortDesc(read)];
-
-  // 4) render
-  notifListEl.innerHTML = '';
-  let newCount = unread.length;
-
-  sorted.forEach(item => {
-    const li = document.createElement('li');
-    li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between items-center';
-
-    const wrapper = document.createElement('div');
-    if (!seenNotifIds.has(item.id)) {
-      const nb = document.createElement('span');
-      nb.textContent = 'New ';
-      nb.className   = 'new-badge text-red-600 text-xs font-semibold mr-1';
-      wrapper.appendChild(nb);
-    }
-    const txt = document.createElement('span');
-    txt.textContent = `${iconFor(item.type)} ${item.text}`;
-    wrapper.appendChild(txt);
-    li.appendChild(wrapper);
-
-    const tm = document.createElement('time');
-    tm.className = 'text-xs text-gray-500';
-    tm.textContent = getRelativeTime(item.time);        // relative text
-    tm.title       = item.time.toLocaleString();        // hover shows exact
-    li.appendChild(tm);
-
-    notifListEl.appendChild(li);
-    seenNotifIds.add(item.id);
-  });
-
-  localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
-  setNotifCount(newCount);
-
-  // bell-bounce animation
-  const bellIcon = document.getElementById('bellIcon');
-  bellIcon.style.animation = 'bell-bounce 0.6s';
-  bellIcon.addEventListener('animationend', () => {
-    bellIcon.style.animation = '';
-  }, { once: true });
-}
-  setInterval(pollNotifications, 60000);
-  pollNotifications();
-
-  // === Notification bell handlers ===
-notifBtn.onclick = () => {
-  const isOpen = !notifDropdown.classList.toggle('hidden');
-  notifBtn.setAttribute('aria-expanded', String(isOpen));
-
-  if (isOpen) {
-    // Reset count only when the dropdown is opened
-    setNotifCount(0);
-    document.querySelectorAll('#notification-list li .new-badge')
-      .forEach(el => el.remove());
-
-    // Save seen notifications to localStorage
-    localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
-  }
-};
-
-clearNotifsBtn.onclick = () => {
-  const allKnownIds = Object.values(badgeDataMap).flat();
-  allKnownIds.forEach(id => seenNotifIds.add(id));
-  localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
-
-  // Clear the notification list and reset the count
-  notifListEl.innerHTML = '';
-  setNotifCount(0);
-};
-  
-     // Add the event listener for the update-banner-close button
-   document.getElementById('update-banner-close').addEventListener('click', hideUpdateBanner);
-
-  // === Recent updates panel ===
-  let allUpdates = [], displayCount = 5;
-  async function pollUpdatesPanel() {
-    try {
-      const res = await fetch('data/updates.json');
-      if (!res.ok) return;
-      allUpdates = (await res.json()).map(u => ({ text: u.text, time: u.timestamp, link: u.link }));
-      renderUpdatesPanel();
-    } catch { console.error('Updates panel error'); }
-  }
-  function renderUpdatesPanel() {
-    const filterVal = (updatesFilter?.value || mobileUpdatesFilter?.value || '').toLowerCase();
-    const filtered = allUpdates
-      .filter(u => u.text.toLowerCase().includes(filterVal))
-      .sort((a,b) => new Date(b.time) - new Date(a.time));
-    const toShow = filtered.slice(0, displayCount);
-    const lastSeen = getLastSeenUpdate(), latestTime = toShow[0]?.time, isNew = latestTime && latestTime !== lastSeen;
-    [updatesContainer, mobileUpdatesContainer].forEach(cn => {
-      cn.innerHTML = '';
-      if (!toShow.length) {
-        const li = document.createElement('li');
-        li.textContent = 'No updates available.';
-        li.className = 'py-2 text-gray-500';
-        cn.appendChild(li);
-      } else {
-        toShow.forEach((u,i) => {
-          const li = document.createElement('li');
-          if (u.link) {
-            const a = document.createElement('a');
-            a.href = u.link; a.className = 'block py-2 hover:underline';
-            if (i === 0 && initialUpdatesLoad) {
-              const badge = document.createElement('span');
-              badge.textContent = 'New ';
-              badge.className = 'text-red-600 text-xs font-semibold';
-              a.appendChild(badge);
-              showUpdateBanner(u.text);
-            }
-            a.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
-            li.appendChild(a);
-          } else {
-            if (i === 0 && initialUpdatesLoad) {
-              const badge = document.createElement('span');
-              badge.textContent = 'New ';
-              badge.className = 'text-red-600 text-xs font-semibold';
-              li.appendChild(badge);
-              showUpdateBanner(u.text);
-            }
-            li.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
-            li.className = 'py-2';
-          }
-          cn.appendChild(li);
-        });
-      }
-    });
-    if (isNew) setLastSeenUpdate(latestTime);
-    initialUpdatesLoad = false;
-  }
-  setInterval(pollUpdatesPanel, 60000);
-  pollUpdatesPanel();
-  updatesToggleBtn.onclick = () => updatesFilterContainer.classList.toggle('hidden');
-  mobileUpdatesToggleBtn.onclick = () => mobileUpdatesFilterContainer.classList.toggle('hidden');
-  updatesFilter?.addEventListener('input', debounce(renderUpdatesPanel, 200));
-  mobileUpdatesFilter?.addEventListener('input', debounce(renderUpdatesPanel, 200));
-
-  // === Fuzzy search ===
-  let fuse;
-  async function buildSearchIndex() {
-    const items = cardsData.map(c => ({ name: c.title, content: c.description, slug: c.slug, isRoot: true }));
-    for (const c of cardsData) {
-      if (c.slug === 'reports') continue;
-      try {
-        const data = await fetchItems(c.slug), arr = Array.isArray(data) ? data : Object.values(data).flat();
-        arr.forEach(i => items.push({ name: i.name, content: i.content, slug: c.slug, isRoot: false }));
-      } catch {}
-    }
-    fuse = new Fuse(items, { keys: ['name', 'content'], includeMatches: true, threshold: 0.4 });
-  }
-  function renderSuggestions(results) {
-    searchSuggestions.innerHTML = '';
-    if (!results.length) {
-      searchSuggestions.innerHTML = '<li class="px-4 py-2 text-gray-500">No results</li>';
-    } else {
-      results.forEach(r => {
-        let label = r.item.name, match = r.matches.find(m => m.key === 'name');
-        if (match) {
-          let h = '', last = 0;
-          match.indices.forEach(([s,e]) => {
-            h += label.slice(last, s) + `<mark>${label.slice(s, e+1)}</mark>`;
-            last = e+1;
-          });
-          h += label.slice(last);
-          label = h;
-        }
-        const li = document.createElement('li');
-        li.role = 'option';
-        li.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
-        li.innerHTML = label;
-        li.onclick = () => {
-          (r.item.isRoot ? showContent : openEmailOverlay)(r.item.slug||r.item.name, r.item.content, r.item.slug);
-          searchSuggestions.classList.add('hidden');
-          searchInput.setAttribute('aria-expanded', 'false');
-        };
-        searchSuggestions.appendChild(li);
-      });
-    }
-  }
-  searchInput.addEventListener('input', debounce(async e => {
-    const q = e.target.value.trim();
-    if (!q) return searchSuggestions.classList.add('hidden');
-    if (!fuse) await buildSearchIndex();
-    renderSuggestions(fuse.search(q));
-    searchSuggestions.classList.remove('hidden');
-    searchInput.setAttribute('aria-expanded', 'true');
-  }, 250));
-  document.addEventListener('keydown', e => {
-    if (e.key === '/' && document.activeElement !== searchInput) {
-      e.preventDefault();
-      searchInput.focus();
-    }
-  });
-
-  // === Final init ===
-document.addEventListener('DOMContentLoaded', () => {
-    const key = 'recentlyViewed';
-    const recents = JSON.parse(localStorage.getItem(key) || '[]');
-    renderRecentlyViewed(recents);
-  // 0) Initial rendering & index build
-  renderCards();
-  buildSearchIndex();
-  renderChangeLog(stored);
-
-  // Now subscribe to live events:
-  const evtSource = new EventSource('/events');
-  evtSource.onmessage = e => {
-    const { file, updatedAt } = JSON.parse(e.data);
-    const ts = formatTimestamp(updatedAt);
-    stored.unshift(`[${ts}] ${file} changed`);
-    renderChangeLog(stored);
-  };
-
-    // 1) Tilt effect on cards
-    VanillaTilt.init(document.querySelectorAll('article[data-tilt]'), {
-      max: 15,
-      speed: 400,
-      glare: true,
-      'max-glare': 0.2
-    });
-
-    // 2) Parallax scroll effect
-    const bg = document.getElementById('parallax-bg');
-    window.addEventListener('scroll', () => {
-      const offset = window.scrollY * 0.3;
-      bg.style.transform = `translateY(${offset}px)`;
-    });
-
-    // 3) Banner close button + clear initial count
-    const bannerCloseBtn = document.getElementById('update-banner-close');
-    bannerCloseBtn.addEventListener('click', () => {
-      bannerClosed = true;
-      hideUpdateBanner();
-    });
-
-    // 4) Notification refs (needed by your recently‐viewed toggle)
-    const notificationBtnRef      = document.getElementById('notification-btn');
-    const notificationDropdownRef = document.getElementById('notification-dropdown');
-
-// 5a) Recently Viewed dropdown toggle
-  // 1) Select the button & dropdown once
-  const recentBtn    = document.getElementById('recent-btn');
-  const recentDrop   = document.getElementById('recent-dropdown');
-
-  // 2) Toggle dropdown on button click
-  recentBtn.addEventListener('click', e => {
-    e.stopPropagation();                              // don’t let this click bubble to document
-    const isNowOpen = recentDrop.classList.toggle('hidden') === false;
-    recentBtn.setAttribute('aria-expanded', isNowOpen);
-  });
-
-  // 3) Anywhere else on the page closes it
-  document.addEventListener('click', e => {
-    if (!recentDrop.classList.contains('hidden')) {
-      // if click is outside both button and dropdown → hide
-      if (!recentBtn.contains(e.target) && !recentDrop.contains(e.target)) {
-        recentDrop.classList.add('hidden');
-        recentBtn.setAttribute('aria-expanded', 'false');
-      }
-    }
-  });
-
-    // 6) Render recents once on load
-    renderRecentlyViewed(JSON.parse(localStorage.getItem('recentlyViewed') || '[]'));
-
-    // 7) Zero‐out the notif count
-    setNotifCount(0);
-  });
-</script>
-
-    <!-- …all your existing <script>…</script> blocks above… -->
-    </script> <!-- end of your main app code -->
-
-<script>
-let showingAll = false;  // collapsed vs. expanded
-
-function renderChangeLog(entries) {
-  const logBox = document.getElementById('change-log');
-  logBox.innerHTML = '';
-
-  // Choose 3 or all
-  const visible = showingAll ? entries : entries.slice(0, 3);
-
-  if (!visible.length) {
-    logBox.textContent = 'No updates yet...';
-    return;
-  }
-
-  // Render each entry
-  visible.forEach(text => {
-    const div = document.createElement('div');
-    div.className = 'mb-1';
-    div.textContent = text;
-    logBox.appendChild(div);
-  });
-
-  // If there are more hidden, append the toggle *inside* the scroll area
-  if (entries.length > visible.length) {
-    const btn = document.createElement('button');
-    btn.className = 'block mx-auto text-indigo-600 hover:underline focus:outline-none';
-    btn.textContent = showingAll ? 'Show less' : 'Show more';
-    btn.onclick = () => {
-      showingAll = !showingAll;
-      renderChangeLog(entries);
-    };
-    logBox.appendChild(btn);
-  }
-}
-
-  
-(function() {
-  const POLL_INTERVAL = 5000;
-  const slugs = cardsData.map(c => c.slug);
-  const stored = JSON.parse(localStorage.getItem('changeLog') || '[]');
-  const logBox = document.getElementById('change-log');
-  let showingAll = false;
-
-  // ← INITIAL RENDER (first 3)
-  renderChangeLog(stored, 3);
-
-  // TOGGLE BUTTON
-  showMoreBtn.addEventListener('click', () => {
-    showingAll = !showingAll;
-    renderChangeLog(stored, showingAll ? 0 : 3);    // ← toggle between all (0) and 3
-    showMoreBtn.textContent = showingAll ? 'Show less' : 'Show more';
-  });
-
-  function appendLog(msg) {
-    const entryText = `[${formatTimestamp(Date.now())}] ${msg}`;
-    // prepend to array
-    stored.unshift(entryText);
-    localStorage.setItem('changeLog', JSON.stringify(stored));
-    // re-render with current mode
-    renderChangeLog(stored, showingAll ? 0 : 5);
-  }
-
-  function normalize(data) {
-    const arr = Array.isArray(data) ? data : Object.values(data).flat();
-    return arr.map(item => ({
-      id:      item.id ?? item.name,
-      content: JSON.stringify(item)
-    }));
-  }
-
-  async function fetchFresh(slug) {
-    const res = await fetch(`data/${slug}.json?cb=${Date.now()}`, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`Failed to load ${slug}`);
-    return res.json();
-  }
-
-  const prev = {};
-
-  async function checkUpdates() {
-    for (const slug of slugs) {
-      let newArr;
-      try {
-        newArr = normalize(await fetchFresh(slug));
-      } catch {
-        continue;
-      }
-      const oldMap = Object.fromEntries(prev[slug].map(i => [i.id, i]));
-      const newMap = Object.fromEntries(newArr.map(i => [i.id, i]));
-
-      // additions
-      Object.keys(newMap).forEach(id => {
-        if (!oldMap[id]) appendLog(`✓ [${slug}] added “${id}”`);
-      });
-      // removals
-      Object.keys(oldMap).forEach(id => {
-        if (!newMap[id]) appendLog(`✗ [${slug}] removed “${id}”`);
-      });
-      // edits
-      Object.keys(newMap).forEach(id => {
-        if (oldMap[id] && oldMap[id].content !== newMap[id].content) {
-          appendLog(`✎ [${slug}] updated “${id}”`);
-        }
-      });
-
-      prev[slug] = newArr;
-    }
-  }
-
-async function initWatcher() {
-  // 1) Load the initial “prev” so checkUpdates can diff
-  for (const slug of slugs) {
-    try {
-      prev[slug] = normalize(await fetchFresh(slug));
-    } catch {
-      prev[slug] = [];
-    }
-  }
-
-  // 2) Do an initial check + render
-  checkUpdates();
-  renderChangeLog(stored);
-
-  // 3) Poll every POLL_INTERVAL, then re-render
-  setInterval(async () => {
-    await checkUpdates();
-    renderChangeLog(stored);
-  }, POLL_INTERVAL);
-}
-
-window.checkUpdates = checkUpdates;
-initWatcher();
-
-})();
-</script>
-
+  <!-- Initialization scripts moved out -->
+  <script src="init.js"></script>
 </body>
 </html>
