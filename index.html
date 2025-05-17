@@ -685,25 +685,22 @@ document.getElementById('clear-notifications').onclick=_=>{
     }
   });
 
-  document.addEventListener('DOMContentLoaded', async () => {
-    let entries;
-    try {
-      const r = await fetch('https://chmpzu.github.io/WooHub/data/history.json');
-      entries = r.ok
-        ? await r.json()
-        : JSON.parse(localStorage.getItem('changeLogEntries') || '[]');
-    } catch {
-      entries = JSON.parse(localStorage.getItem('changeLogEntries') || '[]');
-    }
-    localStorage.setItem('changeLogEntries', JSON.stringify(entries));
-    document.getElementById('change-log').innerHTML = entries.length
-      ? entries.map(e => `<div class="update-item">${e.timestamp}: ${e.message}</div>`).join('')
-      : '<p>No updates yet…</p>';
-
-    renderRecentlyViewed(JSON.parse(localStorage.getItem('recentlyViewed')||'[]'));
-    renderCards();
-    buildSearchIndex();
-  });
+document.addEventListener("DOMContentLoaded", async () => {
+  const key = "changeLogEntries";
+  let entries = [];
+  try {
+    const r = await fetch(`data/history.json?cb=${Date.now()}`, { cache: "no-store" });
+    if (r.ok) entries = await r.json();
+  } catch {}
+  if (!entries.length) entries = JSON.parse(localStorage.getItem(key) || "[]");
+  localStorage.setItem(key, JSON.stringify(entries));
+  document.getElementById("change-log").innerHTML = entries.length
+    ? entries.map(e => `<li class="py-2">${e.timestamp}: ${e.message}</li>`).join("")
+    : '<li class="py-2 text-gray-500">No updates available.</li>';
+  renderRecentlyViewed(JSON.parse(localStorage.getItem("recentlyViewed") || "[]"));
+  renderCards();
+  buildSearchIndex();
+});
   
   new EventSource('/updates').onmessage = e => {
     const update = JSON.parse(e.data);
