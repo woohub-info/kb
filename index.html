@@ -542,7 +542,6 @@ async function pollNotifications(){
     li.className='p-2 border-b hover:bg-gray-50 flex justify-between items-center';
     li.append(wr,tm);
     ul.appendChild(li);
-    seen.add(i.id);
   }
   st(SKEY,[...seen]);
   setCount(unread.length);
