@@ -74,8 +74,8 @@
       "content": "<p>Hi,</p><p>We hope this message finds you well. We sincerely apologize for any inconvenience caused by the rejection of your cancellation request.</p><p>Please note that the item has already been shipped out on [DATE] with tracking number [TN] via [CARRIER]. We understand this may not be the outcome you were hoping for, and we genuinely regret any frustration this may have caused.</p><p>Once you receive the item, kindly reach out to us so we can explore any available options to help resolve the matter. Thank you for your patience and understanding.</p><p>Sincerely,<br>WooParts</p>"
     },
     {
-      "name": "For Awaiting Shipment Item",
-      "content": "<p>Hi,</p><p>We have successfully canceled your order. We have initiated a full refund. It will go back to your original payment method and will reflect in the next 1-5 business days.</p><p>Thank you for your business and we hope to serve you again in the future.</p><p>Best regards,<br>WooParts</p>"
+      "name": "Will Call Cancellation - Awaiting Shipment",
+      "content": "<p>Hi,</p><p>We have successfully canceled your order. The refund will go back to your original payment method in 1-5 business days.</p><p>Thank you for your business and we hope to serve you again in the future.</p><p>Best regards,<br>WooParts</p>"
     },
     {
       "name": "For Dropship",
