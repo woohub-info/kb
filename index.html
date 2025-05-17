@@ -193,7 +193,24 @@
     });
   };
 
-  // helpers
+  // updateCardBadges: show “new” badge if any unread items exist for each card
+  async function updateCardBadges() {
+    for (const c of cardsData) {
+      const badge = document.querySelector(`[data-slug="${c.slug}"] .badge`);
+      if (!badge) continue;
+      try {
+        const data = await fetchItems(c.slug);
+        const items = Array.isArray(data) ? data : Object.values(data).flat();
+        const hasUnread = items.some(item => {
+          const id = item.id || item.name;
+          return !isItemRead(c.slug, id);
+        });
+        badge.classList.toggle('hidden', !hasUnread);
+      } catch {}
+    }
+  }
+
+  // helper: format timestamp
   function formatTimestamp(t){
     const d = new Date(t),
           M = d.getMonth()+1,
@@ -206,17 +223,17 @@
     return `${M}/${D}/${YY} ${h}:${m}${ampm}`;
   }
 
+  // read/seen persistence
   const badgeDataMap = {},
         seenNotifIds = new Set(JSON.parse(localStorage.getItem('seenNotifIds')||'[]'));
-
   function getReadItems(){ try{return JSON.parse(localStorage.getItem('readItems')||'{}')}catch{return {}} }
   function saveReadItems(v){ localStorage.setItem('readItems', JSON.stringify(v)); }
   function markItemRead(s,i){ let r=getReadItems(); r[s]=r[s]||[]; if(!r[s].includes(i)){ r[s].push(i); saveReadItems(r); } }
   function isItemRead(s,i){ let r=getReadItems(); return Array.isArray(r[s]) && r[s].includes(i); }
-  function hasUnreadForSlug(s){ return (badgeDataMap[s]||[]).some(id => !isItemRead(s,id)); }
+  function hasUnreadForSlug(s){ return (badgeDataMap[s]||[]).some(id => !isItemRead(s, id)); }
   function setNotifCount(n){
     const el = document.getElementById('notification-count');
-    if(n>0){ el.textContent = n; el.classList.remove('hidden'); }
+    if (n > 0) { el.textContent = n; el.classList.remove('hidden'); }
     else el.classList.add('hidden');
   }
 
@@ -248,97 +265,105 @@
         mobileUpdatesContainer = document.getElementById('mobile-updates-container'),
         toTopBtn = document.getElementById('to-top');
 
+  // card definitions
   const cardsData = [
-    { title:'Email Templates',slug:'email-templates',description:'Browse pre-built email templates.' },
-    { title:'Processes',      slug:'processes',      description:'Step-by-step how-to guides and workflows.' },
-    { title:'Reports',        slug:'reports',        description:'Access performance and usage reports.' },
-    { title:'Links',          slug:'links',          description:'Quick access to essential resources.' },
-    { title:'Tutorials',      slug:'tutorials',      description:'Video lessons to guide you through every step.' },
-    { title:'Directory',      slug:'directory',      description:'Key people to contact.' }
+    { title: 'Email Templates', slug: 'email-templates', description: 'Browse pre-built email templates.' },
+    { title: 'Processes',       slug: 'processes',      description: 'Step-by-step how-to guides and workflows.' },
+    { title: 'Reports',         slug: 'reports',        description: 'Access performance and usage reports.' },
+    { title: 'Links',           slug: 'links',          description: 'Quick access to essential resources.' },
+    { title: 'Tutorials',       slug: 'tutorials',      description: 'Video lessons to guide you through every step.' },
+    { title: 'Directory',       slug: 'directory',      description: 'Key people to contact.' }
   ];
 
+  // caching & debounce
   const contentCache = {},
-        debounce = (fn,ms)=>{ let t; return(...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; };
+        debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
 
-  async function fetchItems(slug){
-    if(contentCache[slug]) return contentCache[slug];
+  async function fetchItems(slug) {
+    if (contentCache[slug]) return contentCache[slug];
     const res = await fetch(`data/${slug}.json`);
-    if(!res.ok) throw new Error('Failed to load');
+    if (!res.ok) throw new Error('Failed to load data');
     return contentCache[slug] = await res.json();
   }
 
-  function renderRecentlyViewed(recents){
+  // Recently Viewed
+  function renderRecentlyViewed(recents) {
     const ul = document.getElementById('recent-list');
     ul.innerHTML = '';
-    if(!recents.length){
+    if (!recents.length) {
       ul.innerHTML = '<li class="py-2 text-gray-500 italic">No recently viewed items</li>';
       return;
     }
-    recents.forEach(item=>{
+    recents.forEach(item => {
       const li = document.createElement('li');
       li.className = 'py-2 text-indigo-600 hover:underline cursor-pointer';
       li.textContent = item.title;
-      li.onclick = ()=> item.type==='card'
-        ? showContent(item.slug,item.title)
-        : openEmailOverlay(item.title,item.content,item.slug);
+      li.onclick = () => item.type === 'card'
+        ? showContent(item.slug, item.title)
+        : openEmailOverlay(item.title, item.content, item.slug);
       ul.appendChild(li);
     });
   }
-  function addToRecents(item){
-    const key='recentlyViewed', arr = JSON.parse(localStorage.getItem(key)||'[]');
-    const filtered = arr.filter(r=>!(r.slug===item.slug&&r.id===item.id));
+  function addToRecents(item) {
+    const key = 'recentlyViewed',
+          arr = JSON.parse(localStorage.getItem(key) || '[]'),
+          filtered = arr.filter(r => !(r.slug === item.slug && r.id === item.id));
     filtered.unshift(item);
-    localStorage.setItem(key, JSON.stringify(filtered.slice(0,10)));
+    localStorage.setItem(key, JSON.stringify(filtered.slice(0, 10)));
     renderRecentlyViewed(filtered);
   }
 
-  function renderCards(){
+  // Render cards
+  function renderCards() {
     container.innerHTML = '';
-    cardsData.forEach(c=>{
+    cardsData.forEach(c => {
       const art = document.createElement('article');
       art.dataset.tilt = '';
       art.dataset.slug = c.slug;
-      art.className = 'relative bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6 flex flex-col';
+      art.className = 'relative bg-white rounded-lg shadow hover:shadow-lg transform transition-transform hover:-translate-y-1 hover:scale-[1] p-6 flex flex-col';
       art.innerHTML = `
         <span class="badge absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full hidden">new</span>
         <h3 tabindex="0" class="text-xl font-semibold mb-2 hover:text-indigo-600 cursor-pointer">${c.title}</h3>
         <p class="text-gray-600 flex-1">${c.description}</p>
-        <button class="bg-indigo-600 hover:bg-indigo-700 text-white mt-4 font-medium px-4 py-2 rounded-lg transition">View ${c.title} →</button>
+        <button class="bg-indigo-600 hover:bg-indigo-700 text-white mt-4 font-medium px-4 py-2 rounded-lg transition">
+          View ${c.title} →
+        </button>
       `;
-      art.querySelector('h3').onclick = ()=> showContent(c.slug,c.title);
-      art.querySelector('button').onclick = ()=> showContent(c.slug,c.title);
+      art.querySelector('h3').onclick    = () => showContent(c.slug, c.title);
+      art.querySelector('button').onclick = () => showContent(c.slug, c.title);
       container.appendChild(art);
     });
     updateCardBadges();
   }
 
-  async function showContent(slug,title){
-    addToRecents({ id: slug, slug, title, type:'card' });
+  // Show content for a card
+  async function showContent(slug, title) {
+    addToRecents({ id: slug, slug, title, type: 'card' });
     container.classList.add('hidden');
     detailContainer.classList.remove('hidden');
     detailTitle.textContent = title;
     detailList.innerHTML = '';
 
-    if(slug==='links'){
+    if (slug === 'links') {
       const groups = await fetchItems('links'),
-            oldIds = new Set((window.initialLinks||[]).map(x=>x.id));
-      for(const [cat,items] of Object.entries(groups)){
-        if(cat){
+            oldIds = new Set((window.initialLinks || []).map(x => x.id));
+      for (const [cat, items] of Object.entries(groups)) {
+        if (cat) {
           const h = document.createElement('h3');
-          h.className='text-lg font-semibold mt-4';
-          h.textContent=cat;
+          h.className = 'text-lg font-semibold mt-4';
+          h.textContent = cat;
           detailList.appendChild(h);
         }
-        items.forEach(i=>{
-          if(oldIds.has(i.name)) markItemRead('links',i.name);
+        items.forEach(i => {
+          if (oldIds.has(i.name)) markItemRead('links', i.name);
           const li = document.createElement('li'),
-                a  = Object.assign(document.createElement('a'),{ href:i.url, target:'_blank', rel:'noopener noreferrer', textContent:i.name });
-          a.className='text-indigo-600 hover:underline';
+                a  = Object.assign(document.createElement('a'), { href: i.url, target: '_blank', rel: 'noopener noreferrer', textContent: i.name });
+          a.className = 'text-indigo-600 hover:underline';
           const dot = document.createElement('span');
-          dot.className='ml-2 inline-block w-2 h-2 bg-red-600 rounded-full';
-          if(isItemRead('links',i.name)) dot.classList.add('hidden');
-          a.onclick = ()=>{ markItemRead('links',i.name); dot.classList.add('hidden'); updateCardBadges(); };
-          li.append(a,dot);
+          dot.className = 'ml-2 inline-block w-2 h-2 bg-red-600 rounded-full';
+          if (isItemRead('links', i.name)) dot.classList.add('hidden');
+          a.onclick = () => { markItemRead('links', i.name); dot.classList.add('hidden'); updateCardBadges(); };
+          li.append(a, dot);
           detailList.appendChild(li);
         });
       }
@@ -346,44 +371,49 @@
       return;
     }
 
-    if(slug==='reports'){
-      const p1=['https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png','https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_amz.png'],
-            p2=['https://raw.githubusercontent.com/chmpzu/assets/main/reports/autoapex_ebay.png'];
-      detailList.innerHTML=`
+    if (slug === 'reports') {
+      const p1 = [
+        'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
+        'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_amz.png'
+      ];
+      const p2 = [
+        'https://raw.githubusercontent.com/chmpzu/assets/main/reports/autoapex_ebay.png'
+      ];
+      detailList.innerHTML = `
         <div class="prose max-w-none space-y-8">
           <p><a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl" target="_blank" class="text-blue-600 hover:underline">WooParts eBay and Amazon Monthly Performance – 2025</a></p>
-          <div class="space-y-4">${p1.map(u=>`<img src="${u}" loading="lazy" class="h-64 w-auto object-contain block" alt="Report">`).join('')}</div>
+          <div class="space-y-4">${p1.map(u => `<img src="${u}" loading="lazy" class="h-64 w-auto object-contain block" alt="Report">`).join('')}</div>
           <p><a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/EdkrNcbAsn1Oj6R_91SAOs4BwbNHpXFXBZtCrfaNoLYq3Q?e=7qIebl" target="_blank" class="text-blue-600 hover:underline">AutoApex eBay Monthly Performance – 2025</a></p>
-          <div class="space-y-4">${p2.map(u=>`<img src="${u}" loading="lazy" class="h-64 w-auto object-contain block" alt="Extra Report">`).join('')}</div>
+          <div class="space-y-4">${p2.map(u => `<img src="${u}" loading="lazy" class="h-64 w-auto object-contain block" alt="Extra Report">`).join('')}</div>
         </div>`;
       return;
     }
 
-    try{
+    try {
       const data = await fetchItems(slug),
-            groups = Array.isArray(data)?{ '': data } : data;
-      for(const [cat,items] of Object.entries(groups)){
-        if(cat){
+            groups = Array.isArray(data) ? { '': data } : data;
+      for (const [cat, items] of Object.entries(groups)) {
+        if (cat) {
           const h = document.createElement('h3');
-          h.className='text-lg font-semibold mt-4';
-          h.textContent=cat;
+          h.className = 'text-lg font-semibold mt-4';
+          h.textContent = cat;
           detailList.appendChild(h);
         }
-        items.forEach(i=>{
+        items.forEach(i => {
           const li = document.createElement('li'),
                 btn = document.createElement('button');
-          btn.className='flex items-center text-indigo-600 hover:underline focus:outline-none';
-          btn.textContent=i.name;
-          const id = i.id||i.name,
-                dot=document.createElement('span');
-          dot.className='ml-2 inline-block w-2 h-2 bg-red-600 rounded-full';
-          if(isItemRead(slug,id)) dot.classList.add('hidden');
+          btn.className = 'flex items-center text-indigo-600 hover:underline focus:outline-none';
+          btn.textContent = i.name;
+          const id = i.id || i.name,
+                dot = document.createElement('span');
+          dot.className = 'ml-2 inline-block w-2 h-2 bg-red-600 rounded-full';
+          if (isItemRead(slug, id)) dot.classList.add('hidden');
           btn.appendChild(dot);
-          btn.onclick = ()=>{
-            openEmailOverlay(i.name,i.content,slug);
-            markItemRead(slug,id);
+          btn.onclick = () => {
+            openEmailOverlay(i.name, i.content, slug);
+            markItemRead(slug, id);
             dot.classList.add('hidden');
-            if(!hasUnreadForSlug(slug)){
+            if (!hasUnreadForSlug(slug)) {
               const b = document.querySelector(`[data-slug="${slug}"] .badge`);
               b && b.classList.add('hidden');
             }
@@ -392,185 +422,194 @@
           detailList.appendChild(li);
         });
       }
-    }catch{
-      detailList.innerHTML='<li class="text-red-500">This page is under construction – check back soon!</li>';
+    } catch {
+      detailList.innerHTML = '<li class="text-red-500">This page is under construction – check back soon!</li>';
     }
   }
 
   // trap focus
   document.addEventListener('keydown', e => {
-    if(e.key==='Tab' && !overlay.classList.contains('hidden')){
-      const focusable = Array.from(overlayDialog.querySelectorAll('button,[href],input,textarea,[tabindex]:not([tabindex="-1"])')).filter(el=>!el.disabled),
+    if (e.key === 'Tab' && !overlay.classList.contains('hidden')) {
+      const focusable = Array.from(overlayDialog.querySelectorAll('button,[href],input,textarea,[tabindex]:not([tabindex="-1"])')).filter(el => !el.disabled),
             idx = focusable.indexOf(document.activeElement);
-      if(e.shiftKey && idx===0){ focusable[focusable.length-1].focus(); e.preventDefault(); }
-      else if(!e.shiftKey && idx===focusable.length-1){ focusable[0].focus(); e.preventDefault(); }
+      if (e.shiftKey && idx === 0) { focusable[focusable.length-1].focus(); e.preventDefault(); }
+      else if (!e.shiftKey && idx === focusable.length-1) { focusable[0].focus(); e.preventDefault(); }
     }
   });
 
   // overlay open/close & copy
   let lastFocused;
-  function openEmailOverlay(name, html, slug){
-    lastFocused=document.activeElement;
-    document.documentElement.style.overflow='';
-    overlayHeader.textContent=name;
-    const c=cardsData.find(x=>x.slug===slug);
-    overlayBody.innerHTML=`${c?`<h3 class="text-lg font-semibold mb-2">${c.title}</h3>`:''}<div class="prose max-w-none space-y-4">${html}</div>`;
-    addToRecents({id:name,slug,title:name,content:html,type:'item'});
+  function openEmailOverlay(name, html, slug) {
+    lastFocused = document.activeElement;
+    document.documentElement.style.overflow = '';
+    overlayHeader.textContent = name;
+    const c = cardsData.find(x => x.slug === slug);
+    overlayBody.innerHTML = `${c ? `<h3 class="text-lg font-semibold mb-2">${c.title}</h3>` : ''}<div class="prose max-w-none space-y-4">${html}</div>`;
+    addToRecents({ id: name, slug, title: name, content: html, type: 'item' });
     overlay.classList.remove('hidden');
     overlayDialog.classList.add('opacity-100','scale-100');
     copyBtn.classList.remove('hidden');
     overlayClose.focus();
   }
-  overlayClose.onclick=()=>{
+  overlayClose.onclick = () => {
     overlay.classList.add('hidden');
     overlayDialog.classList.remove('opacity-100','scale-100');
-    document.documentElement.style.overflow='';
-    lastFocused&&lastFocused.focus();
+    document.documentElement.style.overflow = '';
+    lastFocused && lastFocused.focus();
   };
-  overlay.onclick=e=>{ if(e.target===overlay) overlayClose.click(); };
-  copyBtn.onclick=()=>{
-    navigator.clipboard.writeText(overlayBody.innerText).then(()=>{
-      copyBtn.textContent='Copied!';
-      setTimeout(()=>copyBtn.textContent='Copy',2000);
+  overlay.onclick = e => { if (e.target === overlay) overlayClose.click(); };
+  copyBtn.onclick = () => {
+    navigator.clipboard.writeText(overlayBody.innerText).then(() => {
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => copyBtn.textContent = 'Copy', 2000);
     });
   };
 
   // back & to-top
-  backBtn.onclick=()=>{
+  backBtn.onclick = () => {
     detailContainer.classList.add('hidden');
     container.classList.remove('hidden');
-    document.documentElement.style.overflow='';
+    document.documentElement.style.overflow = '';
   };
-  window.addEventListener('scroll', ()=>{ toTopBtn.classList.toggle('hidden', window.scrollY<300); });
-  toTopBtn.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+  window.addEventListener('scroll', () => { toTopBtn.classList.toggle('hidden', window.scrollY < 300); });
+  toTopBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  function iconFor(t){ return {updates:'🔔','email-templates':'✉️',processes:'🛠️',reports:'📊',links:'🔗',tutorials:'🎥',directory:'📇'}[t]||'🆕'; }
-  function getRelativeTime(d){
-    const diff=(new Date()-d)/1000;
-    if(diff<60) return 'just now';
-    if(diff<3600) return `${Math.floor(diff/60)} min${Math.floor(diff/60)>1?'s':''} ago`;
-    if(diff<86400) return `${Math.floor(diff/3600)} hour${Math.floor(diff/3600)>1?'s':''} ago`;
+  // notification helper & relative time
+  function iconFor(t) { return { updates:'🔔','email-templates':'✉️',processes:'🛠️',reports:'📊',links:'🔗',tutorials:'🎥',directory:'📇' }[t] || '🆕'; }
+  function getRelativeTime(d) {
+    const diff = (new Date() - d) / 1000;
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return `${Math.floor(diff/60)} min${Math.floor(diff/60)>1?'s':''} ago`;
+    if (diff < 86400) return `${Math.floor(diff/3600)} hour${Math.floor(diff/3600)>1?'s':''} ago`;
     return d.toLocaleDateString();
   }
 
-  // poll notifications
-  async function pollNotifications(){
-    let all=[];
-    try{
-      const r=await fetch('data/updates.json');
-      if(r.ok){ const j=await r.json(); all=j.map(u=>({id:u.id||u.timestamp+u.text,text:u.text,time:new Date(u.timestamp),type:'updates'})); }
-    }catch{}
-    for(const c of cardsData){
-      if(c.slug==='reports') continue;
-      try{
-        const r=await fetch(`data/${c.slug}.json`);
-        if(r.ok){
-          const j=await r.json(), arr=Array.isArray(j)?j:Object.values(j).flat();
-          all.push(...arr.map(i=>({id:`${c.slug}|${i.name}`,text:`New ${c.title}: ${i.name}`,time:new Date(i.timestamp||Date.now()),type:c.slug})));
-        }
-      }catch{}
-    }
-    const unread=all.filter(i=>!seenNotifIds.has(i.id)),
-          read=all.filter(i=>seenNotifIds.has(i.id)),
-          sortDesc=l=>l.sort((a,b)=>b.time-a.time),
-          sorted=[...sortDesc(unread),...sortDesc(read)];
-    notifListEl.innerHTML='';
-    let newCount=unread.length;
-    for(const item of sorted){
-      const li=document.createElement('li');
-      li.className='p-2 border-b hover:bg-gray-50 flex justify-between items-center';
-      const w=document.createElement('div');
-      if(!seenNotifIds.has(item.id)){
-        const nb=document.createElement('span');
-        nb.textContent='New ';
-        nb.className='new-badge text-red-600 text-xs font-semibold mr-1';
-        w.appendChild(nb);
+  // poll notifications & refresh badges
+  async function pollNotifications() {
+    let all = [];
+    try {
+      const r = await fetch('data/updates.json');
+      if (r.ok) {
+        const j = await r.json();
+        all = j.map(u => ({ id: u.id || u.timestamp+u.text, text: u.text, time: new Date(u.timestamp), type: 'updates' }));
       }
-      const txt=document.createElement('span');
-      txt.textContent=`${iconFor(item.type)} ${item.text}`;
-      w.appendChild(txt);
-      const tm=document.createElement('time');
-      tm.className='text-xs text-gray-500';
-      tm.textContent=getRelativeTime(item.time);
-      tm.title=item.time.toLocaleString();
-      li.append(w,tm);
+    } catch {}
+    for (const c of cardsData) {
+      if (c.slug === 'reports') continue;
+      try {
+        const r = await fetch(`data/${c.slug}.json`);
+        if (!r.ok) continue;
+        const j = await r.json(), arr = Array.isArray(j)?j:Object.values(j).flat();
+        all.push(...arr.map(i => ({ id: `${c.slug}|${i.name}`, text: `New ${c.title}: ${i.name}`, time: new Date(i.timestamp||Date.now()), type: c.slug })));
+      } catch {}
+    }
+    const unread = all.filter(i => !seenNotifIds.has(i.id)),
+          read   = all.filter(i => seenNotifIds.has(i.id)),
+          sortDesc = l => l.sort((a,b)=>b.time - a.time),
+          sorted = [...sortDesc(unread),...sortDesc(read)];
+
+    notifListEl.innerHTML = '';
+    let newCount = unread.length;
+    for (const item of sorted) {
+      const li = document.createElement('li');
+      li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between items-center';
+      const wrapper = document.createElement('div');
+      if (!seenNotifIds.has(item.id)) {
+        const nb = document.createElement('span');
+        nb.textContent = 'New ';
+        nb.className   = 'new-badge text-red-600 text-xs font-semibold mr-1';
+        wrapper.appendChild(nb);
+      }
+      const txt = document.createElement('span');
+      txt.textContent = `${iconFor(item.type)} ${item.text}`;
+      wrapper.appendChild(txt);
+      const tm = document.createElement('time');
+      tm.className    = 'text-xs text-gray-500';
+      tm.textContent = getRelativeTime(item.time);
+      tm.title        = item.time.toLocaleString();
+      li.append(wrapper, tm);
       notifListEl.appendChild(li);
       seenNotifIds.add(item.id);
     }
-    localStorage.setItem('seenNotifIds',JSON.stringify([...seenNotifIds]));
+    localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
     setNotifCount(newCount);
 
     // refresh card “new” badges
     updateCardBadges();
 
-    const bell=document.getElementById('bellIcon');
-    bell.style.animation='bell-bounce .6s';
-    bell.addEventListener('animationend',()=>bell.style.animation='',{once:true});
+    const bell = document.getElementById('bellIcon');
+    bell.style.animation = 'bell-bounce .6s';
+    bell.addEventListener('animationend', () => bell.style.animation = '', { once:true });
   }
-  setInterval(pollNotifications,60000);
+  setInterval(pollNotifications, 60000);
   pollNotifications();
 
-  notifBtn.onclick=()=>{
-    const isOpen=!notifDropdown.classList.toggle('hidden');
-    notifBtn.setAttribute('aria-expanded',String(isOpen));
-    if(isOpen){
+  notifBtn.onclick = () => {
+    const open = !notifDropdown.classList.toggle('hidden');
+    notifBtn.setAttribute('aria-expanded', String(open));
+    if (open) {
       setNotifCount(0);
       document.querySelectorAll('#notification-list .new-badge').forEach(e=>e.remove());
-      localStorage.setItem('seenNotifIds',JSON.stringify([...seenNotifIds]));
+      localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
     }
   };
-  clearNotifsBtn.onclick=()=>{
-    seenNotifIds=new Set(Object.values(badgeDataMap).flat());
-    localStorage.setItem('seenNotifIds',JSON.stringify([...seenNotifIds]));
-    notifListEl.innerHTML='';
+  clearNotifsBtn.onclick = () => {
+    seenNotifIds = new Set(Object.values(badgeDataMap).flat());
+    localStorage.setItem('seenNotifIds', JSON.stringify([...seenNotifIds]));
+    notifListEl.innerHTML = '';
     setNotifCount(0);
   };
-  document.getElementById('update-banner-close').addEventListener('click',()=>document.getElementById('update-banner').classList.add('hidden'));
+  document.getElementById('update-banner-close').addEventListener('click', () => {
+    document.getElementById('update-banner').classList.add('hidden');
+  });
 
   // recent updates panel
-  let allUpdates=[], displayCount=5, initialUpdatesLoad=true;
-  async function pollUpdatesPanel(){
-    try{
-      const r=await fetch('data/updates.json');
-      if(r.ok){ const j=await r.json(); allUpdates=j.map(u=>({text:u.text,time:u.timestamp,link:u.link})); renderUpdatesPanel(); }
-    }catch{}
+  let allUpdates = [], displayCount=5, initialUpdatesLoad=true;
+  async function pollUpdatesPanel() {
+    try {
+      const r = await fetch('data/updates.json');
+      if (r.ok) {
+        const j = await r.json();
+        allUpdates = j.map(u => ({ text:u.text, time:u.timestamp, link:u.link }));
+        renderUpdatesPanel();
+      }
+    } catch {}
   }
-  function renderUpdatesPanel(){
-    const fv=(updatesFilter?.value||mobileUpdatesFilter?.value||'').toLowerCase();
-    const fl=allUpdates.filter(u=>u.text.toLowerCase().includes(fv)).sort((a,b)=>new Date(b.time)-new Date(a.time));
-    const ts=fl.slice(0,displayCount), lastSeen=localStorage.getItem('lastSeenUpdate'), latestTime=ts[0]?.time, isNew=latestTime&&latestTime!==lastSeen;
-    [updatesContainer,mobileUpdatesContainer].forEach(cn=>{
-      cn.innerHTML='';
-      if(!ts.length){
-        const li=document.createElement('li');
-        li.textContent='No updates available.';
-        li.className='py-2 text-gray-500';
+  function renderUpdatesPanel() {
+    const fv = (updatesFilter?.value || mobileUpdatesFilter?.value || '').toLowerCase();
+    const fl = allUpdates.filter(u => u.text.toLowerCase().includes(fv))
+                         .sort((a,b)=>new Date(b.time)-new Date(a.time));
+    const ts = fl.slice(0, displayCount), lastSeen = localStorage.getItem('lastSeenUpdate'),
+          latestTime = ts[0]?.time, isNew = latestTime && latestTime !== lastSeen;
+    [updatesContainer, mobileUpdatesContainer].forEach(cn => {
+      cn.innerHTML = '';
+      if (!ts.length) {
+        const li = document.createElement('li');
+        li.textContent = 'No updates available.'; li.className='py-2 text-gray-500';
         cn.appendChild(li);
-      } else ts.forEach((u,i)=>{
-        const li=document.createElement('li');
-        if(u.link){
-          const a=document.createElement('a');
-          a.href=u.link; a.className='block py-2 hover:underline';
-          if(i===0&&initialUpdatesLoad){
-            const b=document.createElement('span');
-            b.textContent='New ';
-            b.className='text-red-600 text-xs font-semibold';
+      } else ts.forEach((u,i) => {
+        const li = document.createElement('li');
+        if (u.link) {
+          const a = document.createElement('a');
+          a.href = u.link; a.className = 'block py-2 hover:underline';
+          if (i===0 && initialUpdatesLoad) {
+            const b = document.createElement('span');
+            b.textContent='New '; b.className='text-red-600 text-xs font-semibold';
             a.appendChild(b);
             document.getElementById('update-banner').classList.remove('hidden');
             document.getElementById('update-banner').classList.add('show');
-            document.getElementById('update-banner-content').textContent=u.text;
+            document.getElementById('update-banner-content').textContent = u.text;
           }
           a.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
           li.appendChild(a);
         } else {
-          if(i===0&&initialUpdatesLoad){
-            const b=document.createElement('span');
-            b.textContent='New ';
-            b.className='text-red-600 text-xs;font-semibold';
+          if (i===0 && initialUpdatesLoad) {
+            const b = document.createElement('span');
+            b.textContent='New '; b.className='text-red-600 text-xs font-semibold';
             li.appendChild(b);
             document.getElementById('update-banner').classList.remove('hidden');
             document.getElementById('update-banner').classList.add('show');
-            document.getElementById('update-banner-content').textContent=u.text;
+            document.getElementById('update-banner-content').textContent = u.text;
           }
           li.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
           li.className='py-2';
@@ -578,47 +617,45 @@
         cn.appendChild(li);
       });
     });
-    if(isNew) localStorage.setItem('lastSeenUpdate', latestTime);
+    if (isNew) localStorage.setItem('lastSeenUpdate', latestTime);
     initialUpdatesLoad=false;
   }
-  setInterval(pollUpdatesPanel,60000);
+  setInterval(pollUpdatesPanel, 60000);
   pollUpdatesPanel();
-  updatesFilterToggle.onclick=()=>updatesFilterContainer.classList.toggle('hidden');
-  mobileUpdatesFilterToggle.onclick=()=>mobileUpdatesFilterContainer.classList.toggle('hidden');
+  updatesFilterToggle.onclick = () => updatesFilterContainer.classList.toggle('hidden');
+  mobileUpdatesFilterToggle.onclick = () => mobileUpdatesFilterContainer.classList.toggle('hidden');
   updatesFilter?.addEventListener('input', debounce(renderUpdatesPanel,200));
   mobileUpdatesFilter?.addEventListener('input', debounce(renderUpdatesPanel,200));
 
   // fuzzy search
   let fuse;
-  async function buildSearchIndex(){
-    const items=cardsData.map(c=>({name:c.title,content:c.description,slug:c.slug,isRoot:true}));
-    for(const c of cardsData) if(c.slug!=='reports'){
-      try{
-        const d=await fetchItems(c.slug);
-        const arr=Array.isArray(d)?d:Object.values(d).flat();
+  async function buildSearchIndex() {
+    const items = cardsData.map(c=>({name:c.title,content:c.description,slug:c.slug,isRoot:true}));
+    for (const c of cardsData) if (c.slug!=='reports') {
+      try {
+        const d = await fetchItems(c.slug);
+        const arr = Array.isArray(d)?d:Object.values(d).flat();
         arr.forEach(i=>items.push({name:i.name,content:i.content,slug:c.slug,isRoot:false}));
-      }catch{}
+      } catch {}
     }
-    fuse=new Fuse(items,{keys:['name','content'],includeMatches:true,threshold:0.4});
+    fuse = new Fuse(items,{keys:['name','content'],includeMatches:true,threshold:0.4});
   }
-  function renderSuggestions(results){
-    searchSuggestions.innerHTML='';
-    if(!results.length){
-      searchSuggestions.innerHTML='<li class="px-4 py-2 text-gray-500">No results</li>';
-    } else results.forEach(r=>{
-      let label=r.item.name;
-      const m=r.matches.find(x=>x.key==='name');
-      if(m){
-        let h='',last=0;
+  function renderSuggestions(results) {
+    searchSuggestions.innerHTML = '';
+    if (!results.length) {
+      searchSuggestions.innerHTML = '<li class="px-4 py-2 text-gray-500">No results</li>';
+    } else results.forEach(r => {
+      let label = r.item.name;
+      const m = r.matches.find(x=>x.key==='name');
+      if (m) {
+        let h='', last=0;
         m.indices.forEach(([s,e])=>{ h+=label.slice(last,s)+`<mark>${label.slice(s,e+1)}</mark>`; last=e+1; });
-        h+=label.slice(last);
-        label=h;
+        h+=label.slice(last); label=h;
       }
-      const li=document.createElement('li');
-      li.role='option';
-      li.className='px-4 py-2 hover:bg-gray-100 cursor-pointer';
+      const li = document.createElement('li');
+      li.role='option'; li.className='px-4 py-2 hover:bg-gray-100 cursor-pointer';
       li.innerHTML=label;
-      li.onclick=()=>{
+      li.onclick = () => {
         (r.item.isRoot?showContent:openEmailOverlay)(r.item.slug||r.item.name,r.item.content,r.item.slug);
         searchSuggestions.classList.add('hidden');
         searchInput.setAttribute('aria-expanded','false');
@@ -627,15 +664,15 @@
     });
   }
   searchInput.addEventListener('input', debounce(async e=>{
-    const q=e.target.value.trim();
-    if(!q) return searchSuggestions.classList.add('hidden');
-    if(!fuse) await buildSearchIndex();
+    const q = e.target.value.trim();
+    if (!q) return searchSuggestions.classList.add('hidden');
+    if (!fuse) await buildSearchIndex();
     renderSuggestions(fuse.search(q));
     searchSuggestions.classList.remove('hidden');
     searchInput.setAttribute('aria-expanded','true');
   },250));
-  document.addEventListener('keydown', e=>{
-    if(e.key==='/' && document.activeElement!==searchInput){
+  document.addEventListener('keydown', e => {
+    if (e.key==='/' && document.activeElement!==searchInput) {
       e.preventDefault();
       searchInput.focus();
     }
