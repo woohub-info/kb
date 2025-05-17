@@ -146,9 +146,8 @@
     <p class="text-sm text-gray-500">Developed By: Christine Anastacio</p>
   </div>
 </footer>
-<!-- Part 3/3: Full updated <script> block -->
 <script>
-  // wrap recently‐viewed toggle in DOMContentLoaded
+  // recently-viewed dropdown
   document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('recent-btn'),
           dd  = document.getElementById('recent-dropdown');
@@ -185,8 +184,16 @@
       : '<p>No updates yet...</p>';
   });
   new EventSource('/updates').onmessage = e => updateChangeLog(JSON.parse(e.data));
+  new EventSource('/events').onmessage = e => {
+    const d = JSON.parse(e.data);
+    const ts = new Date(d.updatedAt);
+    updateChangeLog({
+      timestamp: `${ts.getMonth()+1}/${ts.getDate()}/${String(ts.getFullYear()%100).padStart(2,'0')} ${((h=>h%12||12)(ts.getHours()))}:${String(ts.getMinutes()).padStart(2,'0')}${ts.getHours()<12?'AM':'PM'}`,
+      message: `${d.file} changed`
+    });
+  };
 
-  // Format timestamp helper
+  // helpers
   function formatTimestamp(t){
     const d = new Date(t),
           M = d.getMonth()+1,
@@ -199,9 +206,9 @@
     return `${M}/${D}/${YY} ${h}:${m}${ampm}`;
   }
 
-  // Read/seen persistence
   const badgeDataMap = {},
         seenNotifIds = new Set(JSON.parse(localStorage.getItem('seenNotifIds')||'[]'));
+
   function getReadItems(){ try{return JSON.parse(localStorage.getItem('readItems')||'{}')}catch{return {}} }
   function saveReadItems(v){ localStorage.setItem('readItems', JSON.stringify(v)); }
   function markItemRead(s,i){ let r=getReadItems(); r[s]=r[s]||[]; if(!r[s].includes(i)){ r[s].push(i); saveReadItems(r); } }
@@ -213,7 +220,7 @@
     else el.classList.add('hidden');
   }
 
-  // Element refs
+  // element refs
   const container = document.getElementById('card-container'),
         detailContainer = document.getElementById('detail-container'),
         detailTitle = document.getElementById('detail-title'),
@@ -241,7 +248,6 @@
         mobileUpdatesContainer = document.getElementById('mobile-updates-container'),
         toTopBtn = document.getElementById('to-top');
 
-  // Card definitions
   const cardsData = [
     { title:'Email Templates',slug:'email-templates',description:'Browse pre-built email templates.' },
     { title:'Processes',      slug:'processes',      description:'Step-by-step how-to guides and workflows.' },
@@ -251,7 +257,6 @@
     { title:'Directory',      slug:'directory',      description:'Key people to contact.' }
   ];
 
-  // Caching & debounce
   const contentCache = {},
         debounce = (fn,ms)=>{ let t; return(...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; };
 
@@ -262,7 +267,6 @@
     return contentCache[slug] = await res.json();
   }
 
-  // Recently Viewed
   function renderRecentlyViewed(recents){
     const ul = document.getElementById('recent-list');
     ul.innerHTML = '';
@@ -274,8 +278,9 @@
       const li = document.createElement('li');
       li.className = 'py-2 text-indigo-600 hover:underline cursor-pointer';
       li.textContent = item.title;
-      li.onclick = ()=> item.type==='card' ? showContent(item.slug,item.title)
-                                         : openEmailOverlay(item.title,item.content,item.slug);
+      li.onclick = ()=> item.type==='card'
+        ? showContent(item.slug,item.title)
+        : openEmailOverlay(item.title,item.content,item.slug);
       ul.appendChild(li);
     });
   }
@@ -287,7 +292,6 @@
     renderRecentlyViewed(filtered);
   }
 
-  // Render cards
   function renderCards(){
     container.innerHTML = '';
     cardsData.forEach(c=>{
@@ -308,7 +312,6 @@
     updateCardBadges();
   }
 
-  // Show content for a card (links, reports, other)
   async function showContent(slug,title){
     addToRecents({ id: slug, slug, title, type:'card' });
     container.classList.add('hidden');
@@ -394,7 +397,7 @@
     }
   }
 
-  // trap focus in modal
+  // trap focus
   document.addEventListener('keydown', e => {
     if(e.key==='Tab' && !overlay.classList.contains('hidden')){
       const focusable = Array.from(overlayDialog.querySelectorAll('button,[href],input,textarea,[tabindex]:not([tabindex="-1"])')).filter(el=>!el.disabled),
@@ -418,19 +421,30 @@
     copyBtn.classList.remove('hidden');
     overlayClose.focus();
   }
-  overlayClose.onclick=()=>{ overlay.classList.add('hidden'); overlayDialog.classList.remove('opacity-100','scale-100'); document.documentElement.style.overflow=''; lastFocused&&lastFocused.focus(); }
-  overlay.onclick=e=>{ if(e.target===overlay) overlayClose.click(); }
-  copyBtn.onclick=()=>{ navigator.clipboard.writeText(overlayBody.innerText).then(()=>{ copyBtn.textContent='Copied!'; setTimeout(()=>copyBtn.textContent='Copy',2000); }); }
+  overlayClose.onclick=()=>{
+    overlay.classList.add('hidden');
+    overlayDialog.classList.remove('opacity-100','scale-100');
+    document.documentElement.style.overflow='';
+    lastFocused&&lastFocused.focus();
+  };
+  overlay.onclick=e=>{ if(e.target===overlay) overlayClose.click(); };
+  copyBtn.onclick=()=>{
+    navigator.clipboard.writeText(overlayBody.innerText).then(()=>{
+      copyBtn.textContent='Copied!';
+      setTimeout(()=>copyBtn.textContent='Copy',2000);
+    });
+  };
 
-  // back to grid & to-top
-  backBtn.onclick=()=>{ detailContainer.classList.add('hidden'); container.classList.remove('hidden'); document.documentElement.style.overflow=''; }
+  // back & to-top
+  backBtn.onclick=()=>{
+    detailContainer.classList.add('hidden');
+    container.classList.remove('hidden');
+    document.documentElement.style.overflow='';
+  };
   window.addEventListener('scroll', ()=>{ toTopBtn.classList.toggle('hidden', window.scrollY<300); });
   toTopBtn.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 
-  // notification helper
   function iconFor(t){ return {updates:'🔔','email-templates':'✉️',processes:'🛠️',reports:'📊',links:'🔗',tutorials:'🎥',directory:'📇'}[t]||'🆕'; }
-
-  // relative time
   function getRelativeTime(d){
     const diff=(new Date()-d)/1000;
     if(diff<60) return 'just now';
@@ -446,7 +460,8 @@
       const r=await fetch('data/updates.json');
       if(r.ok){ const j=await r.json(); all=j.map(u=>({id:u.id||u.timestamp+u.text,text:u.text,time:new Date(u.timestamp),type:'updates'})); }
     }catch{}
-    for(const c of cardsData) if(c.slug!=='reports') {
+    for(const c of cardsData){
+      if(c.slug==='reports') continue;
       try{
         const r=await fetch(`data/${c.slug}.json`);
         if(r.ok){
@@ -484,6 +499,10 @@
     }
     localStorage.setItem('seenNotifIds',JSON.stringify([...seenNotifIds]));
     setNotifCount(newCount);
+
+    // refresh card “new” badges
+    updateCardBadges();
+
     const bell=document.getElementById('bellIcon');
     bell.style.animation='bell-bounce .6s';
     bell.addEventListener('animationend',()=>bell.style.animation='',{once:true});
@@ -492,9 +511,9 @@
   pollNotifications();
 
   notifBtn.onclick=()=>{
-    const open=!notifDropdown.classList.toggle('hidden');
-    notifBtn.setAttribute('aria-expanded',open);
-    if(open){
+    const isOpen=!notifDropdown.classList.toggle('hidden');
+    notifBtn.setAttribute('aria-expanded',String(isOpen));
+    if(isOpen){
       setNotifCount(0);
       document.querySelectorAll('#notification-list .new-badge').forEach(e=>e.remove());
       localStorage.setItem('seenNotifIds',JSON.stringify([...seenNotifIds]));
@@ -547,7 +566,7 @@
           if(i===0&&initialUpdatesLoad){
             const b=document.createElement('span');
             b.textContent='New ';
-            b.className='text-red-600 text-xs font-semibold';
+            b.className='text-red-600 text-xs;font-semibold';
             li.appendChild(b);
             document.getElementById('update-banner').classList.remove('hidden');
             document.getElementById('update-banner').classList.add('show');
@@ -614,7 +633,7 @@
     renderSuggestions(fuse.search(q));
     searchSuggestions.classList.remove('hidden');
     searchInput.setAttribute('aria-expanded','true');
-  }, 250));
+  },250));
   document.addEventListener('keydown', e=>{
     if(e.key==='/' && document.activeElement!==searchInput){
       e.preventDefault();
