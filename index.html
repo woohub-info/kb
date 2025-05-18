@@ -674,7 +674,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderCards();
   buildSearchIndex();
 });
-  
+  const banner       = document.getElementById('update-banner');
+  const bannerClose  = document.getElementById('update-banner-close');
+
+  bannerClose.addEventListener('click', () => {
+    banner.classList.remove('show');
+    banner.classList.add('hidden');
+});  
   new EventSource('/updates').onmessage = e => {
     const update = JSON.parse(e.data);
     const entries = JSON.parse(localStorage.getItem('changeLogEntries') || '[]');
