@@ -113,7 +113,7 @@
         <li>Dashboard</li>
       </ol>
     </nav>
-
+    
     <section id="detail-container"
              class="hidden absolute inset-0 bg-white rounded-lg shadow p-6 flex flex-col"
              style="height:calc(100% - 1rem);max-height:calc(100vh - 1rem);overflow-y:auto;margin-bottom:1rem;">
@@ -211,17 +211,7 @@
   }
 
   // helper: format timestamp
-  function formatTimestamp(t){
-    const d = new Date(t),
-          M = d.getMonth()+1,
-          D = d.getDate(),
-          YY = String(d.getFullYear()%100).padStart(2,'0'),
-          h24 = d.getHours(),
-          ampm = h24 < 12 ? 'AM' : 'PM',
-          h = h24%12 || 12,
-          m = String(d.getMinutes()).padStart(2,'0');
-    return `${M}/${D}/${YY} ${h}:${m}${ampm}`;
-  }
+  function formatTimestamp(t){const d = new Date(t), M = d.getMonth()+1, D = d.getDate(), YY = String(d.getFullYear()%100).padStart(2,'0'), h24 = d.getHours(), ampm = h24 < 12 ? 'AM' : 'PM', h = h24%12 || 12, m = String(d.getMinutes()).padStart(2,'0'); return `${M}/${D}/${YY} ${h}:${m}${ampm}`;}
 
   // read/seen persistence
   const badgeDataMap = {},
@@ -314,27 +304,23 @@
   }
 
   // Render cards
-  function renderCards() {
-    container.innerHTML = '';
-    cardsData.forEach(c => {
-      const art = document.createElement('article');
-      art.dataset.tilt = '';
-      art.dataset.slug = c.slug;
-      art.className = 'relative bg-white rounded-lg shadow hover:shadow-lg transform transition-transform hover:-translate-y-1 hover:scale-[1] p-6 flex flex-col';
-      art.innerHTML = `
-        <span class="badge absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full hidden">new</span>
-        <h3 tabindex="0" class="text-xl font-semibold mb-2 hover:text-indigo-600 cursor-pointer">${c.title}</h3>
-        <p class="text-gray-600 flex-1">${c.description}</p>
-        <button class="bg-indigo-600 hover:bg-indigo-700 text-white mt-4 font-medium px-4 py-2 rounded-lg transition">
-          View ${c.title} →
-        </button>
-      `;
-      art.querySelector('h3').onclick    = () => showContent(c.slug, c.title);
-      art.querySelector('button').onclick = () => showContent(c.slug, c.title);
-      container.appendChild(art);
-    });
-    updateCardBadges();
-  }
+function iconFor(t) { return { updates:'🔔','email-templates':'✉️',processes:'🛠️',reports:'📊',links:'🔗',tutorials:'🎥',directory:'📇' }[t] || '🆕'; }
+function renderCards() {
+  container.innerHTML = '';
+  cardsData.forEach(c => {
+    const art = document.createElement('article');
+    art.dataset.slug = c.slug;
+    art.className = 'relative bg-white rounded-lg shadow hover:shadow-lg transform transition-transform hover:-translate-y-1 hover:scale-[1] p-6 flex flex-col';
+    const badge = document.createElement('span'); badge.className = 'badge absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full hidden'; badge.textContent = 'new';
+    const header = document.createElement('div'); header.className = 'flex items-center mb-2';
+    const iconEl = document.createElement('span'); iconEl.className = 'text-2xl text-gray-600 mr-2'; iconEl.textContent = iconFor(c.slug);
+    const title = document.createElement('h3'); title.tabIndex = 0; title.className = 'text-xl font-semibold hover:text-indigo-600 cursor-pointer'; title.textContent = c.title; title.onclick = () => showContent(c.slug, c.title); header.append(iconEl, title);
+    const desc = document.createElement('p'); desc.className = 'text-gray-600 flex-1'; desc.textContent = c.description;
+    const btn = document.createElement('button'); btn.className = 'bg-indigo-600 hover:bg-indigo-700 text-white mt-4 font-medium px-4 py-2 rounded-lg transition'; btn.textContent = `View ${c.title} →`; btn.onclick = () => showContent(c.slug, c.title);
+    art.append(badge, header, desc, btn); container.appendChild(art);
+  });
+  updateCardBadges();
+}
 
   // Show content for a card
   async function showContent(slug, title) {
