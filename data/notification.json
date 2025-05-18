@@ -1,42 +1,42 @@
 [
   {
     "id": "2025-05-07-metrics-amzl-wooparts",
-    "text": "For metrics purposes, only select AMZL for WooParts if the EDD is 1–3 days. Our goal is to deliver the item a day or two earlier than the actual EDD. Do not select AMZL if the EDD is more than 3 days, even if it still meets the delivery window.",
+    "text": "Announcement: 📣For metrics purposes, only select AMZL for WooParts if the EDD is 1–3 days. Our goal is to deliver the item a day or two earlier than the actual EDD. Do not select AMZL if the EDD is more than 3 days, even if it still meets the delivery window.",
     "timestamp": "2025-05-07"
   },
   {
     "id": "2025-05-04-autoapex-fedex-ups",
-    "text": "For AutoApex, only use FedEx and UPS until further notice. Do not select AMZL and USPS.",
+    "text": "Announcement: 📣For AutoApex, only use FedEx and UPS until further notice. Do not select AMZL and USPS.",
     "timestamp": "2025-05-04"
   },
   {
     "id": "2025-05-01-autoapex-shipping-account",
-    "text": "AutoApex will use the same shipping account as WooParts.",
+    "text": "Announcement: 📣AutoApex will use the same shipping account as WooParts.",
     "timestamp": "2025-05-01"
   },
   {
     "id": "2025-04-29-autoapex-no-amzl",
-    "text": "Do not use AMZL for AutoApex until further notice. Use only UPS, USPS, or FedEx, with a $3 bias.",
+    "text": "Announcement: 📣Do not use AMZL for AutoApex until further notice. Use only UPS, USPS, or FedEx, with a $3 bias.",
     "timestamp": "2025-04-29"
   },
   {
     "id": "2025-04-28-wooparts-amzl-resume",
-    "text": "WooParts will resume using AMZL as a carrier, with an expected delivery window of 1–3 days—preferably delivering 1 day earlier than the estimated delivery date.",
+    "text": "Announcement: 📣WooParts will resume using AMZL as a carrier, with an expected delivery window of 1–3 days—preferably delivering 1 day earlier than the estimated delivery date.",
     "timestamp": "2025-04-28"
   },
   {
     "id": "2025-05-17-shipping-issues-processes",
-    "text": "✦︎ Added Shipping Issues - eBay International Shipping Issues to the Processes section.",
+    "text": "New Content! 📌Added Shipping Issues - eBay International Shipping Issues to the Processes section.",
     "timestamp": "2025-05-17T19:30:00"
   },
   {
     "id": "2025-05-17-returnless-refund-guidelines",
-    "text": "✦︎ Added Returnless Refund Guidelines to the Processes section.",
+    "text": "New Content! 📌Added Returnless Refund Guidelines to the Processes section.",
     "timestamp": "2025-05-17T19:00:00"
   },
   {
     "id": "2025-05-17-email-template-update",
-    "text": "✎ Updated Email Template for Will Call Cancellation - Awaiting Shipment.",
+    "text": "New Changes! 📌Updated Email Template for Will Call Cancellation - Awaiting Shipment.",
     "timestamp": "2025-05-17T18:00:00"
   }
 ]
