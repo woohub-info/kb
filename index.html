@@ -92,6 +92,10 @@
         <h2 class="font-semibold text-lg">Recent Updates</h2>
         <button id="updates-filter-toggle" class="p-1"></button>
       </div>
+  <div class="mb-2">
+    <textarea id="update-input" class="w-full p-2 border rounded mb-2" placeholder="Type a new update..." rows="2"></textarea>
+    <button id="add-update-btn" class="bg-indigo-600 text-white px-4 py-2 rounded">Add Update</button>
+  </div>
       <div id="updates-filter-container" class="hidden mb-2">
         <input id="updates-filter" type="text" placeholder="Filter updates..." class="w-full p-2 border rounded"/>
       </div>
@@ -701,6 +705,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderCards();
   buildSearchIndex();
 });
+  document.getElementById('add-update-btn').onclick = async function() {
+  const textarea = document.getElementById('update-input');
+  const text = textarea.value.trim();
+  if (!text) return alert("Please type an update!");
+
+  const res = await fetch('https://script.google.com/macros/s/AKfycbylHMZEAECIi2cURmr4oMNmFm2YlxttI9C5ztSabSR8YE1b5bO_Jnh6NwAM_Uq9Kf6B/exec', {
+    method: 'POST',
+    body: JSON.stringify({ text }),
+    headers: { 'Content-Type': 'application/json' }
+  });
+
+  if (res.ok) {
+    textarea.value = '';
+    pollUpdatesPanel(); // Refresh updates
+  } else {
+    alert('Failed to post update.');
+  }
+};
   
   new EventSource('/updates').onmessage = e => {
     const update = JSON.parse(e.data);
