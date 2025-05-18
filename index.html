@@ -498,7 +498,7 @@ const NKEY='notifications',SKEY='seenNotifIds',
 async function pollNotifications(){
   let nots=ls(NKEY);
   try{
-    let r=await fetch('data/updates.json');
+    let r=await fetch('data/notification.json');
     if(r.ok) for(let u of await r.json()){
       let id=u.id||u.timestamp+u.text;
       if(!nots.some(x=>x.id===id))
