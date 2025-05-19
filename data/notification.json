@@ -1,38 +1,28 @@
 [
   {
-    "id": "2025-19-05-cancellation-request-rejected"
-    "text": "New Template Added! 📌Added Cancellation Request Rejected to the Email Template section."
-    "timestamp": "2025-05-19T12:30:00"
-  },
-  {
-    "id": "2025-19-05-damaged-item-request-for-additional-images"
-    "text": "New Template Added! 📌Added Damaged Item - Request for Additional Images to the Email Template section."
-    "timestamp": "2025-05-19T12:30:00"
-  },
-  {
     "id": "2025-05-07-metrics-amzl-wooparts",
     "text": "Announcement: 📣For metrics purposes, only select AMZL for WooParts if the EDD is 1–3 days. Our goal is to deliver the item a day or two earlier than the actual EDD. Do not select AMZL if the EDD is more than 3 days, even if it still meets the delivery window.",
-    "timestamp": "2025-05-07"
+    "timestamp": "2025-05-07T00:00:00"
   },
   {
     "id": "2025-05-04-autoapex-fedex-ups",
     "text": "Announcement: 📣For AutoApex, only use FedEx and UPS until further notice. Do not select AMZL and USPS.",
-    "timestamp": "2025-05-04"
+    "timestamp": "2025-05-04T00:00:00"
   },
   {
     "id": "2025-05-01-autoapex-shipping-account",
     "text": "Announcement: 📣AutoApex will use the same shipping account as WooParts.",
-    "timestamp": "2025-05-01"
+    "timestamp": "2025-05-01T00:00:00"
   },
   {
     "id": "2025-04-29-autoapex-no-amzl",
     "text": "Announcement: 📣Do not use AMZL for AutoApex until further notice. Use only UPS, USPS, or FedEx, with a $3 bias.",
-    "timestamp": "2025-04-29"
+    "timestamp": "2025-04-29T00:00:00"
   },
   {
     "id": "2025-04-28-wooparts-amzl-resume",
     "text": "Announcement: 📣WooParts will resume using AMZL as a carrier, with an expected delivery window of 1–3 days—preferably delivering 1 day earlier than the estimated delivery date.",
-    "timestamp": "2025-04-28"
+    "timestamp": "2025-04-28T00:00:00"
   },
   {
     "id": "2025-05-17-shipping-issues-processes",
@@ -48,5 +38,15 @@
     "id": "2025-05-17-email-template-update",
     "text": "New Changes! 📌Updated Email Template for Will Call Cancellation - Awaiting Shipment.",
     "timestamp": "2025-05-17T18:00:00"
+  },
+  {
+    "id": "2025-19-05-cancellation-request-rejected"
+    "text": "New Template Added! 📌Added Cancellation Request Rejected to the Email Template section."
+    "timestamp": "2025-05-19T12:30:00"
+  },
+  {
+    "id": "2025-19-05-damaged-item-request-for-additional-images"
+    "text": "New Template Added! 📌Added Damaged Item - Request for Additional Images to the Email Template section."
+    "timestamp": "2025-05-19T12:30:00"
   }
 ]
