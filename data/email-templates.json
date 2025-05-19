@@ -11,6 +11,10 @@
     {
       "name": "Defective Item",
       "content": "<p>Hi,</p><p>Thank you for reaching out and we sincerely apologize that you received a defective item. We would like to inform you that we have initiated a full refund and it will go back to your original payment method and will reflect in the next 1-5 business days. No need to return the item. Feel free to keep it or dispose of it.</p><p>We'll further investigate this issue to avoid recurrence in the future. Thank you and we appreciate your understanding.</p><p>Sincerely,<br>WooParts</p>"
+    },
+    {
+      "name": "Damaged Item - Request for Additional Images",
+      "content": "<p>Hi,</p><p>We sincerely apologize for the inconvenience caused by receiving a damaged item.</p><p>To help us resolve this issue, we kindly ask that you provide the following additional images:</p><ol><li>Shipping label attached to the box</li><li>Image of the box itself</li><li>Image of the thumb-sized Part Number (SKU label) on the item</li></ol><p>Once we receive the requested images, we will promptly proceed with your preferred resolution—either a refund or a replacement. There is no need to return the damaged item; you are welcome to keep or dispose of it at your discretion.</p><p>Please rest assured that we are actively working to prevent such issues in the future, and we greatly appreciate your patience and cooperation.</p><p>Sincerely,<br>WooParts</p>"
     }
   ],
 
@@ -44,8 +48,8 @@
       "content": "<p>Hi,</p><p>Our warehouse team confirmed that the item you returned to us is materially different than what we sold to you for this order. We have attached images of the items you sent.</p><p>Please send us the correct part(s) using your own label and provide the tracking number so we can properly initiate the refund after we receive the item.</p><p>Regards,<br>WooParts</p>"
     },
     {
-  "name": "Return Request - Bulky Item",
-  "content": "<p>Hi,</p><p>We received your return request. We would like to inform you that the item is too large and will be uneconomical to ship. It exceeds the dimensions allowed for automated return shipping.</p><p>Instead of returning the part, would you be amenable to a returnless refund? We will issue a 70% refund, and you may keep the item or dispose of it.</p><p>If you agree, please close the return request as soon as possible so we can process the refund accordingly.</p><p>Regards,<br>WooParts</p>"
+      "name": "Return Request - Bulky Item",
+      "content": "<p>Hi,</p><p>We received your return request. We would like to inform you that the item is too large and will be uneconomical to ship. It exceeds the dimensions allowed for automated return shipping.</p><p>Instead of returning the part, would you be amenable to a returnless refund? We will issue a 70% refund, and you may keep the item or dispose of it.</p><p>If you agree, please close the return request as soon as possible so we can process the refund accordingly.</p><p>Regards,<br>WooParts</p>"
     }
   ],
 
@@ -70,7 +74,7 @@
 
   "CANCELLATION": [
     {
-      "name": "For Shipped Items",
+      "name": "Cancellation - Item is Already Shipped",
       "content": "<p>Hi,</p><p>We hope this message finds you well. We sincerely apologize for any inconvenience caused by the rejection of your cancellation request.</p><p>Please note that the item has already been shipped out on [DATE] with tracking number [TN] via [CARRIER]. We understand this may not be the outcome you were hoping for, and we genuinely regret any frustration this may have caused.</p><p>Once you receive the item, kindly reach out to us so we can explore any available options to help resolve the matter. Thank you for your patience and understanding.</p><p>Sincerely,<br>WooParts</p>"
     },
     {
@@ -78,8 +82,12 @@
       "content": "<p>Hi,</p><p>We have successfully canceled your order. The refund will go back to your original payment method in 1-5 business days.</p><p>Thank you for your business and we hope to serve you again in the future.</p><p>Best regards,<br>WooParts</p>"
     },
     {
-      "name": "For Dropship",
+      "name": "Cancellation - Dropship",
       "content": "<p>Hi,</p><p>Thank you for reaching out to us. We understand that you'd like to cancel your order, and we want to inform you that it has already entered the shipping queue. We will do our best to intercept and stop the shipment, but please note that we cannot guarantee the cancellation at this stage. Rest assured, we will keep you updated and inform you as soon as we have more information.</p><p>Thank you for your patience.</p><p>Best regards,<br>WooParts</p>"
+    },
+    {
+    "name": "Cancellation Request Rejected",
+    "content": "<p>Hi,</p><p>Thank you for contacting us.</p><p>We’ve reviewed your request to cancel your order. Unfortunately, the item has already shipped and is on its way to you. As a result, we’re unable to process a cancellation at this time.</p><p>Once the package is delivered, you are welcome to initiate a return in accordance with our return policy. Please let us know if you need any assistance with the return process, and we’ll be happy to help.</p><p>We appreciate your understanding and are here if you have any further questions.</p><p>Best regards,<br>WooParts</p>"
     }
   ],
 
