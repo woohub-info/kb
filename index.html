@@ -5,7 +5,7 @@
   <title>WooHub</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.2/dist/vanilla-tilt.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     @keyframes bell-bounce{0%,100%{transform:rotate(0)}25%{transform:rotate(10deg)}75%{transform:rotate(-10deg)}}
     @keyframes gradient-slide{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
@@ -375,23 +375,62 @@ function renderCards() {
       return;
     }
 
-    if (slug === 'reports') {
-      const p1 = [
-        'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_ebay.png',
-        'https://raw.githubusercontent.com/chmpzu/assets/main/reports/woo_amz.png'
-      ];
-      const p2 = [
-        'https://raw.githubusercontent.com/chmpzu/assets/main/reports/autoapex_ebay.png'
-      ];
-      detailList.innerHTML = `
-        <div class="prose max-w-none space-y-8">
-          <p><a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/ER63Z5Stme9LntyUK_P_3YEBxDfhDAG0emS4e_Y2BWpRSA?e=XjLGgl" target="_blank" class="text-blue-600 hover:underline">WooParts eBay and Amazon Monthly Performance – 2025</a></p>
-          <div class="space-y-4">${p1.map(u => `<img src="${u}" loading="lazy" class="h-64 w-auto object-contain block" alt="Report">`).join('')}</div>
-          <p><a href="https://netorgft5128391.sharepoint.com/:x:/s/WooParts/EdkrNcbAsn1Oj6R_91SAOs4BwbNHpXFXBZtCrfaNoLYq3Q?e=7qIebl" target="_blank" class="text-blue-600 hover:underline">AutoApex eBay Monthly Performance – 2025</a></p>
-          <div class="space-y-4">${p2.map(u => `<img src="${u}" loading="lazy" class="h-64 w-auto object-contain block" alt="Extra Report">`).join('')}</div>
-        </div>`;
-      return;
-    }
+detailList.innerHTML = `
+  <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div><p class="mb-2"><a href="https://docs.google.com/spreadsheets/d/1cfLvub1zli1txycgl1TZxKr_oUMvqUrhkRwkJ6UG5hw/edit#gid=0"target="_blank"class="text-blue-600 hover:underline font-semibold">WooParts eBay and Amazon Monthly Performance – 2025</a></p><canvas id="profitChartA" class="w-full h-64"></canvas></div>
+    <div><p class="mb-2"><a href="https://docs.google.com/spreadsheets/d/1cfLvub1zli1txycgl1TZxKr_oUMvqUrhkRwkJ6UG5hw/edit#gid=123456789"target="_blank"class="text-blue-600 hover:underline font-semibold">AutoApex eBay Monthly Performance – 2025</a></p><canvas id="profitChartB" class="w-full h-64"></canvas></div>
+  </div>
+`;
+if (slug === 'reports') {
+  const sheetId = '1cfLvub1zli1txycgl1TZxKr_oUMvqUrhkRwkJ6UG5hw';
+  const makeUrl = tab =>
+    `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${tab}&tqx=out:json`;
+
+  detailList.innerHTML = `
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div><p class="mb-2"><a href="https://netorgft5128391.sharepoint.com/:f:/s/WooParts/EjpDWNP2fWpGjFnWrrLQm5YBrQbi5brC2b1icKhK2HgoQg?e=lXACY4"class="text-blue-600 hover:underline font-semibold">WooParts Profit & Loss Report – 2025</a></p><canvas id="profitChartA" class="w-full h-64"></canvas></div>
+    <div><p class="mb-2"><a href="https://netorgft5128391.sharepoint.com/:f:/s/WooParts/EoxeUapprzhKqElf0c-ZIfkBfyEU9gAmQc_HZ_sGtezAag?e=hcH8HA" class="text-blue-600 hover:underline font-semibold">AutoApex eBay Monthly Performance – 2025</a></p><canvas id="profitChartB" class="w-full h-64"></canvas></div>
+    </div>
+  `;
+
+  ['AccountA','AccountB'].forEach((tab, idx) => {
+    fetch(makeUrl(tab))
+      .then(r => r.text())
+      .then(raw => {
+        const json = JSON.parse(raw.substr(47).slice(0, -2));
+        const rows = json.table.rows;
+        const labels  = rows.map(r => r.c[0]?.v);
+        const profits = rows.map(r => r.c[1]?.v);
+        const margins = rows.map(r => r.c[2]?.v);
+
+        const ctx = document
+          .getElementById(idx === 0 ? 'profitChartA' : 'profitChartB')
+          .getContext('2d');
+
+        new Chart(ctx, {
+          type: 'line',
+          data: { labels, datasets: [
+            { label: 'Net Profit', data: profits, borderWidth: 2, tension: 0.3 },
+            { label: 'Margin (%)', data: margins, borderWidth: 2, tension: 0.3, yAxisID: 'marginAxis' }
+          ]},
+          options: {
+            responsive: true,
+            scales: {
+              y: { beginAtZero:true, position:'left', title:{display:true,text:'Net Profit'} },
+              marginAxis:{
+                beginAtZero:true, position:'right',
+                grid:{drawOnChartArea:false},
+                title:{display:true,text:'Margin (%)'},
+                ticks:{callback:v=>v+'%'}
+              }
+            }
+          }
+        });
+      })
+      .catch(err => console.error(`Error loading ${tab}:`, err));
+  });
+}
+
 
     try {
       const data = await fetchItems(slug),
