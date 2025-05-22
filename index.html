@@ -5,7 +5,7 @@
   <title>WooHub</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js" defer></script>
   <style>
     @keyframes bell-bounce{0%,100%{transform:rotate(0)}25%{transform:rotate(10deg)}75%{transform:rotate(-10deg)}}
     @keyframes gradient-slide{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
@@ -375,13 +375,8 @@ function renderCards() {
       return;
     }
 
-detailList.innerHTML = `
-  <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div><p class="mb-2"><a href="https://docs.google.com/spreadsheets/d/1cfLvub1zli1txycgl1TZxKr_oUMvqUrhkRwkJ6UG5hw/edit#gid=0"target="_blank"class="text-blue-600 hover:underline font-semibold">WooParts eBay and Amazon Monthly Performance – 2025</a></p><canvas id="profitChartA" class="w-full h-64"></canvas></div>
-    <div><p class="mb-2"><a href="https://docs.google.com/spreadsheets/d/1cfLvub1zli1txycgl1TZxKr_oUMvqUrhkRwkJ6UG5hw/edit#gid=123456789"target="_blank"class="text-blue-600 hover:underline font-semibold">AutoApex eBay Monthly Performance – 2025</a></p><canvas id="profitChartB" class="w-full h-64"></canvas></div>
-  </div>
-`;
 if (slug === 'reports') {
+  console.log('🍒 building report charts');
   const sheetId = '1cfLvub1zli1txycgl1TZxKr_oUMvqUrhkRwkJ6UG5hw';
   const makeUrl = tab =>
     `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${tab}&tqx=out:json`;
@@ -429,8 +424,8 @@ if (slug === 'reports') {
       })
       .catch(err => console.error(`Error loading ${tab}:`, err));
   });
+    return;
 }
-
 
     try {
       const data = await fetchItems(slug),
