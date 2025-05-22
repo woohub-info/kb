@@ -379,52 +379,89 @@ if (slug === 'reports') {
   console.log('🍒 building report charts');
   const sheetId = '1cfLvub1zli1txycgl1TZxKr_oUMvqUrhkRwkJ6UG5hw';
   const makeUrl = tab =>
-    `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${tab}&tqx=out:json`;
+    `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${encodeURIComponent(tab)}&tqx=out:json`;
 
   detailList.innerHTML = `
     <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div><p class="mb-2"><a href="https://netorgft5128391.sharepoint.com/:f:/s/WooParts/EjpDWNP2fWpGjFnWrrLQm5YBrQbi5brC2b1icKhK2HgoQg?e=lXACY4"class="text-blue-600 hover:underline font-semibold">WooParts Profit & Loss Report – 2025</a></p><canvas id="profitChartA" class="w-full h-64"></canvas></div>
-    <div><p class="mb-2"><a href="https://netorgft5128391.sharepoint.com/:f:/s/WooParts/EoxeUapprzhKqElf0c-ZIfkBfyEU9gAmQc_HZ_sGtezAag?e=hcH8HA" class="text-blue-600 hover:underline font-semibold">AutoApex eBay Monthly Performance – 2025</a></p><canvas id="profitChartB" class="w-full h-64"></canvas></div>
+      <div><p class="mb-2"><a href="https://netorgft5128391.sharepoint.com/:f:/s/WooParts/EjpDWNP2fWpGjFnWrrLQm5YBrQbi5brC2b1icKhK2HgoQg?e=lXACY4" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline font-semibold">WooParts Profit &amp; Loss Report – 2025</a>
+</p><canvas id="profitChartA" class="w-full h-64"></canvas></div>
+    <div><p class="mb-2"><a href="https://netorgft5128391.sharepoint.com/:f:/s/WooParts/EoxeUapprzhKqElf0c-ZIfkBfyEU9gAmQc_HZ_sGtezAag?e=hcH8HA"_blank" rel="noopener noreferrer"class="text-blue-600 hover:underline font-semibold">AutoApex Profit &amp; Loss Report – 2025</a></p><canvas id="profitChartB" class="w-full h-64"></canvas></div>
     </div>
   `;
 
-  ['AccountA','AccountB'].forEach((tab, idx) => {
+  ['WooParts', 'AutoApex'].forEach((tab, idx) => {
     fetch(makeUrl(tab))
       .then(r => r.text())
       .then(raw => {
         const json = JSON.parse(raw.substr(47).slice(0, -2));
-        const rows = json.table.rows;
+        console.log(`${tab} rows:`, json.table.rows.length);
+        const rows    = json.table.rows;
         const labels  = rows.map(r => r.c[0]?.v);
         const profits = rows.map(r => r.c[1]?.v);
         const margins = rows.map(r => r.c[2]?.v);
+        const ctx     = document
+                        .getElementById(idx === 0 ? 'profitChartA' : 'profitChartB')
+                        .getContext('2d');
 
-        const ctx = document
-          .getElementById(idx === 0 ? 'profitChartA' : 'profitChartB')
-          .getContext('2d');
-
-        new Chart(ctx, {
-          type: 'line',
-          data: { labels, datasets: [
-            { label: 'Net Profit', data: profits, borderWidth: 2, tension: 0.3 },
-            { label: 'Margin (%)', data: margins, borderWidth: 2, tension: 0.3, yAxisID: 'marginAxis' }
-          ]},
-          options: {
-            responsive: true,
-            scales: {
-              y: { beginAtZero:true, position:'left', title:{display:true,text:'Net Profit'} },
-              marginAxis:{
-                beginAtZero:true, position:'right',
-                grid:{drawOnChartArea:false},
-                title:{display:true,text:'Margin (%)'},
-                ticks:{callback:v=>v+'%'}
-              }
-            }
+      const myChart = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels,
+    datasets: [
+      { label: 'Net Profit',       data: profits,  backgroundColor: 'rgba(54,162,235,0.5)' },
+      { label: 'Net Profit Margin %', data: margins, backgroundColor: 'rgba(255,159,64,0.5)', yAxisID: 'marginAxis' }
+    ]
+  },
+options: {
+  responsive: true,
+  scales: {
+    x: {
+      title: { display: true, text: 'Week Numbers' }
+    },
+    y: {
+      beginAtZero: true,
+      title: { display: true, text: 'Net Profit' }
+    },
+    marginAxis: {
+      beginAtZero: true,
+      position: 'right',
+      grid: { drawOnChartArea: false },
+      title: { display: true, text: 'Net Profit Margin %' },
+      ticks: {
+        callback: v => (v * 100).toFixed(2) + '%'
+      }
+    }
+  },
+  plugins: {
+    tooltip: {
+      callbacks: {
+        label: ctx =>
+          ctx.dataset.label === 'Margin (%)'
+            ? (ctx.parsed.y * 100).toFixed(2) + '%'
+            : ctx.parsed.y.toFixed(2)
+      }
+    },
+    legend: {
+      
+        onClick(e, legendItem, legend) {
+          Chart.defaults.plugins.legend.onClick.call(this.chart, e, legendItem, legend);
+          const ds = this.chart.data.datasets[legendItem.datasetIndex];
+          if (ds.yAxisID === 'marginAxis') {
+            this.chart.options.scales.marginAxis.title.text = 'Net Profit Margin %';
+          } else {
+            this.chart.options.scales.y.title.text = 'Net Profit';
           }
-        });
+          this.chart.update();
+        }
+      }
+    }
+  }
+});
       })
       .catch(err => console.error(`Error loading ${tab}:`, err));
   });
-    return;
+
+  return;
 }
 
     try {
