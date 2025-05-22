@@ -91,21 +91,44 @@
     <div class="bg-white border rounded-lg p-4 sticky top-24">
       <div class="flex justify-between mb-2">
         <h2 class="font-semibold text-lg">Recent Updates</h2>
-        <button id="updates-filter-toggle" class="p-1"></button>
+        <button id="updates-filter-toggle" class="p-1 text-gray-600 hover:text-gray-800">
+  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <path stroke-linecap="round" stroke-linejoin="round"
+          d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-6.414 6.414a1
+                  1 0 00-.293.707V19l-4-2v-4.172a1 1 0 00-.293-.707L3.293 6.707A1 1 0
+                  013 6V4z"/>
+  </svg>
+</button>
+
       </div>
       <div id="updates-filter-container" class="hidden mb-2">
         <input id="updates-filter" type="text" placeholder="Filter updates..." class="w-full p-2 border rounded"/>
       </div>
       <ul id="updates-container" class="max-h-96 overflow-y-auto pr-2 space-y-2"></ul>
     </div>
-    <div class="bg-white border rounded-lg p-4 sticky top-[calc(6rem+1.5rem)]">
-      <div class="flex justify-between mb-2">
-        <h2 class="font-semibold text-lg">What's New and Different?</h2>
-        </div>
-      <ul id="change-log" class="max-h-40 overflow-y-auto pr-2 space-y-2">
-        <li class="text-gray-600">No updates yet...</li>
-        </ul>
-    </div>
+<div class="bg-white border rounded-lg p-4 sticky top-[calc(6rem+1.5rem)]">
+  <div class="flex justify-between mb-2">
+    <h2 class="font-semibold text-lg">What's New and Different?</h2>
+    <button id="changelog-filter-toggle" class="p-1 text-gray-600 hover:text-gray-800">
+      <!-- you can reuse the same Heroicons filter SVG -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+           viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-6.414 6.414a1
+                      1 0 00-.293.707V19l-4-2v-4.172a1 1 0 00-.293-.707L3.293 6.707A1 1 0
+                      013 6V4z"/>
+      </svg>
+    </button>
+  </div>
+  <div id="changelog-filter-container" class="hidden mb-2">
+    <input id="changelog-filter" type="text" placeholder="Filter changes..."
+           class="w-full p-2 border rounded"/>
+  </div>
+  <ul id="change-log" class="max-h-40 overflow-y-auto pr-2 space-y-2">
+    <li class="text-gray-600">No updates yet...</li>
+  </ul>
+</div>
   </aside>
 
   <main class="relative flex-1 flex flex-col">
@@ -605,6 +628,26 @@ document.getElementById('clear-notifications').onclick=_=>{
   setInterval(pollUpdatesPanel, 60000);
   pollUpdatesPanel();
   updatesFilterToggle.onclick = () => updatesFilterContainer.classList.toggle('hidden');
+
+  const changelogFilterToggle    = document.getElementById('changelog-filter-toggle'),
+      changelogFilterContainer = document.getElementById('changelog-filter-container'),
+      changelogFilter          = document.getElementById('changelog-filter');
+changelogFilterToggle.addEventListener('click', () =>
+  changelogFilterContainer.classList.toggle('hidden')
+);
+changelogFilter.addEventListener('input', debounce(renderChangeLog, 200));
+
+function renderChangeLog() {
+  const fv = changelogFilter.value.toLowerCase();
+  const entries = loadCL();  // your helper that reads localStorage/history.json
+  const filtered = entries.filter(e =>
+    e.message.toLowerCase().includes(fv)
+  );
+  const listHtml = filtered.length
+    ? filtered.map(e => `<li class="py-2">${e.timestamp}: ${e.message}</li>`).join('')
+    : '<li class="py-2 text-gray-500">No matching updates.</li>';
+  document.getElementById('change-log').innerHTML = listHtml;
+}
   mobileUpdatesFilterToggle.onclick = () => mobileUpdatesFilterContainer.classList.toggle('hidden');
   updatesFilter?.addEventListener('input', debounce(renderUpdatesPanel,200));
   mobileUpdatesFilter?.addEventListener('input', debounce(renderUpdatesPanel,200));
