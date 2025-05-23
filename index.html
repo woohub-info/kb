@@ -87,49 +87,71 @@
     </div>
   </details>
 <div class="flex flex-1 w-full max-w-[2000px] mx-auto px-4 pt-6 pb-6">
-  <aside class="hidden lg:block w-80 lg:w-96 mr-6 space-y-6 pb-6">
-    <div class="bg-white border rounded-lg p-4 sticky top-24">
+<aside class="hidden lg:block w-80 lg:w-96 mr-6 pb-6">
+  <div class="bg-white border rounded-lg p-4 sticky top-24">
+    <!-- Tab Headers -->
+    <div class="flex mb-4 border-b">
+      <button
+        id="tab-recent"
+        class="flex-1 py-2 text-center font-semibold border-b-2 border-indigo-600 text-gray-900">
+        Announcements
+      </button>
+      <button
+        id="tab-whatsnew"
+        class="flex-1 py-2 text-center font-semibold border-b-2 border-transparent text-gray-600 hover:text-gray-800">
+        Changelog
+      </button>
+    </div>
+
+    <!-- Recent Updates Panel -->
+    <div id="panel-recent" class="space-y-2 max-h-96 overflow-y-auto pr-2">
       <div class="flex justify-between mb-2">
         <h2 class="font-semibold text-lg">Recent Updates</h2>
         <button id="updates-filter-toggle" class="p-1 text-gray-600 hover:text-gray-800">
-  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
-       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-    <path stroke-linecap="round" stroke-linejoin="round"
-          d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-6.414 6.414a1
-                  1 0 00-.293.707V19l-4-2v-4.172a1 1 0 00-.293-.707L3.293 6.707A1 1 0
-                  013 6V4z"/>
-  </svg>
-</button>
-
+          <!-- filter icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-6.414 6.414a1
+                          1 0 00-.293.707V19l-4-2v-4.172a1 1 0 00-.293-.707L3.293 6.707A1 1 0
+                          013 6V4z" />
+          </svg>
+        </button>
       </div>
       <div id="updates-filter-container" class="hidden mb-2">
-        <input id="updates-filter" type="text" placeholder="Filter updates..." class="w-full p-2 border rounded"/>
+        <input id="updates-filter" type="text"
+               placeholder="Filter updates..."
+               class="w-full p-2 border rounded" />
       </div>
-      <ul id="updates-container" class="max-h-96 overflow-y-auto pr-2 space-y-2"></ul>
+      <ul id="updates-container" class="space-y-2"></ul>
     </div>
-<div class="bg-white border rounded-lg p-4 sticky top-[calc(6rem+1.5rem)]">
-  <div class="flex justify-between mb-2">
-    <h2 class="font-semibold text-lg">What's New and Different?</h2>
-    <button id="changelog-filter-toggle" class="p-1 text-gray-600 hover:text-gray-800">
-      <!-- you can reuse the same Heroicons filter SVG -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
-           viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round"
-              d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-6.414 6.414a1
-                      1 0 00-.293.707V19l-4-2v-4.172a1 1 0 00-.293-.707L3.293 6.707A1 1 0
-                      013 6V4z"/>
-      </svg>
-    </button>
+
+    <!-- What's New Panel -->
+    <div id="panel-whatsnew" class="hidden space-y-2 max-h-96 overflow-y-auto pr-2">
+      <div class="flex justify-between mb-2">
+        <h2 class="font-semibold text-lg">What’s New and Different?</h2>
+        <button id="changelog-filter-toggle" class="p-1 text-gray-600 hover:text-gray-800">
+          <!-- filter icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-6.414 6.414a1
+                          1 0 00-.293.707V19l-4-2v-4.172a1 1 0 00-.293-.707L3.293 6.707A1 1 0
+                          013 6V4z" />
+          </svg>
+        </button>
+      </div>
+      <div id="changelog-filter-container" class="hidden mb-2">
+        <input id="changelog-filter" type="text"
+               placeholder="Filter changes..."
+               class="w-full p-2 border rounded" />
+      </div>
+      <ul id="change-log" class="space-y-2">
+        <li class="text-gray-600">No updates yet...</li>
+      </ul>
+    </div>
   </div>
-  <div id="changelog-filter-container" class="hidden mb-2">
-    <input id="changelog-filter" type="text" placeholder="Filter changes..."
-           class="w-full p-2 border rounded"/>
-  </div>
-  <ul id="change-log" class="max-h-40 overflow-y-auto pr-2 space-y-2">
-    <li class="text-gray-600">No updates yet...</li>
-  </ul>
-</div>
-  </aside>
+</aside>
 
   <main class="relative flex-1 flex flex-col">
     <nav class="text-sm mb-4">
@@ -774,6 +796,28 @@ function renderChangeLog() {
   });
 
 document.addEventListener("DOMContentLoaded", async () => {
+const tabRecent   = document.getElementById('tab-recent');
+const tabWhatsNew = document.getElementById('tab-whatsnew');
+const panelRec    = document.getElementById('panel-recent');
+const panelNew    = document.getElementById('panel-whatsnew');
+
+function activateTab(activeTab, inactiveTab, showPanel, hidePanel) {
+  activeTab.classList.replace('text-gray-600', 'text-gray-900');
+  activeTab.classList.replace('border-transparent', 'border-indigo-600');
+  inactiveTab.classList.replace('text-gray-900', 'text-gray-600');
+  inactiveTab.classList.replace('border-indigo-600', 'border-transparent');
+  showPanel.classList.remove('hidden');
+  hidePanel.classList.add('hidden');
+}
+
+tabRecent.addEventListener('click', () =>
+  activateTab(tabRecent, tabWhatsNew, panelRec, panelNew)
+);
+
+tabWhatsNew.addEventListener('click', () =>
+  activateTab(tabWhatsNew, tabRecent, panelNew, panelRec)
+);
+
   const key = "changeLogEntries";
   let entries = [];
   try {
