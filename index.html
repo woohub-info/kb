@@ -403,7 +403,7 @@ if (slug === 'reports') {
     </div>
   `;
 
-  ['WooParts', 'AutoApex'].forEach((tab, idx) => {
+  ['WooParts P/L', 'AutoApex P/L'].forEach((tab, idx) => {
     fetch(makeUrl(tab))
       .then(r => r.text())
       .then(raw => {
