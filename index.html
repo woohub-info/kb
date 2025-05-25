@@ -284,7 +284,7 @@ document.getElementById('changelog-filter').addEventListener('input', renderRele
         const data = await fetchSheet(c.slug);
         const items = Array.isArray(data) ? data : Object.values(data).flat();
         const hasUnread = items.some(item => {
-          const id = item.id || item.name;
+          const id = item.name;
           return !isItemRead(c.slug, id);
         });
         badge.classList.toggle('hidden', !hasUnread);
@@ -579,13 +579,12 @@ for (const [cat, list] of Object.entries(groups)) {
   if (isItemRead(slug, i.name)) dot.classList.add('hidden');
 
   // when clicked: open, mark read, hide dot, update card badge
-  btn.addEventListener('click', () => {
-    openEmailOverlay(i.name, i.content, slug);
-    markItemRead(slug, i.name);
-    dot.classList.add('hidden');
-    if (!hasUnreadForSlug(slug)) updateCardBadges();
-  });
-
+btn.addEventListener('click', () => {
+  openEmailOverlay(i.name, i.content, slug);
+  markItemRead(slug, i.name); // or .id if that's the true key
+  dot.classList.add('hidden');
+  updateCardBadges();
+});
   // compose
   btn.appendChild(dot);
   li.appendChild(btn);
@@ -663,30 +662,6 @@ const NKEY='notifications',SKEY='seenNotifIds',
 
 async function pollNotifications(){
   let nots=ls(NKEY);
-  try{
-    let r=await fetch('data/notification.json');
-    if(r.ok) for(let u of await r.json()){
-      let id=u.id||u.timestamp+u.text;
-      if(!nots.some(x=>x.id===id))
-        nots.unshift({id,text:u.text,time:new Date().toISOString(),type:'updates'});
-    }
-  }catch{}
-  for(let c of cardsData){
-    if(c.slug==='reports') continue;
-    try{
-      let r=await fetch(`data/${c.slug}.json`);
-      if(r.ok){
-        let arr=Array.isArray(await r.json())
-          ? await r.json()
-          : Object.values(await r.json()).flat();
-        for(let i of arr){
-          let id=`${c.slug}|${i.name}`;
-          if(!nots.some(x=>x.id===id))
-            nots.unshift({id,text:`New ${c.title}: ${i.name}`,time:new Date().toISOString(),type:c.slug});
-        }
-      }
-    }catch{}
-  }
   st(NKEY,nots);
   const unread=nots.filter(x=>!seen.has(x.id)),
         all=[...unread,...nots.filter(x=>seen.has(x.id))],
@@ -696,7 +671,7 @@ async function pollNotifications(){
     let li=document.createElement('li'),
         wr=document.createElement('div'),
         tm=document.createElement('time');
-    if(!seen.has(i.id)){
+    if(!seen.has(i.name)){
       let b=document.createElement('span');
       b.textContent='New '; b.className='new-badge text-red-600 text-xs font-semibold mr-1';
       wr.appendChild(b);
@@ -835,20 +810,18 @@ bannerClose.addEventListener("click", () => {
 pollUpdatesPanel();
 setInterval(pollUpdatesPanel, 60_000);
 
-// toggle your filter UI as before
 updatesFilterToggle.onclick = () => updatesFilterContainer.classList.toggle('hidden');
 
 function renderChangeLog() {
   const fv = changelogFilter.value.toLowerCase();
-  const entries = loadCL();  // your helper that reads localStorage/history.json
+  const entries = loadCL();
   const filtered = entries.filter(e =>
     e.message.toLowerCase().includes(fv)
   );
   const listHtml = filtered.length
     ? filtered.map(e => `<li class="py-2">${e.timestamp}: ${e.message}</li>`).join('')
     : '<li class="py-2 text-gray-500">No matching updates.</li>';
-  document.getElementById('change-log').innerHTML = listHtml;
-}
+  document.getElementById('change-log').innerHTML = listHtml;}
   mobileUpdatesFilterToggle.onclick = () => mobileUpdatesFilterContainer.classList.toggle('hidden');
   updatesFilter?.addEventListener('input', debounce(renderUpdatesPanel,200));
   mobileUpdatesFilter?.addEventListener('input', debounce(renderUpdatesPanel,200));
@@ -861,10 +834,8 @@ function renderChangeLog() {
         const d = await fetchSheet(c.slug);
         const arr = Array.isArray(d)?d:Object.values(d).flat();
         arr.forEach(i=>items.push({name:i.name,content:i.content,slug:c.slug,isRoot:false}));
-      } catch {}
-    }
-    fuse = new Fuse(items,{keys:['name','content'],includeMatches:true,threshold:0.4});
-  }
+      } catch {}}
+    fuse = new Fuse(items,{keys:['name','content'],includeMatches:true,threshold:0.4});}
   function renderSuggestions(results) {
     searchSuggestions.innerHTML = '';
     if (!results.length) {
