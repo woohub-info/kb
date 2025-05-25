@@ -47,9 +47,6 @@
         <div id="notification-dropdown"
              class="hidden absolute right-0 mt-2 w-96 p-4 bg-white border rounded-lg shadow-lg z-40">
           <ul id="notification-list" class="max-h-64 overflow-y-auto divide-y divide-gray-200"></ul>
-          <div class="text-center p-2">
-            <button id="clear-notifications" class="text-indigo-600 hover:underline">Clear All</button>
-          </div>
         </div>
       </div>
       <div class="relative ml-4">
@@ -332,7 +329,6 @@ function formatTimestamp(t) {
         notifBtn = document.getElementById('notification-btn'),
         notifDropdown = document.getElementById('notification-dropdown'),
         notifListEl = document.getElementById('notification-list'),
-        clearNotifsBtn = document.getElementById('clear-notifications'),
         updatesFilterToggle = document.getElementById('updates-filter-toggle'),
         updatesFilterContainer = document.getElementById('updates-filter-container'),
         updatesFilter = document.getElementById('updates-filter'),
@@ -659,31 +655,41 @@ const NKEY='notifications',SKEY='seenNotifIds',
         e.textContent=n;
       };
 
-async function pollNotifications(){
-  let nots=ls(NKEY);
-  st(NKEY,nots);
-  const unread=nots.filter(x=>!seen.has(x.id)),
-        all=[...unread,...nots.filter(x=>seen.has(x.id))],
-        ul=document.getElementById('notification-list');
-  ul.innerHTML='';
-  for(let i of all){
-    let li=document.createElement('li'),
-        wr=document.createElement('div'),
-        tm=document.createElement('time');
-    if(!seen.has(i.name)){
-      let b=document.createElement('span');
-      b.textContent='New '; b.className='new-badge text-red-600 text-xs font-semibold mr-1';
+async function pollNotifications() {
+  let nots = ls(NKEY) || [];
+  const seen = new Set(ls(SKEY));
+  const unread = nots.filter(x => !seen.has(x.id));
+  const all = [...unread, ...nots.filter(x => seen.has(x.id))];
+  const ul = document.getElementById('notification-list');
+  ul.innerHTML = '';
+  for (let i of all) {
+    let li = document.createElement('li'),
+      wr = document.createElement('div'),
+      tm = document.createElement('time');
+    let isUnread = !seen.has(i.id);
+    if (isUnread) {
+      let b = document.createElement('span');
+      b.textContent = 'New ';
+      b.className = 'new-badge text-red-600 text-xs font-semibold mr-1';
       wr.appendChild(b);
     }
-    wr.appendChild(Object.assign(document.createElement('span'),{textContent:`🔔 ${i.text}`}));
-    let d=new Date(i.time);
-    tm.textContent=d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit',hour12:true});
-    tm.title=d.toLocaleString();
-    li.className='p-2 border-b hover:bg-gray-50 flex justify-between items-center';
-    li.append(wr,tm);
+    wr.appendChild(Object.assign(document.createElement('span'), { textContent: `🔔 ${i.text}` }));
+    let d = new Date(i.time);
+    tm.textContent = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true });
+    tm.title = d.toLocaleString();
+    li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between items-center';
+    li.append(wr, tm);
+
+    li.style.cursor = "pointer";
+    li.onclick = () => {
+      if (isUnread) {
+        seen.add(i.id);
+        st(SKEY, [...seen]);
+        pollNotifications();
+      }
+    };
     ul.appendChild(li);
   }
-  st(SKEY,[...seen]);
   setCount(unread.length);
   updateCardBadges();
 }
@@ -695,19 +701,6 @@ document.getElementById('notification-btn').onclick=e=>{
   const dd=document.getElementById('notification-dropdown'),
         open=!dd.classList.toggle('hidden');
   e.currentTarget.setAttribute('aria-expanded',open);
-  if(open){
-    ls(NKEY).forEach(n=>seen.add(n.id));
-    st(SKEY,[...seen]);
-    setCount(0);
-    document.querySelectorAll('#notification-list .new-badge').forEach(b=>b.remove());
-  }
-};
-
-document.getElementById('clear-notifications').onclick=_=>{
-  ls(NKEY).forEach(n=>seen.add(n.id));
-  st(SKEY,[...seen]);
-  document.getElementById('notification-list').innerHTML='';
-  setCount(0);
 };
 
 let allUpdates = []; const displayCount = 5; let initialUpdatesLoad = true;
