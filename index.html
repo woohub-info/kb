@@ -641,11 +641,8 @@ btn.addEventListener('click', () => {
     return d.toLocaleDateString();
   }
 
-// -- Notification system: Fetch from Google Sheet and sync to localStorage --
-
 const NKEY = 'notifications', SKEY = 'seenNotifIds';
 
-// Helper: get relative time string (e.g. "just now", "2 min ago", "May 25, 2025")
 function getRelativeTime(date) {
   const now = new Date();
   const diff = Math.floor((now - date) / 1000); // seconds
@@ -666,7 +663,6 @@ async function syncNotificationsFromSheet() {
   if (rows.length) console.log('First row:', rows[0]);
   const dataRows = rows;
 
-  // If your rows are objects: [{ time, text }, ...]
   const notifications = dataRows
     .filter(row => row && row.time && row.text)
     .map(({ time, text }) => {
@@ -720,12 +716,43 @@ function pollNotifications() {
       if (isUnread) {
         seen.add(i.id);
         localStorage.setItem(SKEY, JSON.stringify([...seen]));
-        pollNotifications(); // re-render
+        pollNotifications();
       }
     };
     ul.appendChild(li);
   }
-  // Badge count
+function markAllNotifsAsRead() {
+  const nots = JSON.parse(localStorage.getItem('notifications') || '[]');
+  const allIds = nots.map(x => x.id);
+  localStorage.setItem('seenNotifIds', JSON.stringify(allIds));
+}
+const notifBtn = document.getElementById('notification-btn');
+const notifDropdown = document.getElementById('notification-dropdown');
+
+notifBtn.onclick = function(e) {
+  const open = !notifDropdown.classList.toggle('hidden');
+  e.currentTarget.setAttribute('aria-expanded', open);
+  e.stopPropagation();
+
+  if (!open) {
+    markAllNotifsAsRead();
+    pollNotifications();
+  }
+};
+
+  document.addEventListener('click', function(e) {
+  if (
+    !notifDropdown.classList.contains('hidden') &&
+    !notifBtn.contains(e.target) &&
+    !notifDropdown.contains(e.target)
+  ) {
+    notifDropdown.classList.add('hidden');
+    notifBtn.setAttribute('aria-expanded', 'false');
+    markAllNotifsAsRead();
+    pollNotifications();
+  }
+});
+
   const el = document.getElementById('notification-count');
   if (unread.length > 0) {
     el.textContent = unread.length;
@@ -733,29 +760,19 @@ function pollNotifications() {
   } else {
     el.classList.add('hidden');
   }
-  // Optional: update card badges if you have this elsewhere
+  
   if (typeof updateCardBadges === 'function') updateCardBadges();
 }
 
-// 3. Initial load and polling loop
 async function initNotifications() {
   await syncNotificationsFromSheet();
   pollNotifications();
   setInterval(async () => {
     await syncNotificationsFromSheet();
     pollNotifications();
-  }, 60000); // every 1 minute
+  }, 60000);
 }
 
-// 4. Dropdown bell click handler
-document.getElementById('notification-btn').onclick = function(e) {
-  const dd = document.getElementById('notification-dropdown');
-  const open = !dd.classList.toggle('hidden');
-  e.currentTarget.setAttribute('aria-expanded', open);
-  e.stopPropagation();
-};
-
-// 5. Start notifications on DOM load!
 document.addEventListener('DOMContentLoaded', initNotifications);
 
 let allUpdates = []; const displayCount = 5; let initialUpdatesLoad = true;
@@ -766,7 +783,6 @@ async function pollUpdatesPanel() {
     allUpdates = rows.map(({ time, text }) => {
       let dateObj;
       if (typeof time === 'string' && time.startsWith('Date(')) {
-        // extract the numbers
         const parts = time
           .slice(5, -1) .split(',') .map(n => Number(n));
         dateObj = new Date(parts[0], parts[1],  parts[2], parts[3], parts[4], parts[5]);
@@ -819,7 +835,6 @@ slice.forEach((u, idx) => {
   const bannerDismissedKey = "updateBannerDismissed";
   const bannerContent = latestUpdate?.text || "";
   
-  // Only show if not dismissed for this update
 if (latestUpdate) {
   const banner = document.getElementById("update-banner");
   banner.classList.replace("hidden", "show");
@@ -831,7 +846,6 @@ const bannerClose = document.getElementById("update-banner-close");
 bannerClose.addEventListener("click", () => {
   banner.classList.remove("show");
   banner.classList.add("hidden");
-  // Do NOT persist to localStorage!
 });
 
   li.textContent = `${u.time}: ${u.text}`;
@@ -843,7 +857,6 @@ bannerClose.addEventListener("click", () => {
   initialUpdatesLoad = false;
 }
 
-// kick off on load + repeat every minute
 pollUpdatesPanel();
 setInterval(pollUpdatesPanel, 60_000);
 
@@ -932,7 +945,7 @@ tabRecent.addEventListener('click', () =>
 
 tabWhatsNew.addEventListener('click', () => {
   activateTab(tabWhatsNew, tabRecent, panelNew, panelRec);
-  loadReleaseNotes(); // <- add this line!
+  loadReleaseNotes();
 });
 
   renderRecentlyViewed(JSON.parse(localStorage.getItem("recentlyViewed") || "[]"));
@@ -952,7 +965,6 @@ bannerClose.addEventListener('click', () => {
     const dd = document.getElementById('notification-dropdown');
     const open = !dd.classList.toggle('hidden');
     e.currentTarget.setAttribute('aria-expanded', open);
-    // Optionally stop event propagation:
     e.stopPropagation();
   };
 
