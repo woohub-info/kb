@@ -677,7 +677,7 @@ async function syncNotificationsFromSheet() {
         dateObj = new Date(time);
       }
       return {
-        id: btoa(String(time) + text),
+        id: encodeURIComponent(String(time) + text),
         text,
         time: dateObj.toISOString()
       };
