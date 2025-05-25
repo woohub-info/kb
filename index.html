@@ -662,9 +662,16 @@ function parseGoogleDate(str) {
 }
 async function syncNotificationsFromSheet() {
   const rows = await fetchSheet('notifications');
-  // Optionally skip header row: const dataRows = rows.slice(1);
-  const notifications = rows
-    .filter(row => row.time && row.text)
+  console.log('Fetched notification rows:', rows);
+
+  // If header present, skip first row:
+  // const dataRows = rows.slice(1);
+  // Otherwise use as is:
+  const dataRows = rows;
+
+  // If your rows are objects: [{ time, text }, ...]
+  const notifications = dataRows
+    .filter(row => row && row.time && row.text)
     .map(({ time, text }) => {
       let dateObj;
       if (typeof time === 'string' && time.startsWith('Date(')) {
@@ -675,14 +682,16 @@ async function syncNotificationsFromSheet() {
       return {
         id: btoa(String(time) + text),
         text,
-        time: dateObj
+        time: dateObj.toISOString()
       };
     });
-  localStorage.setItem(NKEY, JSON.stringify(notifications));
+
+  console.log('Processed notifications:', notifications);
+  localStorage.setItem('notifications', JSON.stringify(notifications));
 }
 
 function pollNotifications() {
-  const nots = JSON.parse(localStorage.getItem(NKEY) || '[]');
+  const nots = JSON.parse(localStorage.getItem('notifications') || '[]');
   const seen = new Set(JSON.parse(localStorage.getItem(SKEY) || '[]'));
   const unread = nots.filter(x => !seen.has(x.id));
   const all = [...unread, ...nots.filter(x => seen.has(x.id))];
