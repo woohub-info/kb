@@ -663,10 +663,7 @@ function parseGoogleDate(str) {
 async function syncNotificationsFromSheet() {
   const rows = await fetchSheet('notifications');
   console.log('Fetched notification rows:', rows);
-
-  // If header present, skip first row:
-  // const dataRows = rows.slice(1);
-  // Otherwise use as is:
+  if (rows.length) console.log('First row:', rows[0]);
   const dataRows = rows;
 
   // If your rows are objects: [{ time, text }, ...]
@@ -760,7 +757,6 @@ document.getElementById('notification-btn').onclick = function(e) {
 
 // 5. Start notifications on DOM load!
 document.addEventListener('DOMContentLoaded', initNotifications);
-
 
 let allUpdates = []; const displayCount = 5; let initialUpdatesLoad = true;
 
