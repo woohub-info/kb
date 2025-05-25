@@ -904,6 +904,13 @@ bannerClose.addEventListener('click', () => {
   banner.classList.add('hidden');
   localStorage.setItem('bannerClosedFor', document.getElementById('update-banner-content').textContent);
 });
+  document.getElementById('notification-btn').onclick = function(e) {
+    const dd = document.getElementById('notification-dropdown');
+    const open = !dd.classList.toggle('hidden');
+    e.currentTarget.setAttribute('aria-expanded', open);
+    // Optionally stop event propagation:
+    e.stopPropagation();
+  };
 
   new EventSource('/updates').onmessage = e => {
     const update = JSON.parse(e.data);
