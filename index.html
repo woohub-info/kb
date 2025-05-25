@@ -187,13 +187,9 @@
       const table = JSON.parse(text.substr(47).slice(0, -2)).table;
       return table.rows.map(rw => {
         const [c0, c1, c2] = rw.c.map(cell => cell && cell.v);
-        if (tab === 'Announcements' || tab === 'Release Notes') {
-          return { time: c0, text: c1 };
-        }
-        if (tab === 'links') {
-          return { category: c0, name: c1, url: c2 };
-        }
-        // …other cards…
+        if (tab === 'notifications') return { time: c0, text: c1 };
+        if (tab === 'Announcements' || tab === 'Release Notes') {return { time: c0, text: c1 };}
+        if (tab === 'links') {return { category: c0, name: c1, url: c2 };}
         return { category: c0, name: c1, content: c2 };
       });
     });
@@ -645,24 +641,44 @@ btn.addEventListener('click', () => {
     return d.toLocaleDateString();
   }
 
-const NKEY='notifications',SKEY='seenNotifIds',
-      ls=k=>JSON.parse(localStorage.getItem(k)||'[]'),
-      st=(k,v)=>localStorage.setItem(k,JSON.stringify(v)),
-      seen=new Set(ls(SKEY)),
-      setCount=n=>{
-        const e=document.getElementById('notification-count');
-        n?e.classList.remove('hidden'):e.classList.add('hidden');
-        e.textContent=n;
-      };
+// -- Notification system: Fetch from Google Sheet and sync to localStorage --
 
+const NKEY = 'notifications', SKEY = 'seenNotifIds';
+
+// Helper: get relative time string (e.g. "just now", "2 min ago", "May 25, 2025")
 function getRelativeTime(date) {
   const now = new Date();
-  const diff = Math.floor((now - date) / 1000); // in seconds
-
+  const diff = Math.floor((now - date) / 1000); // seconds
   if (diff < 60) return 'just now';
-  if (diff < 3600) return `${Math.floor(diff/60)} min ago`;
-  if (diff < 86400) return `${Math.floor(diff/3600)} hour${Math.floor(diff/3600) > 1 ? 's' : ''} ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} hour${Math.floor(diff / 3600) > 1 ? 's' : ''} ago`;
   return date.toLocaleDateString();
+}
+function parseGoogleDate(str) {
+  const m = /^Date\(([\d,]+)\)$/.exec(str);
+  if (!m) return new Date(str);
+  const parts = m[1].split(',').map(Number);
+  return new Date(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]);
+}
+async function syncNotificationsFromSheet() {
+  const rows = await fetchSheet('notifications');
+  // Optionally skip header row: const dataRows = rows.slice(1);
+  const notifications = rows
+    .filter(row => row.time && row.text)
+    .map(({ time, text }) => {
+      let dateObj;
+      if (typeof time === 'string' && time.startsWith('Date(')) {
+        dateObj = parseGoogleDate(time);
+      } else {
+        dateObj = new Date(time);
+      }
+      return {
+        id: btoa(String(time) + text),
+        text,
+        time: dateObj
+      };
+    });
+  localStorage.setItem(NKEY, JSON.stringify(notifications));
 }
 
 function pollNotifications() {
@@ -675,8 +691,8 @@ function pollNotifications() {
 
   for (let i of all) {
     let li = document.createElement('li'),
-      wr = document.createElement('div'),
-      tm = document.createElement('span'); // Use <span> for relative time
+        wr = document.createElement('div'),
+        tm = document.createElement('span');
     let isUnread = !seen.has(i.id);
 
     if (isUnread) {
@@ -687,9 +703,9 @@ function pollNotifications() {
     }
     wr.appendChild(Object.assign(document.createElement('span'), { textContent: `🔔 ${i.text}` }));
 
-    let d = new Date(i.time);
+    let d = typeof i.time === 'string' ? new Date(i.time) : i.time;
     tm.textContent = getRelativeTime(d);
-    tm.title = d.toLocaleString(); // hover for actual time
+    tm.title = d.toLocaleString(); // actual date on hover
     li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between items-center';
     li.append(wr, tm);
 
@@ -698,12 +714,12 @@ function pollNotifications() {
       if (isUnread) {
         seen.add(i.id);
         localStorage.setItem(SKEY, JSON.stringify([...seen]));
-        pollNotifications();
+        pollNotifications(); // re-render
       }
     };
     ul.appendChild(li);
   }
-  // Show/hide badge count
+  // Badge count
   const el = document.getElementById('notification-count');
   if (unread.length > 0) {
     el.textContent = unread.length;
@@ -711,8 +727,31 @@ function pollNotifications() {
   } else {
     el.classList.add('hidden');
   }
-  updateCardBadges && updateCardBadges();
+  // Optional: update card badges if you have this elsewhere
+  if (typeof updateCardBadges === 'function') updateCardBadges();
 }
+
+// 3. Initial load and polling loop
+async function initNotifications() {
+  await syncNotificationsFromSheet();
+  pollNotifications();
+  setInterval(async () => {
+    await syncNotificationsFromSheet();
+    pollNotifications();
+  }, 60000); // every 1 minute
+}
+
+// 4. Dropdown bell click handler
+document.getElementById('notification-btn').onclick = function(e) {
+  const dd = document.getElementById('notification-dropdown');
+  const open = !dd.classList.toggle('hidden');
+  e.currentTarget.setAttribute('aria-expanded', open);
+  e.stopPropagation();
+};
+
+// 5. Start notifications on DOM load!
+document.addEventListener('DOMContentLoaded', initNotifications);
+
 
 let allUpdates = []; const displayCount = 5; let initialUpdatesLoad = true;
 
