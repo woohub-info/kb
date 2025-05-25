@@ -205,7 +205,6 @@ let allReleaseNotes = [];
 
 async function loadReleaseNotes() {
   const ul = document.getElementById('change-log');
-  ul.innerHTML = '<li class="py-2 text-gray-500">Loading…</li>';
   
   const rows = await fetchSheet('Release Notes');
   allReleaseNotes = rows.map(({ time, text }) => {
@@ -275,22 +274,22 @@ document.getElementById('changelog-filter').addEventListener('input', renderRele
     });
   };
 
-  // updateCardBadges: show “new” badge if any unread items exist for each card
-  async function updateCardBadges() {
-    for (const c of cardsData) {
-      const badge = document.querySelector(`[data-slug="${c.slug}"] .badge`);
-      if (!badge) continue;
-      try {
-        const data = await fetchSheet(c.slug);
-        const items = Array.isArray(data) ? data : Object.values(data).flat();
-        const hasUnread = items.some(item => {
-          const id = item.name;
-          return !isItemRead(c.slug, id);
-        });
-        badge.classList.toggle('hidden', !hasUnread);
-      } catch {}
+async function updateCardBadges() {
+  for (const c of cardsData) {
+    if (c.slug === 'reports') continue;
+    const badge = document.querySelector(`[data-slug="${c.slug}"] .badge`);
+    if (!badge) continue;
+    try {
+      const data = await fetchSheet(c.slug);
+      const items = (Array.isArray(data) ? data : Object.values(data).flat())
+        .filter(i => i && i.name && i.name.toUpperCase() !== 'NAME');
+      const hasUnread = items.some(item => !isItemRead(c.slug, item.name));
+      badge.classList.toggle('hidden', !hasUnread);
+    } catch {
+      badge.classList.add('hidden');
     }
   }
+}
 
 function formatTimestamp(t) {
   const d = new Date(t);
@@ -773,28 +772,18 @@ slice.forEach((u, idx) => {
   const bannerContent = latestUpdate?.text || "";
   
   // Only show if not dismissed for this update
-  if (
-    latestUpdate &&
-    localStorage.getItem(bannerDismissedKey) !== bannerContent
-  ) {
-    const banner = document.getElementById("update-banner");
-    banner.classList.replace("hidden", "show");
-    document.getElementById("update-banner-content").textContent = bannerContent;
-  } else {
-    document.getElementById("update-banner").classList.remove("show");
-    document.getElementById("update-banner").classList.add("hidden");
-  }
+if (latestUpdate) {
+  const banner = document.getElementById("update-banner");
+  banner.classList.replace("hidden", "show");
+  document.getElementById("update-banner-content").textContent = bannerContent;
+}
 const banner = document.getElementById("update-banner");
 const bannerClose = document.getElementById("update-banner-close");
 
 bannerClose.addEventListener("click", () => {
   banner.classList.remove("show");
   banner.classList.add("hidden");
-  // Persist dismissal for THIS update
-  localStorage.setItem(
-    "updateBannerDismissed",
-    document.getElementById("update-banner-content").textContent
-  );
+  // Do NOT persist to localStorage!
 });
 
   li.textContent = `${u.time}: ${u.text}`;
