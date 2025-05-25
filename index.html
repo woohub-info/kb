@@ -655,18 +655,30 @@ const NKEY='notifications',SKEY='seenNotifIds',
         e.textContent=n;
       };
 
-async function pollNotifications() {
-  let nots = ls(NKEY) || [];
-  const seen = new Set(ls(SKEY));
+function getRelativeTime(date) {
+  const now = new Date();
+  const diff = Math.floor((now - date) / 1000); // in seconds
+
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return `${Math.floor(diff/60)} min ago`;
+  if (diff < 86400) return `${Math.floor(diff/3600)} hour${Math.floor(diff/3600) > 1 ? 's' : ''} ago`;
+  return date.toLocaleDateString();
+}
+
+function pollNotifications() {
+  const nots = JSON.parse(localStorage.getItem(NKEY) || '[]');
+  const seen = new Set(JSON.parse(localStorage.getItem(SKEY) || '[]'));
   const unread = nots.filter(x => !seen.has(x.id));
   const all = [...unread, ...nots.filter(x => seen.has(x.id))];
   const ul = document.getElementById('notification-list');
   ul.innerHTML = '';
+
   for (let i of all) {
     let li = document.createElement('li'),
       wr = document.createElement('div'),
-      tm = document.createElement('time');
+      tm = document.createElement('span'); // Use <span> for relative time
     let isUnread = !seen.has(i.id);
+
     if (isUnread) {
       let b = document.createElement('span');
       b.textContent = 'New ';
@@ -674,9 +686,10 @@ async function pollNotifications() {
       wr.appendChild(b);
     }
     wr.appendChild(Object.assign(document.createElement('span'), { textContent: `🔔 ${i.text}` }));
+
     let d = new Date(i.time);
-    tm.textContent = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true });
-    tm.title = d.toLocaleString();
+    tm.textContent = getRelativeTime(d);
+    tm.title = d.toLocaleString(); // hover for actual time
     li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between items-center';
     li.append(wr, tm);
 
@@ -684,24 +697,22 @@ async function pollNotifications() {
     li.onclick = () => {
       if (isUnread) {
         seen.add(i.id);
-        st(SKEY, [...seen]);
+        localStorage.setItem(SKEY, JSON.stringify([...seen]));
         pollNotifications();
       }
     };
     ul.appendChild(li);
   }
-  setCount(unread.length);
-  updateCardBadges();
+  // Show/hide badge count
+  const el = document.getElementById('notification-count');
+  if (unread.length > 0) {
+    el.textContent = unread.length;
+    el.classList.remove('hidden');
+  } else {
+    el.classList.add('hidden');
+  }
+  updateCardBadges && updateCardBadges();
 }
-
-setInterval(pollNotifications,60000);
-pollNotifications();
-
-document.getElementById('notification-btn').onclick=e=>{
-  const dd=document.getElementById('notification-dropdown'),
-        open=!dd.classList.toggle('hidden');
-  e.currentTarget.setAttribute('aria-expanded',open);
-};
 
 let allUpdates = []; const displayCount = 5; let initialUpdatesLoad = true;
 
