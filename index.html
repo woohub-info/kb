@@ -47,9 +47,6 @@
         <div id="notification-dropdown"
              class="hidden absolute right-0 mt-2 w-96 p-4 bg-white border rounded-lg shadow-lg z-40">
           <ul id="notification-list" class="max-h-64 overflow-y-auto divide-y divide-gray-200"></ul>
-          <div class="text-center p-2">
-            <button id="clear-notifications" class="text-indigo-600 hover:underline">Clear All</button>
-          </div>
         </div>
       </div>
       <div class="relative ml-4">
@@ -124,24 +121,16 @@
         <h2 class="font-semibold text-lg">What’s New and Different?</h2>
         <button id="changelog-filter-toggle" class="p-1 text-gray-600 hover:text-gray-800">
           <!-- filter icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
-               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-6.414 6.414a1
-                          1 0 00-.293.707V19l-4-2v-4.172a1 1 0 00-.293-.707L3.293 6.707A1 1 0
-                          013 6V4z" />
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V19l-4-2v-4.172a1 1 0 00-.293-.707L3.293 6.707A1 1 0 013 6V4z" />
           </svg>
         </button>
       </div>
       <div id="changelog-filter-container" class="hidden mb-2">
         <input id="changelog-filter" type="text"
                placeholder="Filter changes..."
-               class="w-full p-2 border rounded" />
-      </div>
-      <ul id="change-log" class="space-y-2">
-        <li class="text-gray-600">No updates yet...</li>
-      </ul>
-    </div>
+               class="w-full p-2 border rounded" /></div>
+      <ul id="change-log" class="space-y-2"></ul></div>
   </div>
 </aside>
 
@@ -187,6 +176,57 @@
   </div>
 </footer>
 <script>
+
+  const SHEET_ID = '1cfLvub1zli1txycgl1TZxKr_oUMvqUrhkRwkJ6UG5hw';
+  function fetchSheet(tab) {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq`
+            + `?sheet=${encodeURIComponent(tab)}&tqx=out:json`;
+  return fetch(url)
+    .then(r => r.text())
+    .then(text => {
+      const table = JSON.parse(text.substr(47).slice(0, -2)).table;
+      return table.rows.map(rw => {
+        const [c0, c1, c2] = rw.c.map(cell => cell && cell.v);
+        if (tab === 'notifications') return { time: c0, text: c1 };
+        if (tab === 'Announcements' || tab === 'Release Notes') {return { time: c0, text: c1 };}
+        if (tab === 'links') {return { category: c0, name: c1, url: c2 };}
+        return { category: c0, name: c1, content: c2 };
+      });
+    });
+}
+let allReleaseNotes = [];
+
+async function loadReleaseNotes() {
+  const ul = document.getElementById('change-log');
+  
+  const rows = await fetchSheet('Release Notes');
+  allReleaseNotes = rows.map(({ time, text }) => {
+    let dateObj;
+    if (typeof time === 'string' && time.startsWith('Date(')) {
+      const parts = time.slice(5, -1).split(',').map(n => Number(n));
+      dateObj = new Date(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]);
+    } else {
+      dateObj = new Date(time);
+    }
+    return { time: formatTimestamp(dateObj), text };
+  });
+
+  renderReleaseNotes();
+}
+
+function renderReleaseNotes() {
+  const ul = document.getElementById('change-log');
+  const filterVal = (document.getElementById('changelog-filter')?.value || '').toLowerCase();
+  const filtered = allReleaseNotes.filter(n => n.text.toLowerCase().includes(filterVal));
+  ul.innerHTML = filtered.length
+    ? filtered.map(n => `<li class="py-2">${n.time}: ${n.text}</li>`).join('')
+    : '<li class="py-2 text-gray-500">No matching release notes.</li>';
+}
+
+document.getElementById('changelog-filter').addEventListener('input', renderReleaseNotes);
+  document.getElementById('changelog-filter-toggle').onclick = () =>
+  document.getElementById('changelog-filter-container').classList.toggle('hidden');
+
   // recently-viewed dropdown
   document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('recent-btn'),
@@ -217,12 +257,6 @@
     document.getElementById('change-log').innerHTML =
       a.map(e => `<div class="update-item">${e.timestamp}: ${e.message}</div>`).join('');
   }
-  document.addEventListener('DOMContentLoaded', () => {
-    let a = loadCL();
-    document.getElementById('change-log').innerHTML = a.length
-      ? a.map(e => `<div class="update-item">${e.timestamp}: ${e.message}</div>`).join('')
-      : '<p>No updates yet...</p>';
-  });
   new EventSource('/updates').onmessage = e => updateChangeLog(JSON.parse(e.data));
   new EventSource('/events').onmessage = e => {
     const d = JSON.parse(e.data);
@@ -233,24 +267,34 @@
     });
   };
 
-  // updateCardBadges: show “new” badge if any unread items exist for each card
-  async function updateCardBadges() {
-    for (const c of cardsData) {
-      const badge = document.querySelector(`[data-slug="${c.slug}"] .badge`);
-      if (!badge) continue;
-      try {
-        const data = await fetchItems(c.slug);
-        const items = Array.isArray(data) ? data : Object.values(data).flat();
-        const hasUnread = items.some(item => {
-          const id = item.id || item.name;
-          return !isItemRead(c.slug, id);
-        });
-        badge.classList.toggle('hidden', !hasUnread);
-      } catch {}
+async function updateCardBadges() {
+  for (const c of cardsData) {
+    if (c.slug === 'reports') continue;
+    const badge = document.querySelector(`[data-slug="${c.slug}"] .badge`);
+    if (!badge) continue;
+    try {
+      const data = await fetchSheet(c.slug);
+      const items = (Array.isArray(data) ? data : Object.values(data).flat())
+        .filter(i => i && i.name && i.name.toUpperCase() !== 'NAME');
+      const hasUnread = items.some(item => !isItemRead(c.slug, item.name));
+      badge.classList.toggle('hidden', !hasUnread);
+    } catch {
+      badge.classList.add('hidden');
     }
   }
+}
 
-  function formatTimestamp(t){const d = new Date(t), M = d.getMonth()+1, D = d.getDate(), YY = String(d.getFullYear()%100).padStart(2,'0'), h24 = d.getHours(), ampm = h24 < 12 ? 'AM' : 'PM', h = h24%12 || 12, m = String(d.getMinutes()).padStart(2,'0'); return `${M}/${D}/${YY} ${h}:${m}${ampm}`;}
+function formatTimestamp(t) {
+  const d = new Date(t);
+  const MM = String(d.getMonth() + 1).padStart(2, '0');
+  const DD = String(d.getDate()).padStart(2, '0');
+  const YYYY = d.getFullYear();
+  const h24 = d.getHours();
+  const ampm = h24 < 12 ? 'AM' : 'PM';
+  const h = String(h24 % 12 || 12).padStart(2, '0');
+  const m = String(d.getMinutes()).padStart(2, '0');
+  return `${MM}/${DD}/${YYYY} ${h}:${m} ${ampm}`;
+}
 
   const badgeDataMap = {},
         seenNotifIds = new Set(JSON.parse(localStorage.getItem('seenNotifIds')||'[]'));
@@ -281,7 +325,6 @@
         notifBtn = document.getElementById('notification-btn'),
         notifDropdown = document.getElementById('notification-dropdown'),
         notifListEl = document.getElementById('notification-list'),
-        clearNotifsBtn = document.getElementById('clear-notifications'),
         updatesFilterToggle = document.getElementById('updates-filter-toggle'),
         updatesFilterContainer = document.getElementById('updates-filter-container'),
         updatesFilter = document.getElementById('updates-filter'),
@@ -303,13 +346,6 @@
 
   const contentCache = {},
         debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
-
-  async function fetchItems(slug) {
-    if (contentCache[slug]) return contentCache[slug];
-    const res = await fetch(`data/${slug}.json`);
-    if (!res.ok) throw new Error('Failed to load data');
-    return contentCache[slug] = await res.json();
-  }
 
   function renderRecentlyViewed(recents) {
     const ul = document.getElementById('recent-list');
@@ -362,32 +398,52 @@ function renderCards() {
     detailTitle.textContent = title;
     detailList.innerHTML = '';
 
-    if (slug === 'links') {
-      const groups = await fetchItems('links'),
-            oldIds = new Set((window.initialLinks || []).map(x => x.id));
-      for (const [cat, items] of Object.entries(groups)) {
-        if (cat) {
-          const h = document.createElement('h3');
-          h.className = 'text-lg font-semibold mt-4';
-          h.textContent = cat;
-          detailList.appendChild(h);
-        }
-        items.forEach(i => {
-          if (oldIds.has(i.name)) markItemRead('links', i.name);
-          const li = document.createElement('li'),
-                a  = Object.assign(document.createElement('a'), { href: i.url, target: '_blank', rel: 'noopener noreferrer', textContent: i.name });
-          a.className = 'text-indigo-600 hover:underline';
-          const dot = document.createElement('span');
-          dot.className = 'ml-2 inline-block w-2 h-2 bg-red-600 rounded-full';
-          if (isItemRead('links', i.name)) dot.classList.add('hidden');
-          a.onclick = () => { markItemRead('links', i.name); dot.classList.add('hidden'); updateCardBadges(); };
-          li.append(a, dot);
-          detailList.appendChild(li);
-        });
-      }
-      updateCardBadges();
-      return;
+if (slug === 'links') {
+  const raw = await fetchSheet('links');
+  const items = raw.slice(1);
+  const groups = items.reduce((acc, item) => {
+    const key = item.category || '';
+    (acc[key] = acc[key]||[]).push(item);
+    return acc;
+  }, {});
+  for (const [cat, list] of Object.entries(groups)) {
+    if (cat) {
+      const h3 = document.createElement('h3');
+      h3.className   = 'text-lg font-semibold mt-4';
+      h3.textContent = cat;
+      detailList.appendChild(h3);
     }
+list.forEach(i => {
+  const li = document.createElement('li');
+
+  // 1) your existing link
+  const a = document.createElement('a');
+  a.href        = i.url;
+  a.textContent = i.name;
+  a.target      = '_blank';
+  a.rel         = 'noopener noreferrer';
+  a.className   = 'text-indigo-600 hover:underline';
+
+  // 2) the unread-dot
+  const dot = document.createElement('span');
+  dot.className = 'ml-2 inline-block w-2 h-2 bg-red-600 rounded-full';
+  if (isItemRead('links', i.name)) dot.classList.add('hidden');
+
+  // 3) on click, mark read and hide dot
+  a.addEventListener('click', () => {
+    markItemRead('links', i.name);
+    dot.classList.add('hidden');
+    updateCardBadges();
+  });
+
+  // 4) append both
+  li.append(a, dot);
+  detailList.appendChild(li);
+});
+
+  }
+  return;
+}
 
 if (slug === 'reports') {
   console.log('🍒 building report charts');
@@ -479,38 +535,54 @@ options: {
 }
 
     try {
-      const data = await fetchItems(slug),
-            groups = Array.isArray(data) ? { '': data } : data;
-      for (const [cat, items] of Object.entries(groups)) {
-        if (cat) {
-          const h = document.createElement('h3');
-          h.className = 'text-lg font-semibold mt-4';
-          h.textContent = cat;
-          detailList.appendChild(h);
-        }
-        items.forEach(i => {
-          const li = document.createElement('li'),
-                btn = document.createElement('button');
-          btn.className = 'flex items-center text-indigo-600 hover:underline focus:outline-none';
-          btn.textContent = i.name;
-          const id = i.id || i.name,
-                dot = document.createElement('span');
-          dot.className = 'ml-2 inline-block w-2 h-2 bg-red-600 rounded-full';
-          if (isItemRead(slug, id)) dot.classList.add('hidden');
-          btn.appendChild(dot);
-          btn.onclick = () => {
-            openEmailOverlay(i.name, i.content, slug);
-            markItemRead(slug, id);
-            dot.classList.add('hidden');
-            if (!hasUnreadForSlug(slug)) {
-              const b = document.querySelector(`[data-slug="${slug}"] .badge`);
-              b && b.classList.add('hidden');
-            }
-          };
-          li.appendChild(btn);
-          detailList.appendChild(li);
-        });
-      }
+// fetch flat array: [{category, name, content}, ...]
+const rawItems = await fetchSheet(slug);
+
+// drop the header row that reads ["CATEGORY","Name",…]
+const items = rawItems.filter(i => 
+  !(i.category?.toUpperCase() === 'CATEGORY' && i.name?.toUpperCase() === 'NAME')
+);
+
+// now group by the real category values
+const groups = items.reduce((acc, item) => {
+  const key = item.category || '';
+  if (!acc[key]) acc[key] = [];
+  acc[key].push(item);
+  return acc;
+}, {});
+
+// render each category
+for (const [cat, list] of Object.entries(groups)) {
+  if (cat) {
+    const h = document.createElement('h3');
+    h.className   = 'text-lg font-semibold mt-4';
+    h.textContent = cat.toUpperCase();    // or leave as-is
+    detailList.appendChild(h);
+  }
+  list.forEach(i => {
+    const li  = document.createElement('li');
+    const btn = document.createElement('button');
+    btn.className   = 'flex items-center text-indigo-600 hover:underline focus:outline-none';
+    btn.textContent = i.name;
+  // create the unread-dot
+  const dot = document.createElement('span');
+  dot.className = 'ml-2 inline-block w-2 h-2 bg-red-600 rounded-full';
+  if (isItemRead(slug, i.name)) dot.classList.add('hidden');
+
+  // when clicked: open, mark read, hide dot, update card badge
+btn.addEventListener('click', () => {
+  openEmailOverlay(i.name, i.content, slug);
+  markItemRead(slug, i.name); // or .id if that's the true key
+  dot.classList.add('hidden');
+  updateCardBadges();
+});
+  // compose
+  btn.appendChild(dot);
+  li.appendChild(btn);
+  detailList.appendChild(li);
+});
+}
+
     } catch {
       detailList.innerHTML = '<li class="text-red-500">This page is under construction – check back soon!</li>';
     }
@@ -569,170 +641,237 @@ options: {
     return d.toLocaleDateString();
   }
 
-const NKEY='notifications',SKEY='seenNotifIds',
-      ls=k=>JSON.parse(localStorage.getItem(k)||'[]'),
-      st=(k,v)=>localStorage.setItem(k,JSON.stringify(v)),
-      seen=new Set(ls(SKEY)),
-      setCount=n=>{
-        const e=document.getElementById('notification-count');
-        n?e.classList.remove('hidden'):e.classList.add('hidden');
-        e.textContent=n;
-      };
+const NKEY = 'notifications', SKEY = 'seenNotifIds';
 
-async function pollNotifications(){
-  let nots=ls(NKEY);
-  try{
-    let r=await fetch('data/notification.json');
-    if(r.ok) for(let u of await r.json()){
-      let id=u.id||u.timestamp+u.text;
-      if(!nots.some(x=>x.id===id))
-        nots.unshift({id,text:u.text,time:new Date().toISOString(),type:'updates'});
-    }
-  }catch{}
-  for(let c of cardsData){
-    if(c.slug==='reports') continue;
-    try{
-      let r=await fetch(`data/${c.slug}.json`);
-      if(r.ok){
-        let arr=Array.isArray(await r.json())
-          ? await r.json()
-          : Object.values(await r.json()).flat();
-        for(let i of arr){
-          let id=`${c.slug}|${i.name}`;
-          if(!nots.some(x=>x.id===id))
-            nots.unshift({id,text:`New ${c.title}: ${i.name}`,time:new Date().toISOString(),type:c.slug});
-        }
+function getRelativeTime(date) {
+  const now = new Date();
+  const diff = Math.floor((now - date) / 1000); // seconds
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} hour${Math.floor(diff / 3600) > 1 ? 's' : ''} ago`;
+  return date.toLocaleDateString();
+}
+function parseGoogleDate(str) {
+  const m = /^Date\(([\d,]+)\)$/.exec(str);
+  if (!m) return new Date(str);
+  const parts = m[1].split(',').map(Number);
+  return new Date(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]);
+}
+async function syncNotificationsFromSheet() {
+  const rows = await fetchSheet('notifications');
+  console.log('Fetched notification rows:', rows);
+  if (rows.length) console.log('First row:', rows[0]);
+  const dataRows = rows;
+
+  const notifications = dataRows
+    .filter(row => row && row.time && row.text)
+    .map(({ time, text }) => {
+      let dateObj;
+      if (typeof time === 'string' && time.startsWith('Date(')) {
+        dateObj = parseGoogleDate(time);
+      } else {
+        dateObj = new Date(time);
       }
-    }catch{}
-  }
-  st(NKEY,nots);
-  const unread=nots.filter(x=>!seen.has(x.id)),
-        all=[...unread,...nots.filter(x=>seen.has(x.id))],
-        ul=document.getElementById('notification-list');
-  ul.innerHTML='';
-  for(let i of all){
-    let li=document.createElement('li'),
-        wr=document.createElement('div'),
-        tm=document.createElement('time');
-    if(!seen.has(i.id)){
-      let b=document.createElement('span');
-      b.textContent='New '; b.className='new-badge text-red-600 text-xs font-semibold mr-1';
-      wr.appendChild(b);
-    }
-    wr.appendChild(Object.assign(document.createElement('span'),{textContent:`🔔 ${i.text}`}));
-    let d=new Date(i.time);
-    tm.textContent=d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit',hour12:true});
-    tm.title=d.toLocaleString();
-    li.className='p-2 border-b hover:bg-gray-50 flex justify-between items-center';
-    li.append(wr,tm);
-    ul.appendChild(li);
-  }
-  st(SKEY,[...seen]);
-  setCount(unread.length);
-  updateCardBadges();
+      return {
+        id: encodeURIComponent(String(time) + text),
+        text,
+        time: dateObj.toISOString()
+      };
+    });
+
+  console.log('Processed notifications:', notifications);
+  localStorage.setItem('notifications', JSON.stringify(notifications));
 }
 
-setInterval(pollNotifications,60000);
-pollNotifications();
+function pollNotifications() {
+  const nots = JSON.parse(localStorage.getItem('notifications') || '[]');
+  const seen = new Set(JSON.parse(localStorage.getItem(SKEY) || '[]'));
+  const unread = nots.filter(x => !seen.has(x.id));
+  const all = [...unread, ...nots.filter(x => seen.has(x.id))];
+  const ul = document.getElementById('notification-list');
+  ul.innerHTML = '';
 
-document.getElementById('notification-btn').onclick=e=>{
-  const dd=document.getElementById('notification-dropdown'),
-        open=!dd.classList.toggle('hidden');
-  e.currentTarget.setAttribute('aria-expanded',open);
-  if(open){
-    ls(NKEY).forEach(n=>seen.add(n.id));
-    st(SKEY,[...seen]);
-    setCount(0);
-    document.querySelectorAll('#notification-list .new-badge').forEach(b=>b.remove());
-  }
-};
+  for (let i of all) {
+    let li = document.createElement('li'),
+        wr = document.createElement('div'),
+        tm = document.createElement('span');
+    let isUnread = !seen.has(i.id);
 
-document.getElementById('clear-notifications').onclick=_=>{
-  ls(NKEY).forEach(n=>seen.add(n.id));
-  st(SKEY,[...seen]);
-  document.getElementById('notification-list').innerHTML='';
-  setCount(0);
-};
+    if (isUnread) {
+      let b = document.createElement('span');
+      b.textContent = 'New ';
+      b.className = 'new-badge text-red-600 text-xs font-semibold mr-1';
+      wr.appendChild(b);
+    }
+    wr.appendChild(Object.assign(document.createElement('span'), { textContent: `🔔 ${i.text}` }));
 
-  let allUpdates = [], displayCount=5, initialUpdatesLoad=true;
-  async function pollUpdatesPanel() {
-    try {
-      const r = await fetch('data/updates.json');
-      if (r.ok) {
-        const j = await r.json();
-        allUpdates = j.map(u => ({ text:u.text, time:u.timestamp, link:u.link }));
-        renderUpdatesPanel();
+    let d = typeof i.time === 'string' ? new Date(i.time) : i.time;
+    tm.textContent = getRelativeTime(d);
+    tm.title = d.toLocaleString(); // actual date on hover
+    li.className = 'p-2 border-b hover:bg-gray-50 flex justify-between items-center';
+    li.append(wr, tm);
+
+    li.style.cursor = "pointer";
+    li.onclick = () => {
+      if (isUnread) {
+        seen.add(i.id);
+        localStorage.setItem(SKEY, JSON.stringify([...seen]));
+        pollNotifications();
       }
-    } catch {}
+    };
+    ul.appendChild(li);
   }
-  function renderUpdatesPanel() {
-    const fv = (updatesFilter?.value || mobileUpdatesFilter?.value || '').toLowerCase();
-    const fl = allUpdates.filter(u => u.text.toLowerCase().includes(fv))
-                         .sort((a,b)=>new Date(b.time)-new Date(a.time));
-    const ts = fl.slice(0, displayCount), lastSeen = localStorage.getItem('lastSeenUpdate'),
-          latestTime = ts[0]?.time, isNew = latestTime && latestTime !== lastSeen;
-    [updatesContainer, mobileUpdatesContainer].forEach(cn => {
-      cn.innerHTML = '';
-      if (!ts.length) {
-        const li = document.createElement('li');
-        li.textContent = 'No updates available.'; li.className='py-2 text-gray-500';
-        cn.appendChild(li);
-      } else ts.forEach((u,i) => {
-        const li = document.createElement('li');
-        if (u.link) {
-          const a = document.createElement('a');
-          a.href = u.link; a.className = 'block py-2 hover:underline';
-          if (i===0 && initialUpdatesLoad) {
-            const b = document.createElement('span');
-            b.textContent='New '; b.className='text-red-600 text-xs font-semibold';
-            a.appendChild(b);
-            document.getElementById('update-banner').classList.remove('hidden');
-            document.getElementById('update-banner').classList.add('show');
-            document.getElementById('update-banner-content').textContent = u.text;
-          }
-          a.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
-          li.appendChild(a);
-        } else {
-          if (i===0 && initialUpdatesLoad) {
-            const b = document.createElement('span');
-            b.textContent='New '; b.className='text-red-600 text-xs font-semibold';
-            li.appendChild(b);
-            document.getElementById('update-banner').classList.remove('hidden');
-            document.getElementById('update-banner').classList.add('show');
-            document.getElementById('update-banner-content').textContent = u.text;
-          }
-          li.appendChild(document.createTextNode(`${u.time}: ${u.text}`));
-          li.className='py-2';
-        }
-        cn.appendChild(li);
-      });
-    });
-    if (isNew) localStorage.setItem('lastSeenUpdate', latestTime);
-    initialUpdatesLoad=false;
-  }
-  setInterval(pollUpdatesPanel, 60000);
-  pollUpdatesPanel();
-  updatesFilterToggle.onclick = () => updatesFilterContainer.classList.toggle('hidden');
+function markAllNotifsAsRead() {
+  const nots = JSON.parse(localStorage.getItem('notifications') || '[]');
+  const allIds = nots.map(x => x.id);
+  localStorage.setItem('seenNotifIds', JSON.stringify(allIds));
+}
+const notifBtn = document.getElementById('notification-btn');
+const notifDropdown = document.getElementById('notification-dropdown');
 
-  const changelogFilterToggle    = document.getElementById('changelog-filter-toggle'),
-      changelogFilterContainer = document.getElementById('changelog-filter-container'),
-      changelogFilter          = document.getElementById('changelog-filter');
-changelogFilterToggle.addEventListener('click', () =>
-  changelogFilterContainer.classList.toggle('hidden')
-);
-changelogFilter.addEventListener('input', debounce(renderChangeLog, 200));
+notifBtn.onclick = function(e) {
+  const open = !notifDropdown.classList.toggle('hidden');
+  e.currentTarget.setAttribute('aria-expanded', open);
+  e.stopPropagation();
+
+  if (!open) {
+    markAllNotifsAsRead();
+    pollNotifications();
+  }
+};
+
+  document.addEventListener('click', function(e) {
+  if (
+    !notifDropdown.classList.contains('hidden') &&
+    !notifBtn.contains(e.target) &&
+    !notifDropdown.contains(e.target)
+  ) {
+    notifDropdown.classList.add('hidden');
+    notifBtn.setAttribute('aria-expanded', 'false');
+    markAllNotifsAsRead();
+    pollNotifications();
+  }
+});
+
+  const el = document.getElementById('notification-count');
+  if (unread.length > 0) {
+    el.textContent = unread.length;
+    el.classList.remove('hidden');
+  } else {
+    el.classList.add('hidden');
+  }
+  
+  if (typeof updateCardBadges === 'function') updateCardBadges();
+}
+
+async function initNotifications() {
+  await syncNotificationsFromSheet();
+  pollNotifications();
+  setInterval(async () => {
+    await syncNotificationsFromSheet();
+    pollNotifications();
+  }, 60000);
+}
+
+document.addEventListener('DOMContentLoaded', initNotifications);
+
+let allUpdates = []; const displayCount = 5; let initialUpdatesLoad = true;
+
+async function pollUpdatesPanel() {
+  try {
+    const rows = await fetchSheet('Announcements');
+    allUpdates = rows.map(({ time, text }) => {
+      let dateObj;
+      if (typeof time === 'string' && time.startsWith('Date(')) {
+        const parts = time
+          .slice(5, -1) .split(',') .map(n => Number(n));
+        dateObj = new Date(parts[0], parts[1],  parts[2], parts[3], parts[4], parts[5]);
+      } else {
+        dateObj = new Date(time);
+      }
+      return {
+        time: formatTimestamp(dateObj),
+        text
+      };
+    });
+
+    renderUpdatesPanel();
+  } catch (err) {
+    console.error('pollUpdatesPanel error:', err);
+  }
+}
+
+function renderUpdatesPanel() {
+  const filterVal = (updatesFilter?.value || mobileUpdatesFilter?.value || '').toLowerCase();
+  const filtered = allUpdates
+    .filter(u => u.text.toLowerCase().includes(filterVal))
+    .sort((a, b) => new Date(b.time) - new Date(a.time));
+  const slice     = filtered.slice(0, displayCount);
+  const lastSeen  = localStorage.getItem('lastSeenUpdate');
+  const latestTime= slice[0]?.time;
+  const isNew     = latestTime && latestTime !== lastSeen;
+
+  [updatesContainer, mobileUpdatesContainer].forEach(listEl => {
+    listEl.innerHTML = '';
+
+    if (slice.length === 0) {
+      const li = document.createElement('li');
+      li.textContent = 'No updates available.';
+      li.className  = 'py-2 text-gray-500';
+      listEl.appendChild(li);
+      return;
+    }
+
+slice.forEach((u, idx) => {
+  const li = document.createElement('li');
+  li.className = 'py-2';
+  if (idx === 0 && initialUpdatesLoad && isNew) {
+    document.getElementById('update-banner')
+      .classList.replace('hidden','show');
+    document.getElementById('update-banner-content')
+      .textContent = u.text;
+  }
+  const latestUpdate = slice[0];
+  const bannerDismissedKey = "updateBannerDismissed";
+  const bannerContent = latestUpdate?.text || "";
+  
+if (latestUpdate) {
+  const banner = document.getElementById("update-banner");
+  banner.classList.replace("hidden", "show");
+  document.getElementById("update-banner-content").textContent = bannerContent;
+}
+const banner = document.getElementById("update-banner");
+const bannerClose = document.getElementById("update-banner-close");
+
+bannerClose.addEventListener("click", () => {
+  banner.classList.remove("show");
+  banner.classList.add("hidden");
+});
+
+  li.textContent = `${u.time}: ${u.text}`;
+  listEl.appendChild(li);
+  });
+});
+
+  if (isNew) localStorage.setItem('lastSeenUpdate', latestTime);
+  initialUpdatesLoad = false;
+}
+
+pollUpdatesPanel();
+setInterval(pollUpdatesPanel, 60_000);
+
+updatesFilterToggle.onclick = () => updatesFilterContainer.classList.toggle('hidden');
 
 function renderChangeLog() {
   const fv = changelogFilter.value.toLowerCase();
-  const entries = loadCL();  // your helper that reads localStorage/history.json
+  const entries = loadCL();
   const filtered = entries.filter(e =>
     e.message.toLowerCase().includes(fv)
   );
   const listHtml = filtered.length
     ? filtered.map(e => `<li class="py-2">${e.timestamp}: ${e.message}</li>`).join('')
     : '<li class="py-2 text-gray-500">No matching updates.</li>';
-  document.getElementById('change-log').innerHTML = listHtml;
-}
+  document.getElementById('change-log').innerHTML = listHtml;}
   mobileUpdatesFilterToggle.onclick = () => mobileUpdatesFilterContainer.classList.toggle('hidden');
   updatesFilter?.addEventListener('input', debounce(renderUpdatesPanel,200));
   mobileUpdatesFilter?.addEventListener('input', debounce(renderUpdatesPanel,200));
@@ -742,13 +881,11 @@ function renderChangeLog() {
     const items = cardsData.map(c=>({name:c.title,content:c.description,slug:c.slug,isRoot:true}));
     for (const c of cardsData) if (c.slug!=='reports') {
       try {
-        const d = await fetchItems(c.slug);
+        const d = await fetchSheet(c.slug);
         const arr = Array.isArray(d)?d:Object.values(d).flat();
         arr.forEach(i=>items.push({name:i.name,content:i.content,slug:c.slug,isRoot:false}));
-      } catch {}
-    }
-    fuse = new Fuse(items,{keys:['name','content'],includeMatches:true,threshold:0.4});
-  }
+      } catch {}}
+    fuse = new Fuse(items,{keys:['name','content'],includeMatches:true,threshold:0.4});}
   function renderSuggestions(results) {
     searchSuggestions.innerHTML = '';
     if (!results.length) {
@@ -806,32 +943,31 @@ tabRecent.addEventListener('click', () =>
   activateTab(tabRecent, tabWhatsNew, panelRec, panelNew)
 );
 
-tabWhatsNew.addEventListener('click', () =>
-  activateTab(tabWhatsNew, tabRecent, panelNew, panelRec)
-);
+tabWhatsNew.addEventListener('click', () => {
+  activateTab(tabWhatsNew, tabRecent, panelNew, panelRec);
+  loadReleaseNotes();
+});
 
-  const key = "changeLogEntries";
-  let entries = [];
-  try {
-    const r = await fetch(`data/history.json?cb=${Date.now()}`, { cache: "no-store" });
-    if (r.ok) entries = await r.json();
-  } catch {}
-  if (!entries.length) entries = JSON.parse(localStorage.getItem(key) || "[]");
-  localStorage.setItem(key, JSON.stringify(entries));
-  document.getElementById("change-log").innerHTML = entries.length
-    ? entries.map(e => `<li class="py-2">${e.timestamp}: ${e.message}</li>`).join("")
-    : '<li class="py-2 text-gray-500">No updates available.</li>';
   renderRecentlyViewed(JSON.parse(localStorage.getItem("recentlyViewed") || "[]"));
   renderCards();
   buildSearchIndex();
+  
 });
   const banner       = document.getElementById('update-banner');
   const bannerClose  = document.getElementById('update-banner-close');
 
-  bannerClose.addEventListener('click', () => {
-    banner.classList.remove('show');
-    banner.classList.add('hidden');
-});  
+bannerClose.addEventListener('click', () => {
+  banner.classList.remove('show');
+  banner.classList.add('hidden');
+  localStorage.setItem('bannerClosedFor', document.getElementById('update-banner-content').textContent);
+});
+  document.getElementById('notification-btn').onclick = function(e) {
+    const dd = document.getElementById('notification-dropdown');
+    const open = !dd.classList.toggle('hidden');
+    e.currentTarget.setAttribute('aria-expanded', open);
+    e.stopPropagation();
+  };
+
   new EventSource('/updates').onmessage = e => {
     const update = JSON.parse(e.data);
     const entries = JSON.parse(localStorage.getItem('changeLogEntries') || '[]');
