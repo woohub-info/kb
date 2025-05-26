@@ -7,6 +7,11 @@
   <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js" defer></script>
   <style>
+    #passcode-overlay .box{background:#fff;padding:3rem;border-radius:.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.2);max-width:400px;width:95%;text-align:center;display:flex;flex-direction:column;gap:.5rem;}
+    #passcode-overlay input {width: 100%;padding: .75rem;border: 2px solid #4F46E5;border-radius: .75rem;background: #f3f4f6;}
+  	#passcode-overlay button {width: fit-content;max-width: 200px;margin: .5rem auto 0;padding: .5rem 1rem;margin-top: .25rem;background: #4F46E5;color: #fff;font-weight: bold;border: none;border-radius: .75rem;box-shadow: 0 4px 12px rgba(0,0,0,0.2);transition: transform .2s ease, box-shadow .2s ease;}
+  	#passcode-overlay button:hover {transform: translateY(-2px);box-shadow: 0 6px 16px rgba(0,0,0,0.3);}
+    #passcode-error {display: none;}
     @keyframes bell-bounce{0%,100%{transform:rotate(0)}25%{transform:rotate(10deg)}75%{transform:rotate(-10deg)}}
     @keyframes gradient-slide{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
     .suggestion-enter{transform:translateX(-20px);opacity:0}
@@ -19,10 +24,15 @@
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800 antialiased flex flex-col min-h-screen">
-
+  <div id="passcode-overlay" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:9999;">
+ <div class="box">
+  <img src="assets/woohub_logo.png" alt="Logo" class="mx-auto mb-4 h-12"/>
+  <h2 class="text-xl font-semibold">Enter Passcode</h2>
+    <input type="password" id="passcode-input" placeholder="Your passcode…" />
+    <button id="passcode-submit">Unlock</button>
+    <p id="passcode-error">Incorrect passcode.</p></div></div>
   <div id="parallax-bg" class="fixed inset-0 bg-[url('/assets/pattern.svg')] bg-center bg-cover pointer-events-none"></div>
   <noscript><div class="p-4 bg-yellow-100 text-yellow-800">JavaScript is required to use WooHub.</div></noscript>
-
   <header class="relative bg-white shadow sticky top-0 z-20 flex items-center justify-between h-16 px-4 lg:px-8">
     <a href="#" onclick="event.preventDefault()" class="h-16 flex items-center">
       <img src="assets/woohub_logo.png" alt="Logo" class="h-10"/>
@@ -176,7 +186,7 @@
   </div>
 </footer>
 <script>
-
+  
   const SHEET_ID = '1cfLvub1zli1txycgl1TZxKr_oUMvqUrhkRwkJ6UG5hw';
   function fetchSheet(tab) {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq`
@@ -925,6 +935,25 @@ function renderChangeLog() {
   });
 
 document.addEventListener("DOMContentLoaded", async () => {
+  const PASSCODE = 'WooAA2025';  // ← change to your secret
+  const overlay = document.getElementById('passcode-overlay');
+  const input   = document.getElementById('passcode-input');
+  const btn     = document.getElementById('passcode-submit');
+  const error   = document.getElementById('passcode-error');
+  function checkPasscode() {
+    if (input.value === PASSCODE) {
+      overlay.style.display = 'none';
+    } else {
+      error.style.display = 'block';
+      input.value = '';
+      input.focus();
+    }
+  }
+
+  btn.addEventListener('click', checkPasscode);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkPasscode();
+  });
 const tabRecent   = document.getElementById('tab-recent');
 const tabWhatsNew = document.getElementById('tab-whatsnew');
 const panelRec    = document.getElementById('panel-recent');
